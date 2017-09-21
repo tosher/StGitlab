@@ -51,9 +51,9 @@
         ]
     },
     {
-        "keys": ["d"], "command": "st_gitlab_issue_delete",
+        "keys": ["delete"], "command": "st_gitlab_issue_delete",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_issues"}
+            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_issue"]}
         ]
     },
     {
@@ -72,6 +72,18 @@
         "keys": ["enter"], "command": "st_gitlab_pipeline",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_pipelines"}
+        ]
+    },
+    {
+        "keys": ["b"], "command": "st_gitlab_pipeline_retry",
+        "context": [
+            {"key": "stg_screen", "operand": ["st_gitlab_pipelines", "st_gitlab_pipeline"]}
+        ]
+    },
+    {
+        "keys": ["c"], "command": "st_gitlab_pipeline_cancel",
+        "context": [
+            {"key": "stg_screen", "operand": ["st_gitlab_pipelines", "st_gitlab_pipeline"]}
         ]
     },
     {

@@ -38,55 +38,54 @@ class StGitlabIssueCreateCommand(sublime_plugin.TextCommand):
         r.run_command('st_gitlab_issue_fetcher', {'obj_id': issue.iid})
 
 
-# View Issue
 class StGitlabIssueCommand(sublime_plugin.TextCommand):
-    def run(self, edit, issue_id=None):
 
-        if not issue_id:
-            colsep = utils.stg_get_setting('table_column_separator')
-            try:
+    INPUT_STR = 'Issue ID'
+
+    def run(self, edit, obj_id=None):
+        self.screen = self.view.settings().get('screen', None)
+        if not obj_id:
+            if self.screen == 'st_gitlab_issues':
+                colsep = utils.stg_get_setting('table_column_separator')
                 line = self.view.substr(self.view.line(self.view.sel()[0].end()))
-                issue_id = line.split(colsep)[1].strip()
-                int(issue_id)  # check is number
-            except Exception as e:
-                print('Exception: %s' % e)
-                pass
+                obj_id = line.split(colsep)[1].strip()
+            elif self.screen == 'st_gitlab_issue':
+                obj_id = self.view.settings().get('object_id', None)
 
-        if not issue_id:
-            issue_id = ''
-            self.view.window().show_input_panel("Issue ID #:", issue_id, self.get_issue, None, None)
+        if not obj_id:
+            self.view.window().show_input_panel(self.INPUT_STR, '', self.process, None, None)
         else:
-            self.get_issue(issue_id)
+            self.process(obj_id)
 
-    def get_issue(self, text):
-        self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': text})
-
-
-# Delete Issue
-class StGitlabIssueDeleteCommand(sublime_plugin.TextCommand):
-    def run(self, edit, issue_id=None):
-        if not issue_id:
-            try:
-                line = self.view.substr(self.view.line(self.view.sel()[0].end()))
-                issue_id = line.split('│')[1].strip()
-                int(issue_id)  # check is number
-            except Exception as e:
-                print('Issue delete exception: %s' % e)
-
-        if not issue_id:
-            issue_id = ''
-            self.view.window().show_input_panel("Issue ID (delete):", issue_id, self.delete_issue, None, None)
-        else:
-            self.delete_issue(issue_id)
-
-    def delete_issue(self, issue_id):
-        is_del = sublime.ok_cancel_dialog('Are you really want to delete issue #%s?' % issue_id)
-        if not is_del:
-            return
+    def get_issue(self, obj_id):
         project_id = self.view.settings().get('project_id', None)
         gitlab = StGitlab.connect()
         project = gitlab.projects.get(project_id)
-        project.issues.delete(issue_id)
-        if self.view.settings().get('screen', None) == 'st_gitlab_issues':
-            self.view.run_command('st_gitlab_list_refresh')
+        return project.issues.get(obj_id)
+
+    def refresh(self):
+        if self.screen == 'st_gitlab_issues':
+            self.view.run_command('st_gitlab_project_list_refresh')
+        elif self.screen == 'st_gitlab_issue':
+            self.view.close()
+
+    def process(self, obj_id):
+        if not obj_id:
+            return
+        self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': obj_id})
+
+
+class StGitlabIssueDeleteCommand(StGitlabIssueCommand):
+
+    INPUT_STR = 'Issue ID to delete'
+
+    def process(self, obj_id):
+        if not obj_id:
+            return
+        is_del = sublime.ok_cancel_dialog('Are you really want to delete issue #%s?' % obj_id)
+        if not is_del:
+            return
+        issue = self.get_issue(obj_id)
+        issue.delete()
+        self.refresh()
 

@@ -4,6 +4,7 @@
 import sublime
 import sublime_plugin
 from .stg_gitlab import StGitlab
+from . import stg_utils as utils
 
 
 class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
@@ -13,16 +14,14 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
         project_id = self.view.settings().get('project_id', None)
         project = gitlab.projects.get(project_id)
         lbs = project.labels.list(all=True)
-        # print(ls)
 
-        lbl_pattern = r'\•[^\•]+\•'
+        lbl_chr = utils.stg_get_setting('label_char')
+        lbl_pattern = r'\%(lchr)s[^\%(lchr)s]+\%(lchr)s' % {'lchr': lbl_chr}
         labels = self.view.find_all(lbl_pattern)
-        # self.view.add_regions('labels', labels, 'text.html.markdown', 'circle', sublime.DRAW_SOLID_UNDERLINE)
         for label_r in labels:
             lbl_text = self.view.substr(label_r)[1:-1]
             lbl_color = '#D84315'
             try:
-                # lab = project.labels.get(lbl_text)
                 for lab in lbs:
                     if lab.attributes.get('name', None) == lbl_text:
                         lbl_color = lab.attributes.get('color', '#D84315')

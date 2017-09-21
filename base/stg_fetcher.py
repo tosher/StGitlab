@@ -65,10 +65,10 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         content = '## Description\n'
         content += BLOCK_MD_LINE_START
         descr = obj.description
-        if descr:
-            content += '%s\n\n' % descr.replace('\r', '')
+        if not descr:
+            return None
         else:
-            content += '\n'
+            content += '%s\n\n' % descr.replace('\r', '')
         content += BLOCK_MD_LINE_STOP
         return content
 
@@ -169,19 +169,20 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
 
 class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
     shortcuts = [
-        '[f2](change subject)',
-        '[c](post a comment)',
+        '[r](refresh)',
+        '[f2](change title)',
+        '[d](change description)',
+        '[c](add note)',
         '[s](change state)',
         '[v](change milestone)',
-        '[a](assing to)',
-        '[m](move to project)',
-        '[r](refresh issue)',
-        '[g](open in browser)',
-        '[d](change description)',
-        '[u](toggle select mode)',
         '[j](label add)',
         '[k](label remove)',
-        '[Enter](*magic)'
+        '[a](assing to)',
+        '[g](open in browser)',
+        '[m](move to project)',
+        '[u](toggle select mode)',
+        '[Enter](*change any)',
+        '[Delete](delete)'
     ]
     obj_name = 'Issue'
     obj_name_sub = 'issue'
@@ -193,19 +194,18 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
 
 class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
     shortcuts = [
-        '[f2](change subject)',
-        '[c](post a comment)',
+        '[r](refresh)',
+        '[f2](change title)',
+        '[d](change description)',
+        '[c](add note)',
         '[s](change state)',
         '[v](change milestone)',
-        '[a](assing to)',
-        # '[m](move to project)',
-        '[r](refresh merge-request)',
-        '[g](open in browser)',
-        '[d](change description)',
-        '[u](toggle select mode)',
         '[j](label add)',
         '[k](label remove)',
-        '[Enter](*magic)'
+        '[a](assing to)',
+        '[g](open in browser)',
+        '[u](toggle select mode)',
+        '[Enter](*change any)'
     ]
     obj_name = 'Merge-request'
     obj_name_sub = 'merge'
@@ -234,6 +234,9 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 
 class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
     shortcuts = [
+        '[r](refresh)',
+        '[b](retry)',
+        '[c](cancel)',
         '[g](open in browser)',
         '[u](toggle select mode)',
         '[Enter](*magic)'

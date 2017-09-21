@@ -9,7 +9,6 @@ import sublime
 from datetime import datetime
 from .stg_gitlab import StGitlab
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
-# from terminaltables import SingleTable
 from terminaltables.other_tables import WindowsTable as SingleTable
 
 
@@ -121,10 +120,10 @@ def stg_msg_labels(msg, project_id):
         label_id = matched.group(1)
         labs = [lab.name for lab in labels if lab.id == int(label_id)]
         if labs:
-            return '%s%s%s' % (label_char, labs[0], label_char)
+            return '%(lchr)s%(lname)s%(lchr)s' % {'lchr': lbl_chr, 'lname': labs[0]}
         return '~%s' % label_id
 
-    label_char = '•'
+    lbl_chr = stg_get_setting('label_char')
     label_pattern = r'\~(\d+)'
     m = re.search(label_pattern, msg)
     if not m or not m.group(1):
@@ -198,7 +197,7 @@ def stg_show_issues(title, **kwargs):
         <body id="gitlab" style="padding:0;margin:0;">
             <tt class="kbd">Enter</tt><span class="keyname">open</span>
             <tt class="kbd">r</tt><span class="keyname">refresh</span>
-            <tt class="kbd">d</tt><span class="keyname">delete</span>
+            <tt class="kbd">Delete</tt><span class="keyname">delete</span>
             <tt class="kbd">f</tt><span class="keyname">filter</span>
             <tt class="kbd">Shift + →</tt><span class="keyname">prev. page</span>
             <tt class="kbd">Shift + ←</tt><span class="keyname">next page</span>

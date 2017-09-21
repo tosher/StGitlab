@@ -10,6 +10,7 @@
     "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
     "datetime_format_show": "%d.%m.%Y %H:%M:%S",
     "table_column_separator": "│",
+    "label_char": "•",
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },
         { "prop": "title", "colname": "Title", "maxlen": 50},
