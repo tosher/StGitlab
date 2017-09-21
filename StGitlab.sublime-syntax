@@ -1,0 +1,102 @@
+%YAML 1.2
+---
+name: StGitlab
+scope: text.html.stgitlab
+hidden: true
+
+contexts:
+  main:
+    - include: block_markdown
+    - include: block_meta
+    - include: inline
+
+  # block_markdown2:
+  #   - match: ^(─{3,})$
+  #     captures:
+  #       1: comment.1.tag.stgitlab
+  #     push:
+  #       - meta_include_prototype: false
+  #       - meta_content_scope: meta.environment.embedded.text.html.markdown.gfm.stgitlab text.html.markdown.gfm.embedded
+  #       - match: (\1)
+  #         pop: true
+  #       - include: scope:text.html.markdown.gfm
+
+  block_markdown:
+    - match: (^┌─{3,}$)
+      captures:
+        1: comment.1.tag.stgitlab
+      push: Packages/MarkdownEditing/Markdown.sublime-syntax
+      with_prototype:
+        - match: (?=^└─{3,}\n)
+          captures:
+            1: comment.2.tag.stgitlab
+          pop: true
+    - match: (^└─{3,}$)
+      captures:
+        1: comment.2.tag.stgitlab
+
+  block_meta:
+    - match: (^═+$)
+      captures:
+        1: comment.tag.stgitlab
+      push:
+        - meta_content_scope: markup.other.table.stgitlab
+        - match: (\1)
+          captures:
+            1: comment.tag.stgitlab
+          pop: true
+        - include: inline
+
+  inline:
+    - match: (\[)([^\[\]]+)(\])(\()([\w\s\.\-\*]+)(\))
+      scope: meta.shortcut.stgitlab
+      captures:
+        1: meta.tag.stgitlab
+        2: storage.shortcut.stgitlab
+        3: meta.tag.stgitlab
+        4: comment.tag.stgitlab
+        5: comment.tag.stgitlab
+        6: comment.tag.stgitlab
+    - match: ^(#+)\s.*
+      scope: markup.heading.stgitlab
+      captures:
+        1: comment.stgitlab
+    - match: (\*{2})(.*?)(\*{2})
+      scope: meta.bold.stgitlab
+      captures:
+        1: comment.stgitlab
+        2: markup.bold.stgitlab
+        3: comment.stgitlab
+    - match: (\•{1})([^\•]+)(\•{1})
+      scope: meta.bold.stgitlab
+      captures:
+        1: comment.stgitlab
+        2: storage.label.stgitlab
+        3: comment.stgitlab
+    - match: (^|[^\*])(\*)([^\*]+)(\*)([^\*]|$)
+      scope: meta.italic.stgitlab
+      captures:
+        2: comment.stgitlab
+        3: comment.italic.stgitlab
+        4: comment.stgitlab
+    - match: \s(?i:opened|reopened|closed|success)\s
+      scope: string.status.stgitlab
+      captures:
+        1: meta.tag.stgitlab
+    - match: \s(?i:running|pending)\s
+      scope: constant.status.stgitlab
+      captures:
+        1: meta.tag.stgitlab
+    - match: \s(?i:failed|canceled|closed|skipped)\s
+      scope: support.status.stgitlab
+      captures:
+        1: meta.tag.stgitlab
+    - match: (\[)(.*?)(\])(\()((http|https)://.*?)(\))
+      scope: meta.attachment.stgitlab
+      captures:
+        1: meta.tag.stgitlab
+        2: constant.other.stgitlab
+        3: meta.tag.stgitlab
+        4: comment.tag.stgitlab
+        5: variable.url.stgitlab
+        7: comment.tag.stgitlab

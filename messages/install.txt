@@ -1,0 +1,3 @@
+## StGitlab: SublimeText 3 Gitlab manager
+
+* Check README.md for setup instructions
