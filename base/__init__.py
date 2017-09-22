@@ -32,6 +32,10 @@ from .stg_project_pipelines import StGitlabProjectPipelinesCommand
 from .stg_project_list_filter import StGitlabProjectListFilterCommand
 from .stg_project_list_refresh import StGitlabProjectListRefreshCommand
 from .stg_project_list_page import StGitlabProjectListPageCommand
+from .stg_project_objects_list import StGitlabProjectObjectsListCommand
+from .stg_project_objects_list import StGitlabProjectIssuesListCommand
+from .stg_project_objects_list import StGitlabProjectMergesListCommand
+from .stg_project_objects_list import StGitlabProjectPipelinesListCommand
 from .stg_merge import StGitlabMergeCommand
 from .stg_pipeline import StGitlabPipelineCommand
 from .stg_pipeline import StGitlabPipelineCancelCommand
@@ -72,6 +76,10 @@ __all__ = [
     'StGitlabObjectInBrowserCommand',
     'StGitlabToggleSelectableCommand',
 
+    'StGitlabProjectObjectsListCommand',
+    'StGitlabProjectIssuesListCommand',
+    'StGitlabProjectMergesListCommand',
+    'StGitlabProjectPipelinesListCommand',
     'StGitlabProjectIssuesCommand',
     'StGitlabProjectMergesCommand',
     'StGitlabProjectPipelinesCommand',

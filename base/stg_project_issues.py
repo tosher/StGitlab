@@ -1,7 +1,7 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
+# import sublime
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_project import ProjectSelectPanel
@@ -26,7 +26,6 @@ class StGitlabProjectIssuesCommand(sublime_plugin.TextCommand):
             'state': 'opened'
         }
         title = 'Issues: %s' % project.name
-        text = utils.stg_show_issues(title=title, **query_params)
         r = self.view.window().new_file()
         r.set_name(title)
         syntax_file = utils.stg_get_setting('syntax_file')
@@ -35,8 +34,7 @@ class StGitlabProjectIssuesCommand(sublime_plugin.TextCommand):
         r.settings().set('screen', 'st_gitlab_issues')
         r.settings().set("word_wrap", False)
         r.settings().set("project_id", project_id)
-        r.settings().set("page", 1)
-        r.run_command('st_gitlab_insert_text', {'position': 0, 'text': text})
+        r.run_command('st_gitlab_project_issues_list', {'title': title})
         r.set_scratch(True)
         # r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)

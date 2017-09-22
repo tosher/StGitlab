@@ -8,7 +8,6 @@ from . import stg_utils as utils
 
 class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
     def run(self, edit, direction):
-
         utils.stg_validate_screen(
             [
                 'st_gitlab_issues',
@@ -16,7 +15,6 @@ class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
                 'st_gitlab_pipelines'
             ]
         )
-
         query_params = self.view.settings().get('query_params')
         per_page = utils.stg_get_setting('list_page_size')
         page = query_params.get('page', 1)
@@ -31,16 +29,16 @@ class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
 
         if query_params:
             title = self.view.name()
-
             screen = self.view.settings().get('screen', None)
-            if screen == 'st_gitlab_issues':
-                text = utils.stg_show_issues(title=title, **query_params)
-            elif screen == 'st_gitlab_merges':
-                text = utils.stg_show_merges(title=title, **query_params)
-            elif screen == 'st_gitlab_pipelines':
-                text = utils.stg_show_pipelines(title=title, **query_params)
-
             self.view.set_read_only(False)
+            self.view.erase_phantoms('shortcuts')
             self.view.erase(edit, sublime.Region(0, self.view.size()))
-            self.view.run_command('st_gitlab_insert_text', {'position': 0, 'text': text})
+            if screen == 'st_gitlab_issues':
+                cmd = 'st_gitlab_project_issues_list'
+            elif screen == 'st_gitlab_merges':
+                cmd = 'st_gitlab_project_merges_list'
+            elif screen == 'st_gitlab_pipelines':
+                cmd = 'st_gitlab_project_pipelines_list'
+            self.view.run_command(cmd, {'title': title})
+            # self.view.erase_phantoms('label')
             self.view.set_read_only(True)
