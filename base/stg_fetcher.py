@@ -3,10 +3,12 @@
 
 import sublime
 import sublime_plugin
+from collections import OrderedDict
 import traceback
 # import textwrap
 from . import stg_utils as utils
 from .stg_gitlab import StGitlab
+from .stg_html import StShortcutsMenu
 
 BLOCK_LINE = '%s\n' % ('═' * 80)
 BLOCK_MD_LINE_START = '┌%s\n\n' % ('─' * 79)
@@ -19,22 +21,24 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
     obj_name = ''
     obj_name_sub = ''
 
-    def run(self, edit, obj_id):
+    def run(self, edit, obj_id=None, project_id=None):
+        self.obj_id = obj_id if obj_id else self.view.settings().get('object_id')
+        self.project_id = project_id if project_id else self.view.settings().get('project_id')
+
+        if not self.obj_id:
+            raise Exception('%(name)s id is not defined. %(name)s can not be opened.' % {'name': self.obj_name})
+
+        if not self.project_id:
+            raise Exception('Project is not defined. %s can not be opened.' % self.obj_name)
+
         try:
-            self.st_gitlab_view(edit, obj_id)
+            self.st_gitlab_view(edit)
         except Exception as e:
             traceback.print_exc()
             sublime.status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
 
-    def get_shortcuts(self):
-        shortcuts_print = ''
-        maxlen = len(max(self.shortcuts, key=len)) + 2
-
-        for idx, s in enumerate(self.shortcuts):
-            idx += 1
-            line_format = '{:<%s}\n' % (maxlen) if not idx % 5 else '{:<%s}' % maxlen
-            shortcuts_print += line_format.format(s)
-        return shortcuts_print
+    def get_shortcuts(self, view):
+        StShortcutsMenu(view, self.shortcuts)
 
     def get_title(self, obj):
         return obj.title
@@ -50,6 +54,8 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         cols_maxlen = len(max([col['colname'] for col in cols], key=len)) + 5  # +4* +1
         cols_data = []
         line_format = '\t{:<%s}: {:<}' % cols_maxlen
+        header += line_format.format('**Project**', self.gitlab.project().name)
+        header += '\n'
         for col in cols:
             value = utils.stg_get_property_value(obj, col)
 
@@ -106,26 +112,21 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             content += notes
         return content
 
-    def obj_get(self, obj_id, project_id=None):
-        return None
+    def screen_name(self):
+        return 'st_gitlab_%s' % self.obj_name_sub
 
-    def set_view_settings(self, view, obj_id, project_id):
-        screen_prop_name = 'st_gitlab_%s' % self.obj_name_sub
-        view.settings().set('object_id', obj_id)
-        view.settings().set('project_id', project_id)
-        view.settings().set('screen', screen_prop_name)
+    def set_view_settings(self, view):
+        screen = self.screen_name()
+        view.settings().set('object_id', self.obj_id)
+        view.settings().set('project_id', self.project_id)
+        view.settings().set('screen', screen)
         view.settings().set('st_gitlab_unselectable', True)
-        view.set_name('%s #%s' % (self.obj_name, obj_id))
+        view.set_name('%s #%s' % (self.obj_name, self.obj_id))
 
-    def st_gitlab_view(self, edit, obj_id):
-        self.gitlab = StGitlab.connect()
-        obj_current_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
+    def st_gitlab_view(self, edit):
+        obj_current_id = self.view.settings().get('object_id')
 
-        if not project_id:
-            raise Exception('Project is not defined. %s can not be opened.' % self.obj_name)
-
-        if obj_current_id == obj_id:
+        if obj_current_id == self.obj_id:
             r = self.view
             r.set_read_only(False)
             r.erase(edit, sublime.Region(0, self.view.size()))
@@ -135,16 +136,19 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             syntax_file = utils.stg_get_setting('syntax_file')
             r.set_syntax_file(syntax_file)
 
-        obj = self.obj_get(obj_id=obj_id, project_id=project_id)
+        self.gitlab = StGitlab()  # creates with current view => r
+        self.set_view_settings(r)
+        obj = self.gitlab.object_by_screen(r.settings().get('screen'))
 
         header_print = self.get_header(obj)
-        shortcuts_print = self.get_shortcuts()
+        # shortcuts_print = self.get_shortcuts()
+        self.get_shortcuts(r)
         description_print = self.get_description(obj)
         object_custom_print = self.get_object_custom(obj)
         notes_print = self.get_notes(obj)
 
         content = ''
-        content += shortcuts_print
+        # content += shortcuts_print
         content += '\n'
         content += '\n'
         content += header_print
@@ -161,58 +165,51 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             content += notes_print
 
         r.insert(edit, 0, content)
-        self.set_view_settings(r, obj_id, project_id)
         sublime.set_timeout_async(utils.stg_show_images(r), 0)
         r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)
 
 
 class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
-    shortcuts = [
-        '[r](refresh)',
-        '[f2](change title)',
-        '[d](change description)',
-        '[c](add note)',
-        '[s](change state)',
-        '[v](change milestone)',
-        '[j](label add)',
-        '[k](label remove)',
-        '[a](assing to)',
-        '[g](open in browser)',
-        '[m](move to project)',
-        '[u](toggle select mode)',
-        '[Enter](*change any)',
-        '[Delete](delete)'
-    ]
+
+    shortcuts = OrderedDict([
+        ('r', 'refresh'),
+        ('f2', 'change title'),
+        ('d', 'change description'),
+        ('c', 'add note'),
+        ('s', 'change state'),
+        ('v', 'change milestone'),
+        ('j', 'label add'),
+        ('k', 'label remove'),
+        ('a', 'assing to'),
+        ('g', 'open in browser'),
+        ('m', 'move to project'),
+        ('u', 'toggle select mode'),
+        ('Enter', 'change'),
+        ('Delete', 'delete')
+    ])
     obj_name = 'Issue'
     obj_name_sub = 'issue'
 
-    def obj_get(self, obj_id, project_id):
-        project = self.gitlab.projects.get(project_id)
-        return project.issues.get(obj_id)
-
 
 class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
-    shortcuts = [
-        '[r](refresh)',
-        '[f2](change title)',
-        '[d](change description)',
-        '[c](add note)',
-        '[s](change state)',
-        '[v](change milestone)',
-        '[j](label add)',
-        '[k](label remove)',
-        '[a](assing to)',
-        '[g](open in browser)',
-        '[u](toggle select mode)',
-        '[Enter](*change any)'
-    ]
+
+    shortcuts = OrderedDict([
+        ('r', 'refresh'),
+        ('f2', 'change title'),
+        ('d', 'change description'),
+        ('c', 'add note'),
+        ('s', 'change state'),
+        ('v', 'change milestone'),
+        ('j', 'label add'),
+        ('k', 'label remove'),
+        ('a', 'assing to'),
+        ('g', 'open in browser'),
+        ('u', 'toggle select mode'),
+        ('Enter', 'change')
+    ])
     obj_name = 'Merge-request'
     obj_name_sub = 'merge'
-
-    def obj_get(self, obj_id, project_id):
-        project = self.gitlab.projects.get(project_id)
-        return project.mergerequests.get(obj_id)
 
     def get_object_custom(self, obj):
         issues = obj.closes_issues()
@@ -233,20 +230,17 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 
 
 class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
-    shortcuts = [
-        '[r](refresh)',
-        '[b](retry)',
-        '[c](cancel)',
-        '[g](open in browser)',
-        '[u](toggle select mode)',
-        '[Enter](*magic)'
-    ]
+
+    shortcuts = OrderedDict([
+        ('r', 'refresh'),
+        ('b', 'retry'),
+        ('c', 'cancel'),
+        ('g', 'open in browser'),
+        ('u', 'toggle select mode'),
+        ('Enter', 'change')
+    ])
     obj_name = 'Pipeline'
     obj_name_sub = 'pipeline'
-
-    def obj_get(self, obj_id, project_id):
-        project = self.gitlab.projects.get(project_id)
-        return project.pipelines.get(obj_id)
 
     def get_title(self, obj):
         return obj.attributes.get('ref', '')

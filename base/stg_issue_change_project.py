@@ -10,27 +10,24 @@ from .stg_project import ProjectSelectPanel
 # TODO: TEST required
 
 
-# Issue: move to project
 class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         def on_done(project_id_new):
-            if issue_id:
-                project = gitlab.projects.get(project_id)
-                project_new = gitlab.projects.get(project_id_new)
-                issue = project.issues.get(issue_id)
-                issue.move(project_id_new)
-                issue.save()
-                self.view.settings().set('project_id', project_id_new)
-                sublime.status_message('Issue #%r is moved to %s' % (issue.id, project_new.name))
-                self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': issue_id})
+            if not project_id_new:
+                return
+            project_new = gitlab.project(oid=project_id_new)
+            issue.move(project_id_new)
+            self.view.settings().set('project_id', project_new.id)
+            self.view.settings().set('object_id', issue.iid)
+            sublime.status_message('Issue #%r was moved to %s' % (issue.id, project_new.name))
+            self.view.run_command('st_gitlab_object_refresh', {'object_name': 'issue'})
 
-        # validate
         utils.stg_validate_screen('st_gitlab_issue')
 
-        gitlab = StGitlab.connect()
-        issue_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if project_id and issue_id:
+        gitlab = StGitlab()
+        project = gitlab.project()
+        issue = gitlab.issue()
+        if project and issue:
             panel = ProjectSelectPanel(callback=on_done)
             panel.show_input()
 

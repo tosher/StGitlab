@@ -1,5 +1,17 @@
 [
     {
+        "keys": ["ctrl+s"], "command": "st_gitlab_editbox_save",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_editbox"}
+        ]
+    },
+    {
+        "keys": ["escape"], "command": "st_gitlab_editbox_cancel",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_editbox"}
+        ]
+    },
+    {
         "keys": ["c"], "command": "st_gitlab_object_add_note",
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}

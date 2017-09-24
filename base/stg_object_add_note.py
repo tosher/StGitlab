@@ -1,17 +1,16 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
+# import sublime
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_gitlab import StGitlab
+from .stg_editbox import StEditbox
 
 
-# Issue comment input
 class StGitlabObjectAddNoteCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-
         utils.stg_validate_screen(
             [
                 'st_gitlab_issue',
@@ -19,21 +18,31 @@ class StGitlabObjectAddNoteCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        self.view.window().show_input_panel('Note:', '', self.post_comment, None, None)
+        gitlab = StGitlab()
+        screen = self.view.settings().get('screen', None)
+        project = gitlab.project()
+        if screen == 'st_gitlab_issue':
+            obj = gitlab.issue()
+        elif screen == 'st_gitlab_merge':
+            obj = gitlab.merge()
+        on_done = 'st_gitlab_object_add_note_done'
+        eb = StEditbox(self.view.id())
+        eb.edit(
+            'Note',
+            on_done,
+            '',
+            project_id=project.id,
+            object_id=obj.iid
+        )
 
-    def post_comment(self, text):
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if object_id and project_id:
-            screen = self.view.settings().get('screen', None)
-            gitlab = StGitlab.connect()
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                object_name = 'issue'
-                obj = project.issues.get(object_id)
-            elif screen == 'st_gitlab_merge':
-                object_name = 'merge'
-                obj = project.mergerequests.get(object_id)
-            obj.notes.create({'body': text})
-            sublime.status_message('Note created successfully!')
-            self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+
+class StGitlabObjectAddNoteDoneCommand(sublime_plugin.TextCommand):
+    def run(self, edit, text):
+        gitlab = StGitlab()
+        base_id = self.view.settings().get('base_id')
+        eb = StEditbox(base_id)
+        eb.layout_base()
+        screen = eb.view.settings().get('screen')
+        obj = gitlab.object_by_screen(screen)
+        obj.notes.create({'body': text})
+        eb.view.run_command('st_gitlab_object_refresh', {'object_name': gitlab.object_name_by_screen(screen)})

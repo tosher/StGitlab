@@ -3,8 +3,6 @@
 
 # import sublime
 import sublime_plugin
-# import stg_utils as utils
-# from .stg_gitlab import StGitlab
 
 
 class StGitlabToggleSelectableCommand(sublime_plugin.TextCommand):

@@ -11,11 +11,10 @@ class StGitlabObjectChangeTitleCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         def on_done(text):
-            if text:
-                if object_id:
-                    obj.title = text
-                    obj.save()
-                    self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+            if text is not None:
+                obj.title = text
+                obj.save()
+                self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
 
         utils.stg_validate_screen(
             [
@@ -24,17 +23,13 @@ class StGitlabObjectChangeTitleCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab.connect()
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if object_id:
-            screen = self.view.settings().get('screen', None)
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                object_name = 'issue'
-                obj = project.issues.get(object_id)
-            elif screen == 'st_gitlab_merge':
-                object_name = 'merge'
-                obj = project.mergerequests.get(object_id)
+        gitlab = StGitlab()
+        screen = self.view.settings().get('screen', None)
+        if screen == 'st_gitlab_issue':
+            object_name = 'issue'
+            obj = gitlab.issue()
+        elif screen == 'st_gitlab_merge':
+            object_name = 'merge'
+            obj = gitlab.merge()
 
-            self.view.window().show_input_panel("Title:", obj.title, on_done, None, None)
+        self.view.window().show_input_panel("Title:", obj.title, on_done, None, None)

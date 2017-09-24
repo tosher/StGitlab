@@ -124,9 +124,8 @@ def stg_msg_labels(msg, project_id):
     if not m or not m.group(1):
         return msg
 
-    gitlab = StGitlab.connect()
-    project = gitlab.projects.get(project_id)
-    labels = project.labels.list(all=True)
+    gitlab = StGitlab()
+    labels = gitlab.labels(project_id=project_id, all=True)
     msg = re.sub(label_pattern, get_label, msg)
     return msg
 
@@ -144,9 +143,8 @@ def stg_show_images(view):
         img_text = view.substr(image_r)
         img_url = img_text.split('(')[1][:-1]
         if not img_url.startswith('http'):
-            project_id = view.settings().get('project_id', None)
-            gitlab = StGitlab.connect()
-            project = gitlab.projects.get(project_id)
+            gitlab = StGitlab()
+            project = gitlab.project()
             img_url = '/'.join([project.web_url.rstrip('/'), img_url.lstrip('/')])
         view.add_phantom(
             'image',

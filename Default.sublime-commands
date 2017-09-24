@@ -1,4 +1,6 @@
 [
+   // tmp
+   { "caption": "Gitlab edit box", "command": "st_gitlab_editbox_save" },
    // issue
    { "caption": "Gitlab issue: Create", "command": "st_gitlab_issue_create" },
    { "caption": "Gitlab issue: Delete", "command": "st_gitlab_issue_delete" },

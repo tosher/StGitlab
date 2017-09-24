@@ -3,53 +3,23 @@
 
 import sys
 import os
-import sublime
+# import sublime
 import sublime_plugin
 from collections import OrderedDict
 from .stg_gitlab import StGitlab
 from . import stg_utils as utils
+from .stg_html import StShortcutsMenu
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
 from terminaltables.other_tables import WindowsTable as SingleTable
 
 
 class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
-    html_tpl = '''
-    <html>
-        <style>
-            tt.kbd {
-                color: #C5C2A2;
-                background-color: #555555;
-                font-size: 1rem;
-                border-radius: 0.6rem;
-                padding: 0.2rem;
-                padding-left: 0.4rem;
-                padding-right: 0.4rem;
-            }
-
-            span.keyname {
-                color: #c0c0c0;
-                font-size: 1rem;
-                padding: 0.2rem;
-                padding-left: 0.3rem;
-                padding-right: 0.4rem;
-            }
-        </style>
-        <body id="gitlab" style="padding:0;margin:0;">
-        %(shortcuts)s
-        </body>
-    </html>
-    '''
-
-    html_shortcut_tpl = '<tt class="kbd">%(keyname)s</tt><span class="keyname">%(cmdname)s</span>'
-
     shortcuts = {}
 
     def run(self, edit, title):
         self.title = title
-        self.gitlab = StGitlab.connect()
-        self.project_id = self.view.settings().get('project_id')
-        self.project = self.gitlab.projects.get(self.project_id)
+        self.gitlab = StGitlab()
         self.query_params = self.view.settings().get('query_params', {})
         self.objects = self.get_objects()
         self.build()
@@ -63,21 +33,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         self.view.run_command('st_gitlab_insert_text', {'position': 0, 'text': content})
 
     def show_shortcuts(self):
-        if not self.shortcuts:
-            return
-        shortcuts_html = '\n'.join(
-            [
-                self.html_shortcut_tpl % {'keyname': keyname, 'cmdname': self.shortcuts[keyname]} for keyname in self.shortcuts.keys()
-            ]
-        )
-
-        shortcuts_menu_html = self.html_tpl % {'shortcuts': shortcuts_html}
-        self.view.add_phantom(
-            'shortcuts',
-            sublime.Region(0, 0),
-            shortcuts_menu_html,
-            sublime.LAYOUT_INLINE
-        )
+        StShortcutsMenu(self.view, self.shortcuts, None)
 
     def show_header(self):
         header = '\n\n'
@@ -134,7 +90,7 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
     ])
 
     def get_objects(self):
-        return self.project.issues.list(**self.query_params)
+        return self.gitlab.issues(**self.query_params)
 
     def get_columns_properties(self):
         return utils.stg_get_setting('issue_list_columns', {})
@@ -150,7 +106,7 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
     ])
 
     def get_objects(self):
-        return self.project.mergerequests.list(**self.query_params)
+        return self.gitlab.merges(**self.query_params)
 
     def get_columns_properties(self):
         return utils.stg_get_setting('merge_requests_list_columns', {})
@@ -168,7 +124,7 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
     ])
 
     def get_objects(self):
-        return self.project.pipelines.list(**self.query_params)
+        return self.gitlab.pipelines(**self.query_params)
 
     def get_columns_properties(self):
         return utils.stg_get_setting('pipelines_list_columns', {})

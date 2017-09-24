@@ -14,12 +14,12 @@ class ProjectSelectPanel(object):
         self.window = sublime.active_window()
 
     def show_input(self):
-        gitlab = StGitlab.connect()
+        gitlab = StGitlab()
         projects_filter = utils.stg_get_setting('projects_filter', [])
         if projects_filter:
-            projects = [gitlab.projects.get(pid) for pid in projects_filter]
+            projects = [gitlab.project(oid=pid) for pid in projects_filter]
         else:
-            projects = gitlab.projects.list(all=True)
+            projects = gitlab.projects(all=True)
 
         self.prj_names = []
         self.prj_ids = []
@@ -37,4 +37,3 @@ class ProjectSelectPanel(object):
             return
         project_id = self.prj_ids[idx]
         sublime.set_timeout_async(self.callback(project_id), 0)
-

@@ -5,6 +5,7 @@
     "projects_filter": [],  // IDs or Namespace/Names
     "users_group_filter": [],  // group names
     "syntax_file": "Packages/StGitlab/StGitlab.sublime-syntax",
+    "syntax_file_edit": "Packages/MarkdownEditing/Markdown.sublime-syntax",
     "list_page_size": 40,
     "issue_show_full_notes": true,
     "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",

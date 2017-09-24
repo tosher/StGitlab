@@ -1,14 +1,13 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
+# import sublime
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_gitlab import StGitlab
 from .stg_project import ProjectSelectPanel
 
 
-# Issues by project
 class StGitlabProjectMergesCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
@@ -16,8 +15,8 @@ class StGitlabProjectMergesCommand(sublime_plugin.TextCommand):
         panel.show_input()
 
     def get_merges(self, project_id):
-        gitlab = StGitlab.connect()
-        project = gitlab.projects.get(project_id)
+        gitlab = StGitlab()
+        project = gitlab.project(oid=project_id)
         per_page = utils.stg_get_setting('list_page_size')
         query_params = {
             'project_id': project_id,

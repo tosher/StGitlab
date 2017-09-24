@@ -5,19 +5,12 @@
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_gitlab import StGitlab
+from .stg_editbox import StEditbox
 
 
-# Issue description
 class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-        def on_done(text):
-            if text:
-                if object_id:
-                    obj.description = text
-                    obj.save()
-                    self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
-
         utils.stg_validate_screen(
             [
                 'st_gitlab_issue',
@@ -25,17 +18,33 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab.connect()
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if object_id:
-            screen = self.view.settings().get('screen', None)
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                object_name = 'issue'
-                obj = project.issues.get(object_id)
-            elif screen == 'st_gitlab_merge':
-                object_name = 'merge'
-                obj = project.mergerequests.get(object_id)
-            description = obj.description if obj.description else ''
-            self.view.window().show_input_panel("Description:", description, on_done, None, None)
+        gitlab = StGitlab()
+        screen = self.view.settings().get('screen', None)
+        project = gitlab.project()
+        if screen == 'st_gitlab_issue':
+            obj = gitlab.issue()
+        elif screen == 'st_gitlab_merge':
+            obj = gitlab.merge()
+        on_done = 'st_gitlab_object_change_description_done'
+        description = obj.description if obj.description else ''
+        eb = StEditbox(self.view.id())
+        eb.edit(
+            'Description',
+            on_done,
+            description,
+            project_id=project.id,
+            object_id=obj.iid
+        )
+
+
+class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):
+    def run(self, edit, text):
+        gitlab = StGitlab()
+        base_id = self.view.settings().get('base_id')
+        eb = StEditbox(base_id)
+        eb.layout_base()
+        screen = eb.view.settings().get('screen')
+        obj = gitlab.object_by_screen(screen)
+        obj.description = text
+        obj.save()
+        eb.view.run_command('st_gitlab_object_refresh', {'object_name': gitlab.object_name_by_screen(screen)})

@@ -19,24 +19,21 @@ class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if object_id and project_id:
-            screen = self.view.settings().get('screen', None)
-            gitlab = StGitlab.connect()
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                obj = project.issues.get(object_id)
-                web_url = obj.attributes.get('web_url')
-            elif screen == 'st_gitlab_merge':
-                obj = project.mergerequests.get(object_id)
-                web_url = obj.attributes.get('web_url')
-            elif screen == 'st_gitlab_pipeline':
-                # url not exists in api now
-                # obj = project.pipelines.get(object_id)
-                web_url = '%s/%s/pipelines/%s' % (
-                    utils.stg_get_setting('gitlab_url'),
-                    project.attributes.get('path_with_namespace'),
-                    object_id
-                )
-            webbrowser.open(web_url)
+        gitlab = StGitlab()
+        project = gitlab.project()
+        screen = self.view.settings().get('screen', None)
+        if screen == 'st_gitlab_issue':
+            obj = gitlab.issue()
+            web_url = obj.attributes.get('web_url')
+        elif screen == 'st_gitlab_merge':
+            obj = gitlab.merge()
+            web_url = obj.attributes.get('web_url')
+        elif screen == 'st_gitlab_pipeline':
+            # url not exists in api now
+            obj = gitlab.pipeline()
+            web_url = '%(url)s/%(project)s/pipelines/%(pid)s' % {
+                'url': utils.stg_get_setting('gitlab_url'),
+                'project': project.attributes.get('path_with_namespace'),
+                'pid': obj.id
+            }
+        webbrowser.open(web_url)

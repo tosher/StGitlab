@@ -15,10 +15,9 @@ class StGitlabObjectChangeStateCommand(sublime_plugin.TextCommand):
             if state_idx < 0:
                 return
 
-            if object_id:
-                obj.state_event = self.state_events[state_idx]
-                obj.save()
-                self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+            obj.state_event = self.state_events[state_idx]
+            obj.save()
+            self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
 
         utils.stg_validate_screen(
             [
@@ -27,17 +26,13 @@ class StGitlabObjectChangeStateCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab.connect()
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
-        if project_id and object_id:
-            screen = self.view.settings().get('screen', None)
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                object_name = 'issue'
-                obj = project.issues.get(object_id)
-            elif screen == 'st_gitlab_merge':
-                object_name = 'merge'
-                obj = project.mergerequests.get(object_id)
+        gitlab = StGitlab()
+        screen = self.view.settings().get('screen', None)
+        if screen == 'st_gitlab_issue':
+            object_name = 'issue'
+            obj = gitlab.issue()
+        elif screen == 'st_gitlab_merge':
+            object_name = 'merge'
+            obj = gitlab.merge()
 
-            self.view.window().show_quick_panel(self.states, on_done)
+        self.view.window().show_quick_panel(self.states, on_done)

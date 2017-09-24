@@ -16,8 +16,8 @@ class StGitlabProjectPipelinesCommand(sublime_plugin.TextCommand):
         panel.show_input()
 
     def get_pipelines(self, project_id):
-        gitlab = StGitlab.connect()
-        project = gitlab.projects.get(project_id)
+        gitlab = StGitlab()
+        project = gitlab.project(oid=project_id)
         per_page = utils.stg_get_setting('list_page_size')
         query_params = {
             'project_id': project_id,

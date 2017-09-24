@@ -26,25 +26,20 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab.connect()
+        gitlab = StGitlab()
         milestones = []
         milestones_menu = ['[Remove]']
-        object_id = self.view.settings().get('object_id', None)
-        project_id = self.view.settings().get('project_id', None)
+        screen = self.view.settings().get('screen', None)
+        if screen == 'st_gitlab_issue':
+            object_name = 'issue'
+            obj = gitlab.issue()
+        elif screen == 'st_gitlab_merge':
+            object_name = 'merge'
+            obj = gitlab.merge()
 
-        if object_id and project_id:
-            screen = self.view.settings().get('screen', None)
-            project = gitlab.projects.get(project_id)
-            if screen == 'st_gitlab_issue':
-                object_name = 'issue'
-                obj = project.issues.get(object_id)
-            elif screen == 'st_gitlab_merge':
-                object_name = 'merge'
-                obj = project.mergerequests.get(object_id)
+        milestones = gitlab.milestones(state='active')
 
-            milestones = project.milestones.list(state='active')
-
-            if milestones:
-                for mile in milestones:
-                    milestones_menu.append(mile.title)
-                sublime.set_timeout(lambda: sublime.active_window().show_quick_panel(milestones_menu, on_done), 1)
+        if milestones:
+            for mile in milestones:
+                milestones_menu.append(mile.title)
+            sublime.set_timeout(lambda: sublime.active_window().show_quick_panel(milestones_menu, on_done), 1)

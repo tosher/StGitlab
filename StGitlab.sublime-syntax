@@ -48,15 +48,15 @@ contexts:
         - include: inline
 
   inline:
-    - match: (\[)([^\[\]]+)(\])(\()([\w\s\.\-\*]+)(\))
-      scope: meta.shortcut.stgitlab
-      captures:
-        1: meta.tag.stgitlab
-        2: storage.shortcut.stgitlab
-        3: meta.tag.stgitlab
-        4: comment.tag.stgitlab
-        5: comment.tag.stgitlab
-        6: comment.tag.stgitlab
+    # - match: (\[)([^\[\]]+)(\])(\()([\w\s\.\-\*]+)(\))
+    #   scope: meta.shortcut.stgitlab
+    #   captures:
+    #     1: meta.tag.stgitlab
+    #     2: storage.shortcut.stgitlab
+    #     3: meta.tag.stgitlab
+    #     4: comment.tag.stgitlab
+    #     5: comment.tag.stgitlab
+    #     6: comment.tag.stgitlab
     - match: ^(#+)\s.*
       scope: markup.heading.stgitlab
       captures:

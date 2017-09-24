@@ -34,8 +34,7 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
 
         filter_type_key = list(self.filter_types.keys())[filter_id]
         self.filter_name = self.filter_types[filter_type_key]
-        gitlab = StGitlab.connect()
-        project = gitlab.projects.get(self.project_id)
+        gitlab = StGitlab()
 
         self.filter_values = []
         if self.filter_name in ['author_id', 'assignee_id']:
@@ -43,10 +42,10 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
             panel.show_input()
             return
         elif self.filter_name == 'labels':
-            self.filter_values = [label.name for label in project.labels.list(all=True)]
+            self.filter_values = [label.name for label in gitlab.labels(all=True)]
             filter_names = self.filter_values
         elif self.filter_name == 'milestone':
-            self.filter_values = [mile.title for mile in project.milestones.list(all=True)]
+            self.filter_values = [mile.title for mile in gitlab.milestones(all=True)]
             filter_names = self.filter_values
         elif self.filter_name == 'state':
             self.filter_values = filter_names = ['opened', 'closed']
@@ -100,7 +99,8 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
     def get_list(self, query_params):
         per_page = utils.stg_get_setting('list_page_size')
         query_params['per_page'] = per_page
-        query_params['state'] = 'opened'
+        if self.filter_name != 'state':
+            query_params['state'] = 'opened'
         if self.filter_name != 'page':
             query_params['page'] = 1
         self.view.settings().set('query_params', query_params)
