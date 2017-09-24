@@ -36,7 +36,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         StShortcutsMenu(self.view, self.shortcuts, None)
 
     def show_header(self):
-        header = '\n\n'
+        header = '\n'
         header += '## %s\n' % self.title
         header += '\t**Total**: %s\n' % len(self.objects)
         page = self.query_params.get('page')

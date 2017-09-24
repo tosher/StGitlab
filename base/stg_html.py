@@ -56,9 +56,8 @@ class StShortcutsMenu(object):
         shs.append('</div>')
         shortcuts_html = '\n'.join(shs)
 
-        print(shortcuts_html)
-
         shortcuts_menu_html = self.html_tpl % {'shortcuts': shortcuts_html}
+        view.erase_phantoms('shortcuts')
         view.add_phantom(
             'shortcuts',
             sublime.Region(0, 0),

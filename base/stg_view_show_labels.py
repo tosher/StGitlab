@@ -10,10 +10,8 @@ from . import stg_utils as utils
 class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         self.view.erase_phantoms('label')
-        gitlab = StGitlab.connect()
-        project_id = self.view.settings().get('project_id', None)
-        project = gitlab.projects.get(project_id)
-        lbs = project.labels.list(all=True)
+        gitlab = StGitlab()
+        lbs = gitlab.labels(all=True)
 
         lbl_chr = utils.stg_get_setting('label_char')
         lbl_pattern = r'\%(lchr)s[^\%(lchr)s]+\%(lchr)s' % {'lchr': lbl_chr}

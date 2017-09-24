@@ -4,6 +4,7 @@
 import sublime
 import sublime_plugin
 from .base import *
+from .base.stg_html import StShortcutsMenu
 
 
 class StGitlabInsertTextCommand(sublime_plugin.TextCommand):
@@ -35,19 +36,35 @@ class StGitlabLoad(sublime_plugin.EventListener):
             view.sel().add(view.line(view.sel()[0].end()))
 
 
-class StGitlabViewEvents(sublime_plugin.EventListener):
+class StGitlabViewEvents(sublime_plugin.ViewEventListener):
 
-    def on_query_context(self, view, key, operator, operand, match_all):
+    def on_query_context(self, key, operator, operand, match_all):
         if key == 'stg_screen':
             if operator == sublime.OP_EQUAL:
                 if isinstance(operand, list):
-                    return view.settings().get('screen', None) in operand
+                    return self.view.settings().get('screen', None) in operand
                 else:
                     # print(key, operand, type(operand), operand == view.settings().get('screen', None))
-                    return operand == view.settings().get('screen', None)
+                    return operand == self.view.settings().get('screen', None)
             if operator == sublime.OP_NOT_EQUAL:
                 if isinstance(operand, list):
-                    return view.settings().get('screen', None) not in operand
+                    return self.view.settings().get('screen', None) not in operand
                 else:
-                    return operand != view.settings().get('screen', None)
+                    return operand != self.view.settings().get('screen', None)
 
+    def on_activated_async(self):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return
+        if screen == 'st_gitlab_issue':
+            StShortcutsMenu(self.view, StGitlabIssueFetcherCommand.shortcuts)
+        elif screen == 'st_gitlab_merge':
+            StShortcutsMenu(self.view, StGitlabMergeFetcherCommand.shortcuts)
+        elif screen == 'st_gitlab_issue':
+            StShortcutsMenu(self.view, StGitlabPipelineFetcherCommand.shortcuts)
+        elif screen == 'st_gitlab_issues':
+            StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts, cols=None)
+        elif screen == 'st_gitlab_merges':
+            StShortcutsMenu(self.view, StGitlabProjectMergesListCommand.shortcuts, cols=None)
+        elif screen == 'st_gitlab_issues':
+            StShortcutsMenu(self.view, StGitlabProjectPipelinesListCommand.shortcuts, cols=None)
