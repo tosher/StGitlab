@@ -87,3 +87,15 @@ class StGitlab(object):
     def milestones(self, project_id=None, **kwargs):
         return self.project(project_id).milestones.list(**kwargs)
 
+    def branch(self, project_id=None, oid=None):
+        return self.project(project_id).branches.get(oid)
+
+    def branches(self, project_id=None, **kwargs):
+        return self.project(project_id).branches.list(**kwargs)
+
+    def commits(self, project_id=None, **kwargs):
+        return self.project(project_id).commits.list(**kwargs)
+
+    def commit(self, sha, project_id=None):
+        return self.project(project_id).commits.get(sha)
+

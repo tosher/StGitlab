@@ -225,6 +225,17 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
             content += '\n### Commits\n'
             for commit in commits:
                 content += '- **%s** by %s, id:%s\n' % (commit.title, commit.committer_name, commit.short_id)
+        branch_name = obj.attributes.get('ref')
+        pipelines = self.gitlab.pipelines(ref=branch_name)
+        if pipelines:
+            pipeline_id = max([p.id for p in pipelines])
+            pipeline = self.gitlab.pipeline(oid=pipeline_id)
+            line_format = '\t{:<8}: {:<}\n'
+            content += '\n### Pipeline: %s\n' % pipeline.id
+            content += line_format.format('**Status**', pipeline.attributes.get('status'))
+            content += line_format.format('**Started**', utils.stg_get_datetime(pipeline.attributes.get('started_at')))
+            content += line_format.format('**Updated**', utils.stg_get_datetime(pipeline.attributes.get('updated_at')))
+            content += line_format.format('**Finished**', utils.stg_get_datetime(pipeline.attributes.get('finished_at')))
             content += BLOCK_LINE
         return content
 
@@ -243,6 +254,28 @@ class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
     obj_name_sub = 'pipeline'
 
     def get_title(self, obj):
+        # branch_name = obj.attributes.get('ref')
+        # branch = self.gitlab.branch(oid=branch_name)
+        # print(branch.attributes)
+        # attributes
+        # {'commit': {'message': 'logging actor name\n', 'id': 'aa8a07339ddf2bba609725336c908e680891d80d', 'authored_date': '2017-09-25T17:34:29.000+03:00',
+        # 'parent_ids': ['9e086eca2bab2aea0b4e5028bd6e3a5a13c13e72'], 'committed_date': '2017-09-25T17:34:29.000+03:00', 'author_email': 'anton.gnidenko@rcntec.com',
+        # 'created_at': '2017-09-25T17:34:29.000+03:00', 'author_name': 'Anton Gnidenko', 'short_id': 'aa8a0733', 'committer_email': 'anton.gnidenko@rcntec.com',
+        # 'title': 'logging actor name', 'committer_name': 'Anton Gnidenko'}, 'project_id': 247, 'merged': False, 'protected': False, 'name': '500-',
+        # 'developers_can_merge': False, 'developers_can_push': False}
+        # print(obj.attributes)
+        # commit_sha = obj.attributes.get('sha')
+        # commit = self.gitlab.commit(sha=commit_sha)
+        # <class 'gitlab.v4.objects.ProjectCommit'> => {'message': 'logging actor name\n', 'id': 'aa8a07339ddf2bba609725336c908e680891d80d',
+        # 'authored_date': '2017-09-25T17:34:29.000+03:00', 'parent_ids': ['9e086eca2bab2aea0b4e5028bd6e3a5a13c13e72'], 'committed_date': '2017-09-25T17:34:29.000+03:00',
+        # 'author_email': 'anton.gnidenko@rcntec.com', 'created_at': '2017-09-25T17:34:29.000+03:00', 'author_name': 'Anton Gnidenko', 'status': 'success',
+        # 'committer_email': 'anton.gnidenko@rcntec.com', 'committer_name': 'Anton Gnidenko', 'stats': {'deletions': 1, 'total': 2, 'additions': 1},
+        # 'title': 'logging actor name', 'short_id': 'aa8a0733'}
+        # ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattr__', '__getattribute__', '__gt__', '__hash__',
+        # '__init__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__',
+        # '__subclasshook__', '__weakref__', '_attrs', '_create_managers', '_id_attr', '_managers', '_module', '_parent_attrs', '_short_print_attr',
+        # '_update_attrs', '_updated_attrs', 'attributes', 'cherry_pick', 'comments', 'diff', 'get_id', 'manager', 'statuses']
+        # print(self.gitlab.pipelines(ref=branch_name))
         return obj.attributes.get('ref', '')
 
     def get_description(self, obj):
