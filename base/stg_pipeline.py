@@ -26,7 +26,7 @@ class StGitlabPipelineCancelCommand(StGitlabPipelineCommand):
 
     INPUT_STR = 'Pipeline ID to cancel'
 
-    def process(self, obj_id):
+    def process(self):
         if not self.obj_id:
             return
         is_cancel = sublime.ok_cancel_dialog('Are you really want to cancel pipeline #%s?' % self.obj_id)
