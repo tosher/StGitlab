@@ -5,7 +5,6 @@
 import webbrowser
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 
 
 # Issue: Open in Browser
@@ -19,7 +18,7 @@ class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         project = gitlab.project()
         screen = self.view.settings().get('screen', None)
         if screen == 'st_gitlab_issue':

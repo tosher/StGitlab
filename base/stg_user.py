@@ -4,7 +4,6 @@
 import sublime
 # import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 
 
 class UserSelectPanel(object):
@@ -14,7 +13,7 @@ class UserSelectPanel(object):
         self.window = sublime.active_window()
 
     def show_input(self):
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         users_group_filter = utils.stg_get_setting('users_group_filter', [])
         self.user_names = []
         self.user_ids = []

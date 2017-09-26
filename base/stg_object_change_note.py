@@ -4,7 +4,6 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_editbox import StEditbox
 
 
@@ -20,7 +19,7 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
                 'st_gitlab_merge'
             ]
         )
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         screen = self.view.settings().get('screen', None)
         project = gitlab.project()
         if screen == 'st_gitlab_issue':
@@ -45,7 +44,7 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
 
 class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):
     def run(self, edit, text):
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         base_id = self.view.settings().get('base_id')
         note_id = self.view.settings().get('note_id')
         eb = StEditbox(base_id)

@@ -4,6 +4,7 @@
 import sublime
 import sublime_plugin
 from .base import *
+from .base import stg_utils as utils
 from .base.stg_html import StShortcutsMenu
 
 
@@ -59,12 +60,13 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
         if screen == 'st_gitlab_issue':
             StShortcutsMenu(self.view, StGitlabIssueFetcherCommand.shortcuts)
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
+            utils.stg_show_images(self.view)
         elif screen == 'st_gitlab_merge':
             StShortcutsMenu(self.view, StGitlabMergeFetcherCommand.shortcuts)
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
-        elif screen == 'st_gitlab_issue':
+            utils.stg_show_images(self.view)
+        elif screen == 'st_gitlab_pipeline':
             StShortcutsMenu(self.view, StGitlabPipelineFetcherCommand.shortcuts)
-            StGitlabViewShowLabelsCommand.pretty_labels(self.view)
         elif screen == 'st_gitlab_issues':
             StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts, cols=None)
         elif screen == 'st_gitlab_merges':

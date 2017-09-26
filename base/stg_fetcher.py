@@ -7,7 +7,6 @@ from collections import OrderedDict
 import traceback
 # import textwrap
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_html import StShortcutsMenu
 
 BLOCK_LINE = '%s\n' % ('═' * 80)
@@ -91,10 +90,9 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         notes_list.sort(key=lambda x: x.id, reverse=False)
         for note in notes_list:
             note_attrs = note.attributes
-            is_full_notes_prop = '%s_show_full_notes' % self.obj_name_sub
             note_is_system = note_attrs.get('system', False)
 
-            if not utils.stg_get_setting(is_full_notes_prop, True) and note_is_system:
+            if not utils.stg_get_setting('show_system_notes') and note_is_system:
                 continue
 
             if note_attrs.get('body'):  # and not note.system:
@@ -136,7 +134,8 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             syntax_file = utils.stg_get_setting('syntax_file')
             r.set_syntax_file(syntax_file)
 
-        self.gitlab = StGitlab()  # creates with current view => r
+        # self.gitlab = utils.gl.get()  # creates with current view => r
+        self.gitlab = utils.gl.get()  # creates with current view => r
         self.set_view_settings(r)
         obj = self.gitlab.object_by_screen(r.settings().get('screen'))
 
@@ -168,13 +167,14 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         sublime.set_timeout_async(utils.stg_show_images(r), 0)
         r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)
+        r.show(0)
 
 
 class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('r', 'refresh'),
-        ('f2', 'change title'),
+        ('F5', 'refresh'),
+        ('F2', 'change title'),
         ('d', 'change description'),
         ('c', 'add note'),
         ('s', 'change state'),
@@ -185,6 +185,7 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
         ('g', 'open in browser'),
         ('m', 'move to project'),
         ('u', 'toggle select mode'),
+        ('n', 'toggle system notes'),
         ('Enter', 'change'),
         ('Delete', 'delete')
     ])
@@ -195,8 +196,8 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
 class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('r', 'refresh'),
-        ('f2', 'change title'),
+        ('F5', 'refresh'),
+        ('F2', 'change title'),
         ('d', 'change description'),
         ('c', 'add note'),
         ('s', 'change state'),
@@ -206,6 +207,7 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         ('a', 'assing to'),
         ('g', 'open in browser'),
         ('u', 'toggle select mode'),
+        ('n', 'toggle system notes'),
         ('Enter', 'change')
     ])
     obj_name = 'Merge-request'
@@ -243,7 +245,7 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('r', 'refresh'),
+        ('F5', 'refresh'),
         ('b', 'retry'),
         ('c', 'cancel'),
         ('g', 'open in browser'),

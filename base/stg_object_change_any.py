@@ -4,7 +4,6 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-# from .stg_gitlab import StGitlab
 
 
 class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):

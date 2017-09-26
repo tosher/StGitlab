@@ -4,7 +4,6 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_project import ProjectSelectPanel
 
 # TODO: TEST required
@@ -24,7 +23,7 @@ class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
 
         utils.stg_validate_screen('st_gitlab_issue')
 
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         project = gitlab.project()
         issue = gitlab.issue()
         if project and issue:

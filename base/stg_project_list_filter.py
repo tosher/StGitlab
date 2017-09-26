@@ -4,11 +4,9 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_user import UserSelectPanel
 
 
-# Project objects filter
 class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
 
     query_params = {}
@@ -34,7 +32,7 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
 
         filter_type_key = list(self.filter_types.keys())[filter_id]
         self.filter_name = self.filter_types[filter_type_key]
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
 
         self.filter_values = []
         if self.filter_name in ['author_id', 'assignee_id']:

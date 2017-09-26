@@ -4,7 +4,6 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_project import ProjectSelectPanel
 from .stg_object import StGitlabObjectCommand
 
@@ -12,7 +11,7 @@ from .stg_object import StGitlabObjectCommand
 # Create Issue
 class StGitlabIssueCreateCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        self.gitlab = StGitlab()
+        self.gitlab = utils.gl.get()
         self.project_id = self.view.settings().get('project_id', None)
         if self.project_id:
             self.set_project(self.project_id)

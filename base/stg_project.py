@@ -4,7 +4,6 @@
 import sublime
 # import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 
 
 class ProjectSelectPanel(object):
@@ -14,7 +13,7 @@ class ProjectSelectPanel(object):
         self.window = sublime.active_window()
 
     def show_input(self):
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         projects_filter = utils.stg_get_setting('projects_filter', [])
         if projects_filter:
             projects = [gitlab.project(oid=pid) for pid in projects_filter]

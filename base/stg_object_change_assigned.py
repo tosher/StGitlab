@@ -4,7 +4,6 @@
 # import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_user import UserSelectPanel
 
 
@@ -22,7 +21,7 @@ class StGitlabObjectChangeAssignedCommand(sublime_plugin.TextCommand):
         panel.show_input()
 
     def assign(self, user_id):
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         screen = self.view.settings().get('screen', None)
         if screen == 'st_gitlab_issue':
             object_name = 'issue'

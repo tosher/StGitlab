@@ -4,7 +4,6 @@
 # import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 from .stg_project import ProjectSelectPanel
 
 
@@ -17,7 +16,7 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, obj_id=None):
         self.obj_id = obj_id
-        self.gitlab = StGitlab()
+        self.gitlab = utils.gl.get()
         self.get_project_id()
 
     def get_obj_id(self):

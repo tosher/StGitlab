@@ -4,7 +4,6 @@
 # import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 
 
 class StGitlabRemoveLabelCommand(sublime_plugin.TextCommand):
@@ -23,7 +22,7 @@ class StGitlabRemoveLabelCommand(sublime_plugin.TextCommand):
 
         self.validate()
 
-        self.gitlab = StGitlab()
+        self.gitlab = utils.gl.get()
         obj = self.get_object()
         obj_labels = obj.attributes.get('labels', [])
         self.view.window().show_quick_panel(obj_labels, on_done)

@@ -29,6 +29,7 @@ from .stg_object_refresh import StGitlabObjectRefreshCommand
 from .stg_object_set_milestone import StGitlabObjectSetMilestoneCommand
 from .stg_object_change_state import StGitlabObjectChangeStateCommand
 from .stg_toggle_selectable import StGitlabToggleSelectableCommand
+from .stg_toggle_system_notes import StGitlabToggleSystemNotesCommand
 from .stg_project_issues import StGitlabProjectIssuesCommand
 from .stg_project_merges import StGitlabProjectMergesCommand
 from .stg_project_pipelines import StGitlabProjectPipelinesCommand
@@ -81,6 +82,7 @@ __all__ = [
     'StGitlabObjectChangeStateCommand',
     'StGitlabObjectInBrowserCommand',
     'StGitlabToggleSelectableCommand',
+    'StGitlabToggleSystemNotesCommand',
 
     'StGitlabProjectObjectsListCommand',
     'StGitlabProjectIssuesListCommand',

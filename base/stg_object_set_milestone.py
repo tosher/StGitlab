@@ -4,7 +4,6 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
-from .stg_gitlab import StGitlab
 
 
 class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
@@ -26,7 +25,7 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         milestones = []
         milestones_menu = ['[Remove]']
         screen = self.view.settings().get('screen', None)

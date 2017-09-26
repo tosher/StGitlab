@@ -12,6 +12,16 @@ import gitlab
 
 
 class StGitlab(object):
+
+    conn = None
+    view = None
+    clabels = None
+    cprojects = None
+    cproject = {}
+    cusers = None
+    cgroups = None
+    cgroup = {}
+
     def connect():
         settings = sublime.load_settings("StGitlab.sublime-settings")
         url = settings.get('gitlab_url')
@@ -19,8 +29,13 @@ class StGitlab(object):
         return gitlab.Gitlab(url, api_key, api_version=4)
 
     def __init__(self):
-        self.connect = StGitlab.connect()
+        pass
+
+    def get(self):
         self.view = sublime.active_window().active_view()
+        if not self.conn:
+            self.conn = StGitlab.connect()
+        return self
 
     def object_name_by_screen(self, screen):
         return screen.split('_')[-1]
@@ -37,7 +52,9 @@ class StGitlab(object):
             oid = self.view.settings().get('project_id', None)
         if not oid:
             raise Exception('Project id is not defined')
-        return self.connect.projects.get(oid)
+        if not self.cproject.get(oid):
+            self.cproject[oid] = self.conn.projects.get(oid)
+        return self.cproject.get(oid)
 
     def issue(self, project_id=None, oid=None):
         if oid is None:
@@ -61,16 +78,33 @@ class StGitlab(object):
         return self.project(project_id).mergerequests.get(oid)
 
     def group(self, gr):
-        return self.connect.groups.get(gr)
+        if not self.cgroup.get(gr):
+            self.cgroup[gr] = self.conn.groups.get(gr)
+        return self.cgroup.get(gr)
 
     def users(self, **kwargs):
-        return self.connect.users.list(**kwargs)
+        if len(kwargs.keys()) == 1 and kwargs.get('all', False):
+            if not self.cusers:
+                self.cusers = self.conn.users.list(**kwargs)
+            return self.cusers
+        else:
+            return self.conn.users.list(**kwargs)
 
     def projects(self, **kwargs):
-        return self.connect.projects.list(**kwargs)
+        if len(kwargs.keys()) == 1 and kwargs.get('all', False):
+            if not self.cprojects:
+                self.cprojects = self.conn.projects.list(**kwargs)
+            return self.cprojects
+        else:
+            return self.conn.projects.list(**kwargs)
 
     def groups(self, **kwargs):
-        return self.connect.groups.list(**kwargs)
+        if len(kwargs.keys()) == 1 and kwargs.get('all', False):
+            if not self.cgroups:
+                self.cgroups = self.conn.groups.list(**kwargs)
+            return self.cgroups
+        else:
+            return self.conn.groups.list(**kwargs)
 
     def issues(self, project_id=None, **kwargs):
         return self.project(project_id).issues.list(**kwargs)
@@ -82,7 +116,12 @@ class StGitlab(object):
         return self.project(project_id).mergerequests.list(**kwargs)
 
     def labels(self, project_id=None, **kwargs):
-        return self.project(project_id).labels.list(**kwargs)
+        if len(kwargs.keys()) == 1 and kwargs.get('all', False):
+            if not self.clabels:
+                self.clabels = self.project(project_id).labels.list(**kwargs)
+            return self.clabels
+        else:
+            return self.project(project_id).labels.list(**kwargs)
 
     def milestones(self, project_id=None, **kwargs):
         return self.project(project_id).milestones.list(**kwargs)

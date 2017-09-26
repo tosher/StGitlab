@@ -6,7 +6,6 @@ import os
 # import sublime
 import sublime_plugin
 from collections import OrderedDict
-from .stg_gitlab import StGitlab
 from . import stg_utils as utils
 from .stg_html import StShortcutsMenu
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
@@ -19,7 +18,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, title):
         self.title = title
-        self.gitlab = StGitlab()
+        self.gitlab = utils.gl.get()
         self.query_params = self.view.settings().get('query_params', {})
         self.objects = self.get_objects()
         self.build()
@@ -31,6 +30,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         content += self.show_filters()
         content += self.show_table()
         self.view.run_command('st_gitlab_insert_text', {'position': 0, 'text': content})
+        self.view.show(0)
 
     def show_shortcuts(self):
         StShortcutsMenu(self.view, self.shortcuts, None)
@@ -83,7 +83,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
     shortcuts = OrderedDict([
         ('Enter', 'open'),
-        ('r', 'refresh'),
+        ('F5', 'refresh'),
         ('Delete', 'delete'),
         ('f', 'filter'),
         ('Shift + ←', 'prev. page'),
@@ -101,7 +101,7 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
     shortcuts = OrderedDict([
         ('Enter', 'open'),
         ('r', 'refresh'),
-        ('f', 'filter'),
+        ('F5', 'filter'),
         ('Shift + ←', 'prev. page'),
         ('Shift + →', 'next page')
     ])
@@ -116,7 +116,7 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
 class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
     shortcuts = OrderedDict([
         ('Enter', 'open'),
-        ('r', 'refresh'),
+        ('F5', 'refresh'),
         ('b', 'retry'),
         ('c', 'cancel'),
         ('f', 'filter'),

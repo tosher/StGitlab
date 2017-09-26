@@ -3,7 +3,6 @@
 
 import sublime
 import sublime_plugin
-from .stg_gitlab import StGitlab
 from . import stg_utils as utils
 
 
@@ -26,7 +25,7 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
 
     def pretty_labels(view):
         view.erase_phantoms('label')
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         lbs = gitlab.labels(all=True)
         lbl_color_default = '#D84315'
         lbs_colors = {}

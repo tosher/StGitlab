@@ -18,10 +18,18 @@ filter_types = {
     'Reset filters': None
 }
 
+gl = StGitlab()
+
 
 def stg_get_setting(key, default_value=None):
     settings = sublime.load_settings('StGitlab.sublime-settings')
     return settings.get(key, default_value)
+
+
+def stg_set_setting(key, value):
+    settings = sublime.load_settings('StGitlab.sublime-settings')
+    settings.set(key, value)
+    sublime.save_settings('Mediawiker.sublime-settings')
 
 
 def stg_validate_screen(screen_type):
@@ -124,7 +132,7 @@ def stg_msg_labels(msg, project_id):
     if not m or not m.group(1):
         return msg
 
-    gitlab = StGitlab()
+    gitlab = gl.get()
     labels = gitlab.labels(project_id=project_id, all=True)
     msg = re.sub(label_pattern, get_label, msg)
     return msg
@@ -137,13 +145,14 @@ def stg_get_image(url):
 
 
 def stg_show_images(view):
+    view.erase_phantoms('image')
     img_pattern = r'!\[(.*?)(\])\((.*?)\)'
     images = view.find_all(img_pattern)
     for image_r in images:
         img_text = view.substr(image_r)
         img_url = img_text.split('(')[1][:-1]
         if not img_url.startswith('http'):
-            gitlab = StGitlab()
+            gitlab = gl.get()
             project = gitlab.project()
             img_url = '/'.join([project.web_url.rstrip('/'), img_url.lstrip('/')])
         view.add_phantom(

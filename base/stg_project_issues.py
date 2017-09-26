@@ -5,10 +5,8 @@
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_project import ProjectSelectPanel
-from .stg_gitlab import StGitlab
 
 
-# Issues by project
 class StGitlabProjectIssuesCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
@@ -16,7 +14,7 @@ class StGitlabProjectIssuesCommand(sublime_plugin.TextCommand):
         panel.show_input()
 
     def get_issues(self, project_id):
-        gitlab = StGitlab()
+        gitlab = utils.gl.get()
         project = gitlab.project(oid=project_id)
         per_page = utils.stg_get_setting('list_page_size')
         query_params = {
