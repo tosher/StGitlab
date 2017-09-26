@@ -43,6 +43,6 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
             view.add_phantom(
                 'label',
                 sublime.Region(point, point),
-                '<span style="background-color:%s;border-radius:0.2rem;font-size:1rem;margin:0;">&nbsp;%s&nbsp;</span>' % (lbl_color, label['label']),
+                '<span style="background-color:%s;border-radius:0.2rem;font-size:1rem;margin:0;font-family:Arial,Consolas,Tahoma;">&nbsp;%s&nbsp;</span>' % (lbl_color, label['label']),
                 sublime.LAYOUT_INLINE
             )
