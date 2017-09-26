@@ -58,10 +58,13 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
             return
         if screen == 'st_gitlab_issue':
             StShortcutsMenu(self.view, StGitlabIssueFetcherCommand.shortcuts)
+            StGitlabViewShowLabelsCommand.pretty_labels(self.view)
         elif screen == 'st_gitlab_merge':
             StShortcutsMenu(self.view, StGitlabMergeFetcherCommand.shortcuts)
+            StGitlabViewShowLabelsCommand.pretty_labels(self.view)
         elif screen == 'st_gitlab_issue':
             StShortcutsMenu(self.view, StGitlabPipelineFetcherCommand.shortcuts)
+            StGitlabViewShowLabelsCommand.pretty_labels(self.view)
         elif screen == 'st_gitlab_issues':
             StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts, cols=None)
         elif screen == 'st_gitlab_merges':

@@ -52,7 +52,8 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         for name in utils.filter_types.values():
             if name in self.query_params:
                 if name == 'labels':
-                    labels = ', '.join(['^%s^' % label for label in self.query_params.get(name)])
+                    lbl_char = utils.stg_get_setting('label_char')
+                    labels = ', '.join(['%(lbl_char)s%(label)s%(lbl_char)s' % {'lbl_char': lbl_char, 'label': label} for label in self.query_params.get(name)])
                     filters += '\t\t**%s**: %s\n' % (name, labels)
                 else:
                     filters += '\t\t**%s**: %s\n' % (name, self.query_params.get(name))

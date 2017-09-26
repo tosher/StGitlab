@@ -84,7 +84,7 @@ def stg_get_property_value(obj, prop):
         return val
 
     val = ''
-    label_char = '•'
+    label_char = stg_get_setting('label_char')
     prop_type = prop.get('type', 'string')
     attrs = obj.attributes
     try:
