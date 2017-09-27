@@ -129,6 +129,12 @@
         ]
     },
     {
+        "keys": ["w"], "command": "st_gitlab_util_open_url",
+        "context": [
+            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+        ]
+    },
+    {
         "keys": ["j"], "command": "st_gitlab_issue_add_label",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_issue"}
@@ -162,6 +168,18 @@
         "keys": ["n"], "command": "st_gitlab_toggle_system_notes",
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline"]}
+        ]
+    },
+    {
+        "keys": ["w"], "command": "st_gitlab_merge_toggle_wip",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_merge"}
+        ]
+    },
+    {
+        "keys": ["m"], "command": "st_gitlab_merge_accept",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_merge"}
         ]
     },
     {
