@@ -127,7 +127,7 @@ def stg_msg_labels(msg, project_id):
         return '~%s' % label_id
 
     lbl_chr = stg_get_setting('label_char')
-    label_pattern = r'\~(\d+)'
+    label_pattern = r'^|\s\~(\d+)'
     m = re.search(label_pattern, msg)
     if not m or not m.group(1):
         return msg
