@@ -75,12 +75,18 @@ class StEditbox(object):
     def focus_base(self):
         self.window.focus_group(self.CELL_MAIN_GROUP)
 
+    def get_editbox_height(self):
+        h = utils.stg_get_setting('edit_height_percent')
+        ratio = (100 - int(h)) / 100
+        return ratio
+
     def layout_edit(self):
+        r = self.get_editbox_height()
         self.window.run_command(
             'set_layout',
             {
                 "cols": [0.0, 1.0],
-                "rows": [0.0, 0.75, 1.0],
+                "rows": [0.0, r, 1.0],
                 "cells": [
                     self.CELL_MAIN,
                     self.CELL_EDIT

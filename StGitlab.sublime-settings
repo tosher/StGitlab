@@ -12,6 +12,7 @@
     "datetime_format_show": "%d.%m.%Y %H:%M:%S",
     "table_column_separator": "│",
     "label_char": "•",
+    "edit_height_percent": 45,
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },
         { "prop": "title", "colname": "Title", "maxlen": 50},
@@ -50,7 +51,7 @@
         { "prop": "iid", "colname": "ID"},
         { "prop": "title", "colname": "Title"},
         { "prop": "source_branch", "colname": "Source branch"},
-        { "prop": "work_in_progress", "colname": "WIP"},
+        { "prop": "work_in_progress", "colname": "WIP", "type": "bool"},
         { "prop": "state", "colname": "State"},
         { "prop": "author", "colname": "Author", "attr": "name"},
         { "prop": "assignee", "colname": "Assigned to", "attr": "name"},

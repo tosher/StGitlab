@@ -41,10 +41,13 @@ from .stg_project_objects_list import StGitlabProjectIssuesListCommand
 from .stg_project_objects_list import StGitlabProjectMergesListCommand
 from .stg_project_objects_list import StGitlabProjectPipelinesListCommand
 from .stg_merge import StGitlabMergeCommand
+from .stg_merge_toggle_wip import StGitlabMergeToggleWipCommand
+from .stg_merge_accept import StGitlabMergeAcceptCommand
 from .stg_pipeline import StGitlabPipelineCommand
 from .stg_pipeline import StGitlabPipelineCancelCommand
 from .stg_pipeline import StGitlabPipelineRetryCommand
 from .stg_view_show_labels import StGitlabViewShowLabelsCommand
+from .stg_util_open_url import StGitlabUtilOpenUrlCommand
 
 __all__ = [
     'StGitlabEditboxSaveCommand',
@@ -58,9 +61,11 @@ __all__ = [
     'StGitlabChangeProjectCommand',
 
     'StGitlabMergeCommand',
+    'StGitlabMergeToggleWipCommand',
     'StGitlabMergeFetcherCommand',
     'StGitlabMergeAddLabelCommand',
     'StGitlabMergeRemoveLabelCommand',
+    'StGitlabMergeAcceptCommand',
 
     'StGitlabPipelineCommand',
     'StGitlabPipelineCancelCommand',
@@ -94,5 +99,7 @@ __all__ = [
     'StGitlabProjectListFilterCommand',
     'StGitlabProjectListRefreshCommand',
     'StGitlabProjectListPageCommand',
-    'StGitlabViewShowLabelsCommand'
+    'StGitlabViewShowLabelsCommand',
+
+    'StGitlabUtilOpenUrlCommand'
 ]

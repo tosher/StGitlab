@@ -6,8 +6,6 @@ import sublime_plugin
 from . import stg_utils as utils
 from .stg_project import ProjectSelectPanel
 
-# TODO: TEST required
-
 
 class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
     def run(self, edit):

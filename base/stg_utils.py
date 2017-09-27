@@ -103,6 +103,8 @@ def stg_get_property_value(obj, prop):
                 val = ', '.join(attrs.get(prop['prop'], ''))
         elif prop_type == 'datetime':
             val = stg_get_datetime(attrs.get(prop['prop'], ''))
+        elif prop_type == 'bool':
+            val = str(attrs.get(prop['prop'], ''))
         elif prop.get('attr', None):
             val_obj = attrs.get(prop['prop'], '')
             if val_obj:

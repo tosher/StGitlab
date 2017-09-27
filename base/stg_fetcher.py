@@ -186,6 +186,7 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
         ('m', 'move to project'),
         ('u', 'toggle select mode'),
         ('n', 'toggle system notes'),
+        ('w', 'open url'),
         ('Enter', 'change'),
         ('Delete', 'delete')
     ])
@@ -206,8 +207,11 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         ('k', 'label remove'),
         ('a', 'assing to'),
         ('g', 'open in browser'),
+        ('w', 'toggle WIP'),
+        ('m', 'accept'),
         ('u', 'toggle select mode'),
         ('n', 'toggle system notes'),
+        ('w', 'open url'),
         ('Enter', 'change')
     ])
     obj_name = 'Merge-request'
