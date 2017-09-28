@@ -14,6 +14,7 @@ from .stg_object_change_assigned import StGitlabObjectChangeAssignedCommand
 from .stg_object_change_description import StGitlabObjectChangeDescriptionCommand
 from .stg_object_change_description import StGitlabObjectChangeDescriptionDoneCommand
 from .stg_issue_change_project import StGitlabChangeProjectCommand
+from .stg_issue_create_branch import StGitlabIssueCreateBranchCommand
 from .stg_object_change_title import StGitlabObjectChangeTitleCommand
 from .stg_fetcher import StGitlabFetcherCommand
 from .stg_fetcher import StGitlabIssueFetcherCommand
@@ -40,6 +41,7 @@ from .stg_project_objects_list import StGitlabProjectObjectsListCommand
 from .stg_project_objects_list import StGitlabProjectIssuesListCommand
 from .stg_project_objects_list import StGitlabProjectMergesListCommand
 from .stg_project_objects_list import StGitlabProjectPipelinesListCommand
+from .stg_project_objects_list_action import StGitlabProjectObjectsListActionCommand
 from .stg_merge import StGitlabMergeCommand
 from .stg_merge_toggle_wip import StGitlabMergeToggleWipCommand
 from .stg_merge_accept import StGitlabMergeAcceptCommand
@@ -59,6 +61,7 @@ __all__ = [
     'StGitlabIssueAddLabelCommand',
     'StGitlabIssueRemoveLabelCommand',
     'StGitlabChangeProjectCommand',
+    'StGitlabIssueCreateBranchCommand',
 
     'StGitlabMergeCommand',
     'StGitlabMergeToggleWipCommand',
@@ -90,6 +93,7 @@ __all__ = [
     'StGitlabToggleSystemNotesCommand',
 
     'StGitlabProjectObjectsListCommand',
+    'StGitlabProjectObjectsListActionCommand',
     'StGitlabProjectIssuesListCommand',
     'StGitlabProjectMergesListCommand',
     'StGitlabProjectPipelinesListCommand',

@@ -16,28 +16,20 @@
                         "children":
                         [
                             {
-                                "command": "open_file",
+                                "command": "edit_settings",
                                 "args": {
-                                    "file": "${packages}/StGitlab/StGitlab.sublime-settings"
+                                    "base_file": "${packages}/StGitlab/StGitlab.sublime-settings",
+                                    "default": "{\n\t$0\n}\n"
                                 },
-                                "caption": "Settings – Default"
+                                "caption": "Settings"
                             },
                             {
-                                "command": "open_file",
+                                "command": "edit_settings",
                                 "args": {
-                                    "file": "${packages}/User/StGitlab.sublime-settings"
+                                    "base_file": "${packages}/StGitlab/Default ($platform).sublime-keymap",
+                                    "default": "[\n\t$0\n]\n"
                                 },
-                                "caption": "Settings – User"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {"file": "${packages}/StGitlab/Default.sublime-keymap"},
-                                "caption": "Key Bindings – Default"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {"file": "${packages}/User/StGitlab.sublime-keymap"},
-                                "caption": "Key Bindings – User"
+                                "caption": "Key Bindings"
                             }
                         ]
                     }

@@ -17,6 +17,9 @@ class StGitlabEditboxSaveCommand(sublime_plugin.TextCommand):
 class StGitlabEditboxCancelCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
+        is_del = sublime.ok_cancel_dialog('Are you really want to cancel editing?')
+        if not is_del:
+            return
         base_id = self.view.settings().get('base_id')
         eb = StEditbox(base_id)
         eb.layout_base()

@@ -9,6 +9,7 @@
    { "caption": "Gitlab issue: Change project", "command": "st_gitlab_change_project" },
    { "caption": "Gitlab issue: Add label", "command": "st_gitlab_issue_add_label" },
    { "caption": "Gitlab issue: Remove label", "command": "st_gitlab_issue_remove_label" },
+   { "caption": "Gitlab issue: Create branch", "command": "st_gitlab_issue_create_branch" },
    // merge-request
    { "caption": "Gitlab merge: View", "command": "st_gitlab_merge" },
    { "caption": "Gitlab merge: Toggle WIP", "command": "st_gitlab_merge_toggle_wip" },
@@ -37,6 +38,8 @@
    // project lists: issues, merges, pipelines, etc.
    { "caption": "Gitlab project: List refresh", "command": "st_gitlab_project_list_refresh" },
    { "caption": "Gitlab project: Set filter", "command": "st_gitlab_project_list_filter" },
+   { "caption": "Gitlab project: Add label", "command": "st_gitlab_project_objects_list_action", "args": {"action": "set_label"} },
+   { "caption": "Gitlab project: Remove label", "command": "st_gitlab_project_objects_list_action", "args": {"action": "del_label"} },
    { "caption": "Gitlab project: Previous page", "command": "st_gitlab_project_list_page", "args": {"direction": 0} },
    { "caption": "Gitlab project: Next page", "command": "st_gitlab_project_list_page", "args": {"direction": 1} },
    // project issues

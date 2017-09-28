@@ -175,6 +175,7 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
     shortcuts = OrderedDict([
         ('F5', 'refresh'),
         ('F2', 'change title'),
+        ('F7', 'create branch'),
         ('d', 'change description'),
         ('c', 'add note'),
         ('s', 'change state'),
@@ -192,6 +193,17 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
     ])
     obj_name = 'Issue'
     obj_name_sub = 'issue'
+
+    def get_object_custom(self, obj):
+        branches = self.gitlab.branches()
+        if branches:
+            content = '## Related branches\n'
+            i = 1
+            for br in branches:
+                print(br)
+                if br.name.startswith(str(obj.iid)):
+                    content += '%s. **%s**: %s by %s\n' % (i, br.name, br.commit.get('title'), br.commit.get('author_name'))
+        return content
 
 
 class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):

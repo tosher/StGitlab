@@ -8,19 +8,25 @@ import sublime_plugin
 from . import stg_utils as utils
 
 
+# TODO: если несколько объектов в строке - показывать меню
 class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         utils.stg_validate_screen(['st_gitlab_issue', 'st_gitlab_merge'])
 
         # markdown urls
         try:
-            url = self.view.substr(self.view.sel()[0]).split('(')[1].split(')')[0]
-            if url:
-                if not url.startswith('http'):
-                    gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
-                    url = '%s/%s' % (gl_url, url.lstrip('/'))
-                webbrowser.open(url)
-                return
+            text = self.view.substr(self.view.sel()[0])
+            if re.findall(r'\]\((.*?)\)', text):
+                url = self.view.substr(self.view.sel()[0]).split('(')[1].split(')')[0]
+                if url:
+                    if not url.startswith('http'):
+                        gitlab = utils.gl.get()
+                        project = gitlab.project()
+                        project_name = project.attributes.get('path_with_namespace')
+                        gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
+                        url = '%s/%s/%s' % (gl_url, project_name, url.lstrip('/'))
+                    webbrowser.open(url)
+                    return
         except Exception:
             pass
 
@@ -31,5 +37,25 @@ class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
             if urls:
                 url = urls[0][0]
                 webbrowser.open(url)
+        except Exception:
+            pass
+
+        # issues
+        try:
+            text = self.view.substr(self.view.sel()[0])
+            issues = re.findall(r'\#\d+', text)
+            if issues:
+                issue_id = issues[0][1:]
+                self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': issue_id})
+        except Exception:
+            pass
+
+        # merge-requests
+        try:
+            text = self.view.substr(self.view.sel()[0])
+            merges = re.findall(r'\!\d+', text)
+            if merges:
+                merge_id = merges[0][1:]
+                self.view.run_command('st_gitlab_merge_fetcher', {'obj_id': merge_id})
         except Exception:
             pass

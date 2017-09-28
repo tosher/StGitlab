@@ -11,7 +11,7 @@ class StGitlabAddLabelCommand(sublime_plugin.TextCommand):
     SCREEN_VALIDATE = ''
     OBJECT_NAME = ''
 
-    def run(self, edit):
+    def run(self, edit, object_id=None):
         def on_done(i):
             if i < 0:
                 return
@@ -21,7 +21,7 @@ class StGitlabAddLabelCommand(sublime_plugin.TextCommand):
             self.object_refresh()
 
         self.validate()
-
+        self.object_id = object_id
         self.gitlab = utils.gl.get()
         obj = self.get_object()
         obj_labels = obj.attributes.get('labels', [])
@@ -32,7 +32,7 @@ class StGitlabAddLabelCommand(sublime_plugin.TextCommand):
     def validate(self):
         utils.stg_validate_screen(self.SCREEN_VALIDATE)
 
-    def get_object(self, object_id):
+    def get_object(self):
         return None
 
     def object_refresh(self):
@@ -45,7 +45,7 @@ class StGitlabIssueAddLabelCommand(StGitlabAddLabelCommand):
     OBJECT_NAME = 'issue'
 
     def get_object(self):
-        return self.gitlab.issue()
+        return self.gitlab.issue(oid=self.object_id)
 
 
 class StGitlabMergeAddLabelCommand(StGitlabAddLabelCommand):
@@ -54,4 +54,4 @@ class StGitlabMergeAddLabelCommand(StGitlabAddLabelCommand):
     OBJECT_NAME = 'merge'
 
     def get_object(self):
-        return self.gitlab.merge()
+        return self.gitlab.merge(oid=self.object_id)

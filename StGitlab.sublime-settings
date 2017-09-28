@@ -12,6 +12,7 @@
     "datetime_format_show": "%d.%m.%Y %H:%M:%S",
     "table_column_separator": "│",
     "label_char": "•",
+    "issue_to_branch_transliterate_lang": "",
     "edit_height_percent": 45,
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },

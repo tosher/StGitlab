@@ -7,6 +7,8 @@ from . import stg_utils as utils
 
 
 class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
+    MARKDOWN_SCOPE = 'text.html.markdown.gfm'
+
     def run(self, edit):
 
         utils.stg_validate_screen(
@@ -34,7 +36,11 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
         header_pattern = '^#{2,3}\s.*$'
         selected_header_str = ''
         try:
-            headers = self.view.find_all(header_pattern)
+            headers = []
+            headers_all = self.view.find_all(header_pattern)
+            for h in headers_all:
+                if self.MARKDOWN_SCOPE not in self.view.scope_name(h.a):
+                    headers.append(h)
             selected = self.view.sel()[0]
             selected_header = max([h for h in headers if h.b < selected.b])
             selected_header_str = self.view.substr(selected_header).lstrip('# ')
