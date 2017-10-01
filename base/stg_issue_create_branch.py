@@ -16,7 +16,7 @@ class StGitlabIssueCreateBranchCommand(sublime_plugin.TextCommand):
             if not name:
                 return
             project.branches.create({'branch': name, 'ref': 'master'})
-            self.view.run_command('st_gitlab_object_refresh', {'object_name': 'issue'})
+            self.view.run_command('st_gitlab_object_refresh')
 
         utils.stg_validate_screen('st_gitlab_issue')
 

@@ -1,28 +1,27 @@
 [
    // tmp
-   { "caption": "Gitlab edit box", "command": "st_gitlab_editbox_save" },
+   { "caption": "Gitlab: Reset connection", "command": "st_gitlab_reset" },
+   { "caption": "Gitlab: Save edit", "command": "st_gitlab_editbox_save" },
    // issue
    { "caption": "Gitlab issue: View", "command": "st_gitlab_issue" },
    { "caption": "Gitlab issue: Create", "command": "st_gitlab_issue_create" },
    { "caption": "Gitlab issue: Delete", "command": "st_gitlab_issue_delete" },
-   { "caption": "Gitlab issue: Refresh", "command": "st_gitlab_object_refresh", "args": {"object_name": "issue"} },
    { "caption": "Gitlab issue: Change project", "command": "st_gitlab_change_project" },
-   { "caption": "Gitlab issue: Add label", "command": "st_gitlab_issue_add_label" },
-   { "caption": "Gitlab issue: Remove label", "command": "st_gitlab_issue_remove_label" },
    { "caption": "Gitlab issue: Create branch", "command": "st_gitlab_issue_create_branch" },
    // merge-request
    { "caption": "Gitlab merge: View", "command": "st_gitlab_merge" },
    { "caption": "Gitlab merge: Toggle WIP", "command": "st_gitlab_merge_toggle_wip" },
-   { "caption": "Gitlab merge: Refresh", "command": "st_gitlab_object_refresh", "args": {"object_name": "merge"} },
-   { "caption": "Gitlab merge: Add label", "command": "st_gitlab_merge_add_label" },
-   { "caption": "Gitlab merge: Remove label", "command": "st_gitlab_merge_remove_label" },
    { "caption": "Gitlab merge: Accept", "command": "st_gitlab_merge_accept" },
    // pipeline
    { "caption": "Gitlab pipeline: View", "command": "st_gitlab_pipeline" },
-   { "caption": "Gitlab pipeline: Refresh", "command": "st_gitlab_object_refresh", "args": {"object_name": "pipeline"} },
    { "caption": "Gitlab pipeline: Cancel", "command": "st_gitlab_pipeline_cancel" },
    { "caption": "Gitlab pipeline: Retry", "command": "st_gitlab_pipeline_retry" },
+   // branch
+   { "caption": "Gitlab branch: Toggle protect", "command": "st_gitlab_branch_toggle_protect" },
    // any possible object
+   { "caption": "Gitlab: Refresh", "command": "st_gitlab_object_refresh" },
+   { "caption": "Gitlab: Add label", "command": "st_gitlab_object_add_label" },
+   { "caption": "Gitlab: Remove label", "command": "st_gitlab_object_remove_label" },
    { "caption": "Gitlab: Toggle select mode", "command": "st_gitlab_toggle_selectable" },
    { "caption": "Gitlab: Toggle system notes", "command": "st_gitlab_toggle_system_notes" },
    { "caption": "Gitlab: Add note", "command": "st_gitlab_object_add_note" },
@@ -38,7 +37,7 @@
    // project lists: issues, merges, pipelines, etc.
    { "caption": "Gitlab project: List refresh", "command": "st_gitlab_project_list_refresh" },
    { "caption": "Gitlab project: Set filter", "command": "st_gitlab_project_list_filter" },
-   { "caption": "Gitlab project: Add label", "command": "st_gitlab_project_objects_list_action", "args": {"action": "set_label"} },
+   { "caption": "Gitlab project: Add label", "command": "st_gitlab_project_objects_list_action", "args": {"action": "add_label"} },
    { "caption": "Gitlab project: Remove label", "command": "st_gitlab_project_objects_list_action", "args": {"action": "del_label"} },
    { "caption": "Gitlab project: Previous page", "command": "st_gitlab_project_list_page", "args": {"direction": 0} },
    { "caption": "Gitlab project: Next page", "command": "st_gitlab_project_list_page", "args": {"direction": 1} },
@@ -47,5 +46,7 @@
    // project merge-requests
    { "caption": "Gitlab project: Merge-requests", "command": "st_gitlab_project_merges" },
    // project pipelines
-   { "caption": "Gitlab project: Pipelines", "command": "st_gitlab_project_pipelines" }
+   { "caption": "Gitlab project: Pipelines", "command": "st_gitlab_project_pipelines" },
+   // project branches
+   { "caption": "Gitlab project: Branches", "command": "st_gitlab_project_branches" }
 ]

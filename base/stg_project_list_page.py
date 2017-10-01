@@ -10,9 +10,10 @@ class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
     def run(self, edit, direction):
         utils.stg_validate_screen(
             [
-                'st_gitlab_issues',
-                'st_gitlab_merges',
-                'st_gitlab_pipelines'
+                utils.object_commands.get('issue', {}).get('screen_list'),
+                utils.object_commands.get('merge', {}).get('screen_list'),
+                utils.object_commands.get('pipeline', {}).get('screen_list'),
+                utils.object_commands.get('branch', {}).get('screen_list')
             ]
         )
         query_params = self.view.settings().get('query_params')
@@ -29,16 +30,11 @@ class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
 
         if query_params:
             title = self.view.name()
-            screen = self.view.settings().get('screen', None)
+            object_name = self.view.settings().get('object_name', None)
             self.view.set_read_only(False)
             self.view.erase_phantoms('shortcuts')
             self.view.erase(edit, sublime.Region(0, self.view.size()))
-            if screen == 'st_gitlab_issues':
-                cmd = 'st_gitlab_project_issues_list'
-            elif screen == 'st_gitlab_merges':
-                cmd = 'st_gitlab_project_merges_list'
-            elif screen == 'st_gitlab_pipelines':
-                cmd = 'st_gitlab_project_pipelines_list'
+            cmd = utils.object_commands.get(object_name, {}).get('list')
             self.view.run_command(cmd, {'title': title})
             # self.view.erase_phantoms('label')
             self.view.set_read_only(True)

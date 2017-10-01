@@ -18,12 +18,8 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
         )
 
         gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen', None)
         project = gitlab.project()
-        if screen == 'st_gitlab_issue':
-            obj = gitlab.issue()
-        elif screen == 'st_gitlab_merge':
-            obj = gitlab.merge()
+        obj = gitlab.object_by_view()
         on_done = 'st_gitlab_object_change_description_done'
         description = obj.description if obj.description else ''
         eb = StEditbox(self.view.id())
@@ -38,12 +34,11 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
 
 class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):
     def run(self, edit, text):
-        gitlab = utils.gl.get()
         base_id = self.view.settings().get('base_id')
         eb = StEditbox(base_id)
         eb.layout_base()
-        screen = eb.view.settings().get('screen')
-        obj = gitlab.object_by_screen(screen)
+        gitlab = utils.gl.get(eb.view)
+        obj = gitlab.object_by_view()
         obj.description = text
         obj.save()
-        eb.view.run_command('st_gitlab_object_refresh', {'object_name': gitlab.object_name_by_screen(screen)})
+        eb.view.run_command('st_gitlab_object_refresh')

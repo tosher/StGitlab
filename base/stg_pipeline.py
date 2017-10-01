@@ -3,23 +3,22 @@
 
 import sublime
 from .stg_object import StGitlabObjectCommand
+from . import stg_utils as utils
 
 
 class StGitlabPipelineCommand(StGitlabObjectCommand):
 
     INPUT_STR = 'Pipeline ID'
-    SCREEN_LIST = 'st_gitlab_pipelines'
-    SCREEN_VIEW = 'st_gitlab_pipeline'
-    FETCHER = 'st_gitlab_pipeline_fetcher'
+    object_name = 'pipeline'
 
     def get_pipeline(self):
         return self.gitlab.pipeline(project_id=self.project_id, oid=self.obj_id)
 
     def refresh(self):
-        if self.screen == 'st_gitlab_pipelines':
+        if self.screen == utils.object_commands.get('pipeline', {}).get('screen_list'):
             self.view.run_command('st_gitlab_project_list_refresh')
-        elif self.screen == 'st_gitlab_pipeline':
-            self.view.run_command('st_gitlab_object_refresh', {'object_name': 'pipeline'})
+        elif self.screen == utils.object_commands.get('pipeline', {}).get('screen_view'):
+            self.view.run_command('st_gitlab_object_refresh')
 
 
 class StGitlabPipelineCancelCommand(StGitlabPipelineCommand):

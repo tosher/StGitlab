@@ -10,20 +10,22 @@ from .stg_project import ProjectSelectPanel
 class StGitlabObjectCommand(sublime_plugin.TextCommand):
 
     INPUT_STR = 'Object ID'
-    SCREEN_LIST = ''
-    SCREEN_VIEW = ''
-    FETCHER = ''
+    object_name = ''
 
     def run(self, edit, obj_id=None):
         self.obj_id = obj_id
         self.gitlab = utils.gl.get()
+        cmds = utils.object_commands.get(self.object_name, {})
+        self.screen_list = cmds.get('screen_list')
+        self.screen_view = cmds.get('screen_view')
+        self.cmd_fetcher = cmds.get('fetch')
         self.get_project_id()
 
     def get_obj_id(self):
         if self.obj_id:
             return
         self.screen = self.view.settings().get('screen', None)
-        if self.screen == self.SCREEN_LIST:
+        if self.screen == self.screen_list:
             colsep = utils.stg_get_setting('table_column_separator')
             try:
                 line = self.view.substr(self.view.line(self.view.sel()[0].end()))
@@ -31,7 +33,7 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
                 int(self.obj_id)
             except Exception:
                 pass
-        elif self.screen == self.SCREEN_VIEW:
+        elif self.screen == self.screen_view:
             self.obj_id = self.view.settings().get('object_id', None)
 
         if not self.obj_id:
@@ -58,4 +60,4 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
     def process(self):
         if not self.obj_id:
             return
-        self.view.run_command(self.FETCHER, {'project_id': self.project_id, 'obj_id': self.obj_id})
+        self.view.run_command(self.cmd_fetcher, {'project_id': self.project_id, 'obj_id': self.obj_id})

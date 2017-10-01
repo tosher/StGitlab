@@ -17,7 +17,7 @@ class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
             self.view.settings().set('project_id', project_new.id)
             self.view.settings().set('object_id', issue.iid)
             sublime.status_message('Issue #%r was moved to %s' % (issue.id, project_new.name))
-            self.view.run_command('st_gitlab_object_refresh', {'object_name': 'issue'})
+            self.view.run_command('st_gitlab_object_refresh')
 
         utils.stg_validate_screen('st_gitlab_issue')
 

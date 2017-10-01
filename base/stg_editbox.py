@@ -48,6 +48,7 @@ class StEditbox(object):
         self.editbox.settings().set('on_done', on_done)
         self.editbox.settings().set('base_id', self.base_id)
         self.editbox.settings().set('screen', 'st_gitlab_editbox')
+        self.editbox.settings().set("word_wrap", True)
         for arg in kwargs.keys():
             self.editbox.settings().set(arg, kwargs[arg])
         self.editbox.run_command('st_gitlab_insert_text', {'position': 0, 'text': text})

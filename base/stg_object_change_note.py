@@ -20,12 +20,8 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
             ]
         )
         gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen', None)
         project = gitlab.project()
-        if screen == 'st_gitlab_issue':
-            obj = gitlab.issue()
-        elif screen == 'st_gitlab_merge':
-            obj = gitlab.merge()
+        obj = gitlab.object_by_view()
         note = obj.notes.get(note_id)
         if note.attributes.get('system', False):
             sublime.message_dialog("Unable to edit system message.")
@@ -44,14 +40,13 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
 
 class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):
     def run(self, edit, text):
-        gitlab = utils.gl.get()
         base_id = self.view.settings().get('base_id')
         note_id = self.view.settings().get('note_id')
         eb = StEditbox(base_id)
         eb.layout_base()
-        screen = eb.view.settings().get('screen')
-        obj = gitlab.object_by_screen(screen)
+        gitlab = utils.gl.get(eb.view)
+        obj = gitlab.object_by_view()
         note = obj.notes.get(note_id)
         note.body = text
         note.save()
-        eb.view.run_command('st_gitlab_object_refresh', {'object_name': gitlab.object_name_by_screen(screen)})
+        eb.view.run_command('st_gitlab_object_refresh')

@@ -20,6 +20,6 @@ class StGitlabMergeToggleWipCommand(sublime_plugin.TextCommand):
             title = merge.attributes.get('title')
             title = 'WIP:%s' % title if val else re.sub(r'^wip[:\s]', '', title, flags=re.IGNORECASE)
             merge.save(title=title)
-        self.view.run_command('st_gitlab_object_refresh', {'object_name': 'merge'})
+        self.view.run_command('st_gitlab_object_refresh')
 
 

@@ -118,6 +118,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         view.settings().set('object_id', self.obj_id)
         view.settings().set('project_id', self.project_id)
         view.settings().set('screen', screen)
+        view.settings().set('object_name', self.obj_name_sub)
         view.settings().set('st_gitlab_unselectable', True)
         view.set_name('%s #%s' % (self.obj_name, self.obj_id))
 
@@ -137,8 +138,8 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         # self.gitlab = utils.gl.get()  # creates with current view => r
         self.gitlab = utils.gl.get()  # creates with current view => r
         self.set_view_settings(r)
-        obj = self.gitlab.object_by_screen(r.settings().get('screen'))
-
+        # obj = self.gitlab.object_by_screen(r.settings().get('screen'))
+        obj = self.gitlab.object_by_view()
         header_print = self.get_header(obj)
         # shortcuts_print = self.get_shortcuts()
         self.get_shortcuts(r)
@@ -167,7 +168,6 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         sublime.set_timeout_async(utils.stg_show_images(r), 0)
         r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)
-        r.show(0)
 
 
 class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
@@ -179,12 +179,12 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
         ('d', 'change description'),
         ('c', 'add note'),
         ('s', 'change state'),
-        ('v', 'change milestone'),
-        ('j', 'label add'),
-        ('k', 'label remove'),
+        ('m', 'change milestone'),
+        ('l', 'label add'),
+        ('Alt+l', 'label remove'),
         ('a', 'assing to'),
         ('g', 'open in browser'),
-        ('m', 'move to project'),
+        ('p', 'move to project'),
         ('u', 'toggle select mode'),
         ('n', 'toggle system notes'),
         ('w', 'open url'),
@@ -200,7 +200,6 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
             content = '## Related branches\n'
             i = 1
             for br in branches:
-                print(br)
                 if br.name.startswith(str(obj.iid)):
                     content += '%s. **%s**: %s by %s\n' % (i, br.name, br.commit.get('title'), br.commit.get('author_name'))
         return content
@@ -214,9 +213,9 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         ('d', 'change description'),
         ('c', 'add note'),
         ('s', 'change state'),
-        ('v', 'change milestone'),
-        ('j', 'label add'),
-        ('k', 'label remove'),
+        ('m', 'change milestone'),
+        ('l', 'label add'),
+        ('Alt+l', 'label remove'),
         ('a', 'assing to'),
         ('g', 'open in browser'),
         ('w', 'toggle WIP'),

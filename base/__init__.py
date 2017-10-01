@@ -1,15 +1,14 @@
 ﻿#!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
+from .stg_gitlab_reset import StGitlabResetCommand
 from .stg_editbox import StGitlabEditboxSaveCommand
 from .stg_editbox import StGitlabEditboxCancelCommand
 from .stg_issue import StGitlabIssueCommand
 from .stg_issue import StGitlabIssueCreateCommand
 from .stg_issue import StGitlabIssueDeleteCommand
-from .stg_object_add_label import StGitlabIssueAddLabelCommand
-from .stg_object_add_label import StGitlabMergeAddLabelCommand
-from .stg_object_remove_label import StGitlabIssueRemoveLabelCommand
-from .stg_object_remove_label import StGitlabMergeRemoveLabelCommand
+from .stg_object_add_label import StGitlabObjectAddLabelCommand
+from .stg_object_remove_label import StGitlabObjectRemoveLabelCommand
 from .stg_object_change_assigned import StGitlabObjectChangeAssignedCommand
 from .stg_object_change_description import StGitlabObjectChangeDescriptionCommand
 from .stg_object_change_description import StGitlabObjectChangeDescriptionDoneCommand
@@ -41,6 +40,7 @@ from .stg_project_objects_list import StGitlabProjectObjectsListCommand
 from .stg_project_objects_list import StGitlabProjectIssuesListCommand
 from .stg_project_objects_list import StGitlabProjectMergesListCommand
 from .stg_project_objects_list import StGitlabProjectPipelinesListCommand
+from .stg_project_objects_list import StGitlabProjectBranchesListCommand
 from .stg_project_objects_list_action import StGitlabProjectObjectsListActionCommand
 from .stg_merge import StGitlabMergeCommand
 from .stg_merge_toggle_wip import StGitlabMergeToggleWipCommand
@@ -48,26 +48,26 @@ from .stg_merge_accept import StGitlabMergeAcceptCommand
 from .stg_pipeline import StGitlabPipelineCommand
 from .stg_pipeline import StGitlabPipelineCancelCommand
 from .stg_pipeline import StGitlabPipelineRetryCommand
+from .stg_branch import StGitlabBranchCommand
+from .stg_branch import StGitlabBranchToggleProtectCommand
+from .stg_project_branches import StGitlabProjectBranchesCommand
 from .stg_view_show_labels import StGitlabViewShowLabelsCommand
 from .stg_util_open_url import StGitlabUtilOpenUrlCommand
 
 __all__ = [
+    'StGitlabResetCommand',
     'StGitlabEditboxSaveCommand',
     'StGitlabEditboxCancelCommand',
     'StGitlabIssueCommand',
     'StGitlabIssueFetcherCommand',
     'StGitlabIssueCreateCommand',
     'StGitlabIssueDeleteCommand',
-    'StGitlabIssueAddLabelCommand',
-    'StGitlabIssueRemoveLabelCommand',
     'StGitlabChangeProjectCommand',
     'StGitlabIssueCreateBranchCommand',
 
     'StGitlabMergeCommand',
     'StGitlabMergeToggleWipCommand',
     'StGitlabMergeFetcherCommand',
-    'StGitlabMergeAddLabelCommand',
-    'StGitlabMergeRemoveLabelCommand',
     'StGitlabMergeAcceptCommand',
 
     'StGitlabPipelineCommand',
@@ -75,7 +75,12 @@ __all__ = [
     'StGitlabPipelineRetryCommand',
     'StGitlabPipelineFetcherCommand',
 
+    'StGitlabBranchCommand',
+    'StGitlabBranchToggleProtectCommand',
+
     'StGitlabFetcherCommand',
+    'StGitlabObjectAddLabelCommand',
+    'StGitlabObjectRemoveLabelCommand',
     'StGitlabObjectChangeAnyCommand',
     'StGitlabObjectAddNoteCommand',
     'StGitlabObjectAddNoteDoneCommand',
@@ -97,9 +102,11 @@ __all__ = [
     'StGitlabProjectIssuesListCommand',
     'StGitlabProjectMergesListCommand',
     'StGitlabProjectPipelinesListCommand',
+    'StGitlabProjectBranchesListCommand',
     'StGitlabProjectIssuesCommand',
     'StGitlabProjectMergesCommand',
     'StGitlabProjectPipelinesCommand',
+    'StGitlabProjectBranchesCommand',
     'StGitlabProjectListFilterCommand',
     'StGitlabProjectListRefreshCommand',
     'StGitlabProjectListPageCommand',

@@ -19,21 +19,14 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
             ]
         )
 
-        screen = self.view.settings().get('screen', None)
-        if screen == 'st_gitlab_issue':
-            object_name = 'issue'
-        elif screen == 'st_gitlab_merge':
-            object_name = 'merge'
-        elif screen == 'st_gitlab_pipeline':
-            object_name = 'pipeline'
-
+        object_name = self.view.settings().get('object_name', None)
         is_unselectable = self.view.settings().get('st_gitlab_unselectable', True)
         if not is_unselectable:
             self.view.settings().set('st_gitlab_unselectable', True)
             self.view.sel().add(self.view.line(self.view.sel()[0].end()))
 
         # header_pattern = '^##\s.*$'
-        header_pattern = '^#{2,3}\s.*$'
+        header_pattern = r'^#{2,3}\s.*$'
         selected_header_str = ''
         try:
             headers = []
@@ -52,7 +45,6 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
                 self.view.run_command('st_gitlab_object_change_description')
             elif selected_header_str.startswith('Note:'):
                 note_id = selected_header_str.split()[0].split(':')[-1]
-                print(note_id)
                 self.view.run_command('st_gitlab_object_change_note', {'note_id': note_id})
             elif selected_header_str.startswith('Notes'):
                 self.view.run_command('st_gitlab_object_add_note')
@@ -69,7 +61,7 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
                     if colname == col['colname']:
                         col_prop = col['prop']
                         if col_prop == 'iid':
-                            self.view.run_command('st_gitlab_%s_go' % object_name)
+                            self.view.run_command('st_gitlab_object_in_browser')
                         elif col_prop == 'title':
                             self.view.run_command('st_gitlab_object_change_title')
                         elif col_prop == 'milestone':
@@ -81,6 +73,6 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
                         elif col_prop == 'assignee':
                             self.view.run_command('st_gitlab_object_change_assigned')
                         elif col_prop == 'labels':
-                            self.view.run_command('st_gitlab_%s_add_label' % object_name)
+                            self.view.run_command('st_gitlab_object_add_label')
                         else:
                             sublime.message_dialog('Not implemented in this version')

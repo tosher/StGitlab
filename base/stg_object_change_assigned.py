@@ -22,14 +22,6 @@ class StGitlabObjectChangeAssignedCommand(sublime_plugin.TextCommand):
 
     def assign(self, user_id):
         gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen', None)
-        if screen == 'st_gitlab_issue':
-            object_name = 'issue'
-            obj = gitlab.issue()
-        elif screen == 'st_gitlab_merge':
-            object_name = 'merge'
-            obj = gitlab.merge()
-
-        obj.assignee_id = user_id
-        obj.save()
-        self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+        obj = gitlab.object_by_view()
+        gitlab.assignee_set(user_id, obj)
+        self.view.run_command('st_gitlab_object_refresh')

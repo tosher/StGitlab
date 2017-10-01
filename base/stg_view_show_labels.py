@@ -4,6 +4,7 @@
 import sublime
 import sublime_plugin
 from . import stg_utils as utils
+from .stg_html import StLabel
 
 
 class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
@@ -42,6 +43,7 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
             view.add_phantom(
                 'label',
                 sublime.Region(point, point),
-                '<span style="background-color:%s;border-radius:0.2rem;font-size:1rem;margin:0;font-family:Arial,Consolas,Tahoma;">&nbsp;%s&nbsp;</span>' % (lbl_color, label['label']),
+                # '<span style="background-color:%s;border-radius:0.2rem;font-size:1rem;margin:0;font-family:Arial,Consolas,Tahoma;">&nbsp;%s&nbsp;</span>' % (lbl_color, label['label']),
+                StLabel(label['label'], lbl_color).get(),
                 sublime.LAYOUT_INLINE
             )

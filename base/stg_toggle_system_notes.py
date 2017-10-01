@@ -14,6 +14,4 @@ class StGitlabToggleSystemNotesCommand(sublime_plugin.TextCommand):
             utils.stg_set_setting('show_system_notes', False)
         else:
             utils.stg_set_setting('show_system_notes', True)
-        gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen')
-        self.view.run_command('st_gitlab_object_refresh', {'object_name': gitlab.object_name_by_screen(screen)})
+        self.view.run_command('st_gitlab_object_refresh')

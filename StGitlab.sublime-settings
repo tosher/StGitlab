@@ -6,7 +6,7 @@
     "users_group_filter": [],  // group names
     "syntax_file": "Packages/StGitlab/StGitlab.sublime-syntax",
     "syntax_file_edit": "Packages/MarkdownEditing/Markdown.sublime-syntax",
-    "list_page_size": 40,
+    "list_page_size": 30,
     "show_system_notes": true,
     "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
     "datetime_format_show": "%d.%m.%Y %H:%M:%S",
@@ -14,6 +14,9 @@
     "label_char": "•",
     "issue_to_branch_transliterate_lang": "",
     "edit_height_percent": 45,
+    "image_max_width": 1200,
+    "char_right_arrow": "⮕", // →
+    "char_left_arrow": "⬅", // ←
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },
         { "prop": "title", "colname": "Title", "maxlen": 50},
@@ -37,6 +40,11 @@
         { "prop": "id", "colname": "#", "align": "right" },
         { "prop": "ref", "colname": "Branch"},
         { "prop": "status", "colname": "Status"}
+    ],
+    "branches_list_columns": [
+        { "prop": "name", "colname": "Branch"},
+        { "prop": "merged", "colname": "Merged?"},
+        { "prop": "protected", "colname": "Protected?"}
     ],
     "issue_view_columns": [
         { "prop": "iid", "colname": "ID"},

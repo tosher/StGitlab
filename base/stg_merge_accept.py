@@ -16,6 +16,6 @@ class StGitlabMergeAcceptCommand(sublime_plugin.TextCommand):
         merge = gitlab.merge()
         if project and merge:
             merge.merge()
-        self.view.run_command('st_gitlab_object_refresh', {'object_name': 'merge'})
+        self.view.run_command('st_gitlab_object_refresh')
 
 

@@ -17,9 +17,10 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         utils.stg_validate_screen(
             [
-                'st_gitlab_issues',
-                'st_gitlab_merges',
-                'st_gitlab_pipelines'
+                utils.object_commands.get('issue', {}).get('screen_list'),
+                utils.object_commands.get('merge', {}).get('screen_list'),
+                utils.object_commands.get('pipeline', {}).get('screen_list'),
+                utils.object_commands.get('branch', {}).get('screen_list')
             ]
         )
         self.filter_types = utils.filter_types

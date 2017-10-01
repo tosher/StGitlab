@@ -1,18 +1,20 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sys
-import os
 # import sublime
 import sublime_plugin
 from . import stg_utils as utils
+from .stg_user import UserSelectPanel
+
 
 class StGitlabProjectObjectsListActionCommand(sublime_plugin.TextCommand):
     valid_actions = [
-        'set_label',
+        'add_label',
         'del_label',
         'set_milestone',
-        'del_milestone'
+        'del_milestone',
+        'set_assignee',
+        'del_assignee'
     ]
 
     def run(self, edit, action):
@@ -31,17 +33,7 @@ class StGitlabProjectObjectsListActionCommand(sublime_plugin.TextCommand):
             funcobj = getattr(self, self.action)
             funcobj(obj_ids)
 
-    def get_label(self, on_done):
-        screen = self.view.settings().get('screen', None)
-        labels = self.gitlab.labels(all=True)
-        labels_names = [lab.name for lab in labels]
-        if screen == 'st_gitlab_issues':
-            object_name = 'issue'
-        elif screen == 'st_gitlab_merges':
-            object_name = 'merge'
-        self.view.window().show_quick_panel(labels_names, on_done)
-
-    def set_label(self, obj_ids):
+    def add_label(self, obj_ids):
         self.process_label(obj_ids)
 
     def del_label(self, obj_ids):
@@ -49,42 +41,66 @@ class StGitlabProjectObjectsListActionCommand(sublime_plugin.TextCommand):
 
     def process_label(self, obj_ids):
         def on_done(i):
-            if self.action == 'set_label':
-                set_label(i)
-            elif self.action == 'del_label':
-                del_label(i)
-
-        def set_label(i):
             if i < 0:
                 return
             for obj_id in obj_ids:
-                obj = self.gitlab.object_by_screen(object_name, oid=obj_id)
-                obj_labels = obj.attributes.get('labels', [])
-                if not labels_names[i] in obj_labels:
-                    obj_labels.append(labels_names[i])
-                obj.save(labels=','.join(obj_labels))
+                obj = self.gitlab.object_by_view(oid=obj_id)
+                if self.action == 'add_label':
+                    self.gitlab.label_add(labels_names[i], obj)
+                elif self.action == 'del_label':
+                    self.gitlab.label_del(labels_names[i], obj)
             self.view.run_command('st_gitlab_project_list_refresh')
 
-
-        def del_label(i):
-            if i < 0:
-                return
-            for obj_id in obj_ids:
-                if screen == 'st_gitlab_issues':
-                    obj = self.gitlab.issue(oid=obj_id)
-                elif screen == 'st_gitlab_merges':
-                    obj = self.gitlab.merge(oid=obj_id)
-                obj_labels = obj.attributes.get('labels', [])
-                if labels_names[i] in obj_labels:
-                    obj_labels.remove(labels_names[i])
-                obj.save(labels=','.join(obj_labels))
-            self.view.run_command('st_gitlab_project_list_refresh')
-
-        screen = self.view.settings().get('screen', None)
         labels = self.gitlab.labels(all=True)
         labels_names = [lab.name for lab in labels]
-        if screen == 'st_gitlab_issues':
-            object_name = 'issue'
-        elif screen == 'st_gitlab_merges':
-            object_name = 'merge'
         self.view.window().show_quick_panel(labels_names, on_done)
+
+    def set_milestone(self, obj_ids):
+        self.process_milestone(obj_ids)
+
+    def del_milestone(self, obj_ids):
+        self.process_milestone(obj_ids)
+
+    def process_milestone(self, obj_ids):
+        def on_done(i):
+            if i < 0:
+                return
+            for obj_id in obj_ids:
+                obj = self.gitlab.object_by_view(oid=obj_id)
+                if self.action == 'set_milestone':
+                    self.gitlab.milestone_set(milestones[i].id, obj)
+                elif self.action == 'del_milestone':
+                    self.gitlab.milestone_del(obj)
+            self.view.run_command('st_gitlab_project_list_refresh')
+
+        milestones = self.gitlab.milestones(state='active')
+        mile_names = [mile.title for mile in milestones]
+        if self.action == 'del_milestone':
+            on_done(0)
+        else:
+            self.view.window().show_quick_panel(mile_names, on_done)
+
+    def set_assignee(self, obj_ids):
+        self.process_assignee(obj_ids)
+
+    def del_assignee(self, obj_ids):
+        self.process_assignee(obj_ids)
+
+    def process_assignee(self, obj_ids):
+        def on_done(i):
+            if i < 0:
+                return
+            for obj_id in obj_ids:
+                obj = self.gitlab.object_by_view(oid=obj_id)
+                if self.action == 'set_assignee':
+                    self.gitlab.assignee_set(i, obj)
+                elif self.action == 'del_assignee':
+                    self.gitlab.assignee_del(obj)
+            self.view.run_command('st_gitlab_project_list_refresh')
+
+        if self.action == 'del_assignee':
+            on_done(0)
+        else:
+            panel = UserSelectPanel(callback=on_done)
+            panel.show_input()
+

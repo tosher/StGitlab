@@ -16,7 +16,7 @@ class StGitlabObjectChangeStateCommand(sublime_plugin.TextCommand):
 
             obj.state_event = self.state_events[state_idx]
             obj.save()
-            self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+            self.view.run_command('st_gitlab_object_refresh')
 
         utils.stg_validate_screen(
             [
@@ -26,12 +26,5 @@ class StGitlabObjectChangeStateCommand(sublime_plugin.TextCommand):
         )
 
         gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen', None)
-        if screen == 'st_gitlab_issue':
-            object_name = 'issue'
-            obj = gitlab.issue()
-        elif screen == 'st_gitlab_merge':
-            object_name = 'merge'
-            obj = gitlab.merge()
-
+        obj = gitlab.object_by_view()
         self.view.window().show_quick_panel(self.states, on_done)

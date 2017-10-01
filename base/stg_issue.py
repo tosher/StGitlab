@@ -41,9 +41,7 @@ class StGitlabIssueCreateCommand(sublime_plugin.TextCommand):
 class StGitlabIssueCommand(StGitlabObjectCommand):
 
     INPUT_STR = 'Issue ID'
-    SCREEN_LIST = 'st_gitlab_issues'
-    SCREEN_VIEW = 'st_gitlab_issue'
-    FETCHER = 'st_gitlab_issue_fetcher'
+    object_name = 'issue'
 
     def get_issue(self):
         return self.gitlab.issue(project_id=self.project_id, oid=self.obj_id)

@@ -6,6 +6,8 @@ import requests
 import sublime
 from datetime import datetime
 from .stg_gitlab import StGitlab
+from ..libs import dimensions
+
 
 filter_types = {
     'Author': 'author_id',
@@ -16,6 +18,37 @@ filter_types = {
     'Search': 'search',
     'Page number': 'page',
     'Reset filters': None
+}
+
+object_commands = {
+    'issue': {
+        'screen_view': 'st_gitlab_issue',
+        'screen_list': 'st_gitlab_issues',
+        'view': 'st_gitlab_issue',
+        'list': 'st_gitlab_project_issues_list',
+        'fetch': 'st_gitlab_issue_fetcher'
+    },
+    'merge': {
+        'screen_view': 'st_gitlab_merge',
+        'screen_list': 'st_gitlab_merges',
+        'view': 'st_gitlab_merge',
+        'list': 'st_gitlab_project_merges_list',
+        'fetch': 'st_gitlab_merge_fetcher'
+    },
+    'pipeline': {
+        'screen_view': 'st_gitlab_pipeline',
+        'screen_list': 'st_gitlab_pipelines',
+        'view': 'st_gitlab_pipeline',
+        'list': 'st_gitlab_project_pipelines_list',
+        'fetch': 'st_gitlab_pipeline_fetcher'
+    },
+    'branch': {
+        'screen_view': None,
+        'screen_list': 'st_gitlab_branches',
+        'view': None,
+        'list': 'st_gitlab_project_branches_list',
+        'fetch': None
+    }
 }
 
 gl = StGitlab()
@@ -122,16 +155,16 @@ def stg_get_property_value(obj, prop):
 
 def stg_msg_labels(msg, project_id):
     def get_label(matched):
-        label_id = matched.group(1)
+        label_id = matched.group(2)
         labs = [lab.name for lab in labels if lab.id == int(label_id)]
         if labs:
             return '%(lchr)s%(lname)s%(lchr)s' % {'lchr': lbl_chr, 'lname': labs[0]}
         return '~%s' % label_id
 
     lbl_chr = stg_get_setting('label_char')
-    label_pattern = r'^|\s\~(\d+)'
+    label_pattern = r'(^|\s)\~(\d+)'
     m = re.search(label_pattern, msg)
-    if not m or not m.group(1):
+    if not m or not m.group(2):
         return msg
 
     gitlab = gl.get()
@@ -141,9 +174,12 @@ def stg_msg_labels(msg, project_id):
 
 
 def stg_get_image(url):
+    max_width = stg_get_setting('image_max_width')
     response = requests.get(url)
+    dims = dimensions.get_dimensions_from_stream(response.content)
+    w, h = stg_image_scale(dims[0], dims[1], max_width)
     img_base64 = "data:" + response.headers['Content-Type'] + ";" + "base64," + str(base64.b64encode(response.content).decode("utf-8"))
-    return img_base64
+    return img_base64, w, h
 
 
 def stg_show_images(view):
@@ -157,9 +193,28 @@ def stg_show_images(view):
             gitlab = gl.get()
             project = gitlab.project()
             img_url = '/'.join([project.web_url.rstrip('/'), img_url.lstrip('/')])
+        img_data, w, h = stg_get_image(img_url)
         view.add_phantom(
             'image',
             sublime.Region(image_r.b + 1, image_r.b + 2),
-            '<img src="%s"><br><br>' % (stg_get_image(img_url)),
+            '<img src="%s" width="%s" height="%s"><br><br>' % (img_data, w, h),
             sublime.LAYOUT_BLOCK
         )
+
+
+def stg_image_scale(width, height, max_width):
+    width = float(width)
+    height = float(height)
+    scaled = False
+    if not max_width:
+        return width, height
+
+    if width > max_width:
+        koeff = width / max_width
+        width = max_width
+        height = height / koeff
+        scaled = True
+
+    if scaled:
+        return int(width), int(height)
+    return width, height

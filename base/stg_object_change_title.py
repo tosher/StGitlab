@@ -13,7 +13,7 @@ class StGitlabObjectChangeTitleCommand(sublime_plugin.TextCommand):
             if text is not None:
                 obj.title = text
                 obj.save()
-                self.view.run_command('st_gitlab_object_refresh', {'object_name': object_name})
+                self.view.run_command('st_gitlab_object_refresh')
 
         utils.stg_validate_screen(
             [
@@ -23,12 +23,5 @@ class StGitlabObjectChangeTitleCommand(sublime_plugin.TextCommand):
         )
 
         gitlab = utils.gl.get()
-        screen = self.view.settings().get('screen', None)
-        if screen == 'st_gitlab_issue':
-            object_name = 'issue'
-            obj = gitlab.issue()
-        elif screen == 'st_gitlab_merge':
-            object_name = 'merge'
-            obj = gitlab.merge()
-
+        obj = gitlab.object_by_view()
         self.view.window().show_input_panel("Title:", obj.title, on_done, None, None)

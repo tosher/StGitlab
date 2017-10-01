@@ -33,7 +33,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         self.view.show(0)
 
     def show_shortcuts(self):
-        StShortcutsMenu(self.view, self.shortcuts, None)
+        StShortcutsMenu(self.view, self.shortcuts)
 
     def show_header(self):
         header = '\n'
@@ -82,12 +82,19 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
 class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
     shortcuts = OrderedDict([
+        ('n', 'new'),
         ('Enter', 'open'),
         ('F5', 'refresh'),
         ('Delete', 'delete'),
         ('f', 'filter'),
-        ('Shift + ←', 'prev. page'),
-        ('Shift + →', 'next page')
+        ('l', 'add label'),
+        ('Alt+l', 'delete label'),
+        ('m', 'set milestone'),
+        ('Alt+m', 'unset milestone'),
+        ('a', 'set assignee'),
+        ('Alt+a', 'unset assignee'),
+        ('Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page'),
+        ('Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page')
     ])
 
     def get_objects(self):
@@ -100,10 +107,16 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
 class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
     shortcuts = OrderedDict([
         ('Enter', 'open'),
-        ('r', 'refresh'),
-        ('F5', 'filter'),
-        ('Shift + ←', 'prev. page'),
-        ('Shift + →', 'next page')
+        ('F5', 'refresh'),
+        ('f', 'filter'),
+        ('l', 'add label'),
+        ('Alt+l', 'delete label'),
+        ('m', 'set milestone'),
+        ('Alt+m', 'unset milestone'),
+        ('a', 'set assignee'),
+        ('Alt+a', 'unset assignee'),
+        ('Shift+←', 'prev. page'),
+        ('Shift+→', 'next page')
     ])
 
     def get_objects(self):
@@ -120,8 +133,8 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
         ('b', 'retry'),
         ('c', 'cancel'),
         ('f', 'filter'),
-        ('Shift + ←', 'prev. page'),
-        ('Shift + →', 'next page')
+        ('Shift+←', 'prev. page'),
+        ('Shift+→', 'next page')
     ])
 
     def get_objects(self):
@@ -129,3 +142,22 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
 
     def get_columns_properties(self):
         return utils.stg_get_setting('pipelines_list_columns', {})
+
+
+class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
+    shortcuts = OrderedDict([
+        ('F5', 'refresh'),
+        ('p', 'toggle propect'),
+        ('f', 'filter'),
+        ('Shift+←', 'prev. page'),
+        ('Shift+→', 'next page')
+    ])
+
+    def get_objects(self):
+        return self.gitlab.branches(**self.query_params)
+
+    def get_columns_properties(self):
+        return utils.stg_get_setting('branches_list_columns', {})
+
+    def show_shortcuts(self):
+        StShortcutsMenu(self.view, self.shortcuts, cols=None)

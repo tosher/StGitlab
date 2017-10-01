@@ -31,17 +31,26 @@ class StGitlab(object):
     def __init__(self):
         pass
 
-    def get(self):
-        self.view = sublime.active_window().active_view()
+    def reset(self):
+        self.conn = None
+        self.clabels = None
+        self.cprojects = None
+        self.cproject = {}
+        self.cusers = None
+        self.cgroups = None
+        self.cgroup = {}
+
+    def get(self, view=None):
+        self.view = sublime.active_window().active_view() if view is None else view
         if not self.conn:
             self.conn = StGitlab.connect()
         return self
 
-    def object_name_by_screen(self, screen):
-        return screen.split('_')[-1]
+    def view_object_name(self):
+        return self.view.settings().get('object_name', None)
 
-    def object_by_screen(self, screen, **kwargs):
-        obj_name = self.object_name_by_screen(screen)
+    def object_by_view(self, **kwargs):
+        obj_name = self.view_object_name()
         if hasattr(self, obj_name):
             funcobj = getattr(self, obj_name)
             return funcobj(**kwargs)
@@ -90,6 +99,15 @@ class StGitlab(object):
         else:
             return self.conn.users.list(**kwargs)
 
+    def assignee_set(self, oid, obj):
+        obj.assignee_id = oid
+        obj.save()
+
+    def assignee_del(self, obj):
+        # obj.assignee_id = None  # not works
+        obj.assignee_ids = []
+        obj.save()
+
     def projects(self, **kwargs):
         if len(kwargs.keys()) == 1 and kwargs.get('all', False):
             if not self.cprojects:
@@ -123,8 +141,27 @@ class StGitlab(object):
         else:
             return self.project(project_id).labels.list(**kwargs)
 
+    def label_add(self, label, obj):
+        obj_labels = obj.attributes.get('labels', [])
+        if label not in obj_labels:
+            obj_labels.append(label)
+        obj.save(labels=','.join(obj_labels))
+
+    def label_del(self, label, obj):
+        obj_labels = obj.attributes.get('labels', [])
+        if label in obj_labels:
+            obj_labels.remove(label)
+        obj.save(labels=','.join(obj_labels))
+
     def milestones(self, project_id=None, **kwargs):
         return self.project(project_id).milestones.list(**kwargs)
+
+    def milestone_set(self, oid, obj):
+        obj.milestone_id = oid
+        obj.save()
+
+    def milestone_del(self, obj):
+        self.milestone_set(None, obj)
 
     def branch(self, project_id=None, oid=None):
         return self.project(project_id).branches.get(oid)

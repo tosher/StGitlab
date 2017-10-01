@@ -1,6 +1,7 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
+import re
 import sublime
 import sublime_plugin
 from .base import *
@@ -16,11 +17,11 @@ class StGitlabInsertTextCommand(sublime_plugin.TextCommand):
 
 # ### Events ###
 class StGitlabLoad(sublime_plugin.EventListener):
-    objects = ['issue', 'merge', 'pipeline']
+    objects = ['issue', 'merge', 'pipeline', 'branch']
 
     def is_list_screen(self, view):
         for obj in self.objects:
-            if view.settings().get('screen', None) == 'st_gitlab_%ss' % obj:
+            if view.settings().get('screen', None) == utils.object_commands.get(obj, {}).get('screen_list'):
                 return True
         return False
 
@@ -28,7 +29,8 @@ class StGitlabLoad(sublime_plugin.EventListener):
         if self.is_list_screen(view):
             return True
         for obj in self.objects:
-            if view.settings().get('screen', None) == 'st_gitlab_%s' % obj and view.settings().get('st_gitlab_unselectable', True):
+            if (view.settings().get('screen', None) == utils.object_commands.get(obj, {}).get('screen_view') and
+                    view.settings().get('st_gitlab_unselectable', True)):
                 return True
         return False
 
@@ -57,19 +59,51 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
         screen = self.view.settings().get('screen')
         if not screen:
             return
-        if screen == 'st_gitlab_issue':
+        if screen == utils.object_commands.get('issue', {}).get('screen_view'):
             StShortcutsMenu(self.view, StGitlabIssueFetcherCommand.shortcuts)
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
             utils.stg_show_images(self.view)
-        elif screen == 'st_gitlab_merge':
+        elif screen == utils.object_commands.get('merge', {}).get('screen_view'):
             StShortcutsMenu(self.view, StGitlabMergeFetcherCommand.shortcuts)
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
             utils.stg_show_images(self.view)
-        elif screen == 'st_gitlab_pipeline':
+        elif screen == utils.object_commands.get('pipeline', {}).get('screen_view'):
             StShortcutsMenu(self.view, StGitlabPipelineFetcherCommand.shortcuts)
-        elif screen == 'st_gitlab_issues':
-            StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts, cols=None)
-        elif screen == 'st_gitlab_merges':
-            StShortcutsMenu(self.view, StGitlabProjectMergesListCommand.shortcuts, cols=None)
-        elif screen == 'st_gitlab_issues':
-            StShortcutsMenu(self.view, StGitlabProjectPipelinesListCommand.shortcuts, cols=None)
+        elif screen == utils.object_commands.get('issue', {}).get('screen_list'):
+            StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts)
+        elif screen == utils.object_commands.get('merge', {}).get('screen_list'):
+            StShortcutsMenu(self.view, StGitlabProjectMergesListCommand.shortcuts)
+        elif screen == utils.object_commands.get('pipeline', {}).get('screen_list'):
+            StShortcutsMenu(self.view, StGitlabProjectPipelinesListCommand.shortcuts)
+        elif screen == utils.object_commands.get('branch', {}).get('screen_list'):
+            StShortcutsMenu(self.view, StGitlabProjectBranchesListCommand.shortcuts, cols=None)
+
+    def on_query_completions(self, prefix, locations):
+        if self.view.settings().get('screen') == 'st_gitlab_editbox':
+            gitlab = utils.gl.get()
+            pattern_issue = re.compile(r'(^|.*\s)(\#)(\d+)?')
+            completions = []
+            cursor_position = locations[0]
+            chars_before = self.view.substr(sublime.Region(cursor_position - 10, cursor_position))
+            m = pattern_issue.match(chars_before)
+            if m and m.group(2):
+                issues = gitlab.issues()
+                for issue in issues:
+                    if m.group(3) and not str(issue.iid).startswith(m.group(3)):
+                        continue
+                    completions.append(('%s %s' % (issue.iid, issue.title), str(issue.iid)))
+            if completions:
+                return completions
+
+            pattern_merge = re.compile(r'(^|.*\s)(\!)(\d+)?')
+            m = pattern_merge.match(chars_before)
+            if m and m.group(2):
+                merges = gitlab.merges()
+                for merge in merges:
+                    if m.group(3) and not str(merge.iid).startswith(m.group(3)):
+                        continue
+                    completions.append(('%s %s' % (merge.iid, merge.title), str(merge.iid)))
+            if completions:
+                return completions
+
+        return []
