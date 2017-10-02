@@ -24,7 +24,6 @@ class StGitlabProjectListRefreshCommand(sublime_plugin.TextCommand):
             self.view.settings().set('query_params', query_params)
             title = self.view.name()
             self.view.set_read_only(False)
-            self.view.erase_phantoms('shortcuts')
             self.view.erase(edit, sublime.Region(0, self.view.size()))
             object_name = self.view.settings().get('object_name')
             cmd = utils.object_commands.get(object_name, {}).get('list')

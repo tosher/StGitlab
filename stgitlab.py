@@ -60,23 +60,51 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
         if not screen:
             return
         if screen == utils.object_commands.get('issue', {}).get('screen_view'):
-            StShortcutsMenu(self.view, StGitlabIssueFetcherCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabIssueFetcherCommand.shortcuts,
+                cols=StGitlabIssueFetcherCommand.cols
+            )
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
             utils.stg_show_images(self.view)
         elif screen == utils.object_commands.get('merge', {}).get('screen_view'):
-            StShortcutsMenu(self.view, StGitlabMergeFetcherCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabMergeFetcherCommand.shortcuts,
+                cols=StGitlabMergeFetcherCommand.cols
+            )
             StGitlabViewShowLabelsCommand.pretty_labels(self.view)
             utils.stg_show_images(self.view)
         elif screen == utils.object_commands.get('pipeline', {}).get('screen_view'):
-            StShortcutsMenu(self.view, StGitlabPipelineFetcherCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabPipelineFetcherCommand.shortcuts,
+                cols=StGitlabPipelineFetcherCommand.cols
+            )
         elif screen == utils.object_commands.get('issue', {}).get('screen_list'):
-            StShortcutsMenu(self.view, StGitlabProjectIssuesListCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabProjectIssuesListCommand.shortcuts,
+                cols=StGitlabProjectIssuesListCommand.cols
+            )
         elif screen == utils.object_commands.get('merge', {}).get('screen_list'):
-            StShortcutsMenu(self.view, StGitlabProjectMergesListCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabProjectMergesListCommand.shortcuts,
+                cols=StGitlabProjectMergesListCommand.cols
+            )
         elif screen == utils.object_commands.get('pipeline', {}).get('screen_list'):
-            StShortcutsMenu(self.view, StGitlabProjectPipelinesListCommand.shortcuts)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabProjectPipelinesListCommand.shortcuts,
+                cols=StGitlabProjectPipelinesListCommand.cols
+            )
         elif screen == utils.object_commands.get('branch', {}).get('screen_list'):
-            StShortcutsMenu(self.view, StGitlabProjectBranchesListCommand.shortcuts, cols=None)
+            StShortcutsMenu(
+                self.view,
+                shortcuts=StGitlabProjectBranchesListCommand.shortcuts,
+                cols=StGitlabProjectBranchesListCommand.cols
+            )
 
     def on_query_completions(self, prefix, locations):
         if self.view.settings().get('screen') == 'st_gitlab_editbox':

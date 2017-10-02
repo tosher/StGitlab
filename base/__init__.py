@@ -50,6 +50,7 @@ from .stg_pipeline import StGitlabPipelineCancelCommand
 from .stg_pipeline import StGitlabPipelineRetryCommand
 from .stg_branch import StGitlabBranchCommand
 from .stg_branch import StGitlabBranchToggleProtectCommand
+from .stg_branch import StGitlabBranchCreateMergeCommand
 from .stg_project_branches import StGitlabProjectBranchesCommand
 from .stg_view_show_labels import StGitlabViewShowLabelsCommand
 from .stg_util_open_url import StGitlabUtilOpenUrlCommand
@@ -77,6 +78,7 @@ __all__ = [
 
     'StGitlabBranchCommand',
     'StGitlabBranchToggleProtectCommand',
+    'StGitlabBranchCreateMergeCommand',
 
     'StGitlabFetcherCommand',
     'StGitlabObjectAddLabelCommand',

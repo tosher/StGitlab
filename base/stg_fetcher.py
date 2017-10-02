@@ -17,6 +17,7 @@ BLOCK_MD_LINE_STOP = '└%s\n' % ('─' * 79)
 class StGitlabFetcherCommand(sublime_plugin.TextCommand):
 
     shortcuts = []
+    cols = None
     obj_name = ''
     obj_name_sub = ''
 
@@ -37,7 +38,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             sublime.status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
 
     def get_shortcuts(self, view):
-        StShortcutsMenu(view, self.shortcuts)
+        StShortcutsMenu(view, shortcuts=self.shortcuts, cols=self.cols)
 
     def get_title(self, obj):
         return obj.title
@@ -173,31 +174,42 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
 class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('F5', 'refresh'),
-        ('F2', 'change title'),
-        ('F7', 'create branch'),
-        ('d', 'change description'),
-        ('c', 'add note'),
-        ('s', 'change state'),
-        ('m', 'change milestone'),
-        ('l', 'label add'),
-        ('Alt+l', 'label remove'),
-        ('a', 'assing to'),
-        ('g', 'open in browser'),
-        ('p', 'move to project'),
-        ('u', 'toggle select mode'),
-        ('n', 'toggle system notes'),
-        ('w', 'open url'),
-        ('Enter', 'change'),
-        ('Delete', 'delete')
+        ('refresh', ['F5', 'refresh']),
+        ('title', ['F2', 'change title']),
+        ('branch', ['F7', 'create branch']),
+        ('descr', ['d', 'change description']),
+        ('addnote', ['c', 'add note']),
+        ('chnote', ['Alt+c', 'change note']),
+        ('state', ['s', 'set state']),
+        ('setmile', ['m', 'set milestone']),
+        ('labeladd', ['l', 'label add']),
+        ('labeldel', ['Alt+l', 'label remove']),
+        ('assign', ['a', 'assing to']),
+        ('browser', ['g', 'open in browser']),
+        ('move', ['p', 'move to project']),
+        ('togglemode', ['Alt+u', 'toggle select mode']),
+        ('togglenotes', ['Alt+r', 'toggle system notes']),
+        ('openlink', ['w', 'open link']),
+        ('change', ['Enter', 'change']),
+        ('delete', ['Delete', 'delete'])
     ])
+
+    cols = [
+        ['refresh', 'title', 'descr', 'state'],
+        ['addnote', 'labeladd', 'setmile', 'assign'],
+        ['chnote', 'labeldel', 'togglemode', 'togglenotes'],
+        ['browser', 'openlink', 'move', 'branch'],
+        ['delete', 'change']
+    ]
+
     obj_name = 'Issue'
     obj_name_sub = 'issue'
 
     def get_object_custom(self, obj):
         branches = self.gitlab.branches()
+        content = ''
         if branches:
-            content = '## Related branches\n'
+            content += '## Related branches\n'
             i = 1
             for br in branches:
                 if br.name.startswith(str(obj.iid)):
@@ -208,40 +220,55 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
 class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('F5', 'refresh'),
-        ('F2', 'change title'),
-        ('d', 'change description'),
-        ('c', 'add note'),
-        ('s', 'change state'),
-        ('m', 'change milestone'),
-        ('l', 'label add'),
-        ('Alt+l', 'label remove'),
-        ('a', 'assing to'),
-        ('g', 'open in browser'),
-        ('w', 'toggle WIP'),
-        ('m', 'accept'),
-        ('u', 'toggle select mode'),
-        ('n', 'toggle system notes'),
-        ('w', 'open url'),
-        ('Enter', 'change')
+        ('refresh', ['F5', 'refresh']),
+        ('title', ['F2', 'change title']),
+        ('descr', ['d', 'change description']),
+        ('addnote', ['c', 'add note']),
+        ('chnote', ['Alt+c', 'change note']),
+        ('state', ['s', 'set state']),
+        ('setmile', ['m', 'set milestone']),
+        ('labeladd', ['l', 'label add']),
+        ('labeldel', ['Alt+l', 'label remove']),
+        ('assign', ['a', 'assing to']),
+        ('browser', ['g', 'open in browser']),
+        ('wip', ['i', 'toggle wip']),
+        ('togglemode', ['Alt+u', 'toggle select mode']),
+        ('togglenotes', ['Alt+r', 'toggle system notes']),
+        ('openlink', ['w', 'open link']),
+        ('change', ['Enter', 'change']),
+        ('accept', ['p', 'accept'])
     ])
+
+    cols = [
+        ['refresh', 'title', 'descr', 'state'],
+        ['addnote', 'labeladd', 'setmile', 'assign'],
+        ['chnote', 'labeldel', 'togglemode', 'togglenotes'],
+        ['browser', 'openlink', 'wip', 'accept'],
+        ['change']
+    ]
+
     obj_name = 'Merge-request'
     obj_name_sub = 'merge'
 
     def get_object_custom(self, obj):
         issues = obj.closes_issues()
         commits = obj.commits()
+        content = ''
         if issues or commits:
-            content = '## Data\n'
+            content += '## Data\n'
             content += BLOCK_LINE
         if issues:
             content += '### Closes issues\n'
             for issue in issues:
                 content += '#%s **%s**\n' % (issue.iid, issue.title)
         if commits:
-            content += '\n### Commits\n'
+            content += '\n### Commits (%s)\n' % len(commits)
             for commit in commits:
-                content += '- **%s** by %s, id:%s\n' % (commit.title, commit.committer_name, commit.short_id)
+                content += '- By %s: [%s](%s)\n' % (
+                    commit.committer_name,
+                    commit.title,
+                    self.get_commit_url(commit)
+                )
         branch_name = obj.attributes.get('ref')
         pipelines = self.gitlab.pipelines(ref=branch_name)
         if pipelines:
@@ -256,17 +283,28 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
             content += BLOCK_LINE
         return content
 
+    def get_commit_url(self, commit):
+        return '%(url)s/%(project)s/commit/%(pid)s' % {
+            'url': utils.stg_get_setting('gitlab_url'),
+            'project': self.gitlab.project(oid=self.project_id).attributes.get('path_with_namespace'),
+            'pid': commit.id
+        }
+
 
 class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
 
     shortcuts = OrderedDict([
-        ('F5', 'refresh'),
-        ('b', 'retry'),
-        ('c', 'cancel'),
-        ('g', 'open in browser'),
-        ('u', 'toggle select mode'),
-        ('Enter', 'change')
+        ('refresh', ['F5', 'refresh']),
+        ('retry', ['b', 'retry']),
+        ('cancel', ['c', 'cancel']),
+        ('browser', ['g', 'open in browser']),
+        ('togglemode', ['Alt+u', 'toggle select mode'])
     ])
+
+    cols = [
+        ['refresh'], ['retry'], ['cancel'], ['browser'], ['togglemode']
+    ]
+
     obj_name = 'Pipeline'
     obj_name_sub = 'pipeline'
 

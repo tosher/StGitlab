@@ -26,7 +26,8 @@ class StGitlab(object):
         settings = sublime.load_settings("StGitlab.sublime-settings")
         url = settings.get('gitlab_url')
         api_key = settings.get('api_token')
-        return gitlab.Gitlab(url, api_key, api_version=4)
+        ssl_verify = settings.get('ssl_verify')
+        return gitlab.Gitlab(url, api_key, api_version=4, ssl_verify=ssl_verify)
 
     def __init__(self):
         pass

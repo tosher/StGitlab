@@ -33,3 +33,36 @@ class StGitlabBranchToggleProtectCommand(StGitlabBranchCommand):
         br.protect() if not br.protected else br.unprotect()
         self.refresh()
 
+
+class StGitlabBranchCreateMergeCommand(StGitlabBranchCommand):
+    INPUT_STR = 'Branch'
+
+    def process(self):
+        def on_done(name):
+            if not name:
+                return
+            project = self.gitlab.project(oid=self.project_id)
+            project.mergerequests.create({
+                'source_branch': branch.name,
+                'target_branch': 'master',
+                'title': name,
+                'description': description
+            })
+            self.refresh()
+
+        if not self.obj_id:
+            return
+
+        branch = self.get_branch()
+        issue_id = None
+        try:
+            issue_id = int(branch.name.split('-')[0])
+            issue = self.gitlab.issue(oid=issue_id)
+            title = 'Resolve: %s' % issue.title
+            description = 'Closes #%s\n' % issue_id
+        except Exception:
+            issue = None
+            title = ''
+            description = ''
+
+        self.view.window().show_input_panel("Title:", title, on_done, None, None)

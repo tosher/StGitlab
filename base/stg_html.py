@@ -8,6 +8,7 @@ import sublime
 
 class StLabel(object):
 
+    # label font-size 0.9 to base
     html_tpl = '''
     <html>
     <style>
@@ -19,8 +20,7 @@ class StLabel(object):
         color: %(color_inverted)s;
         background-color:var(--bg);
         font-family: Consolas, Menlo, Tahoma, Courier, monospace;
-        font-size: 0.7rem;
-        font-weight: bold;
+        font-size: 0.9rem;
         padding-top: 2px;
         padding-left: 6px;
         padding-right: 6px;
@@ -64,6 +64,7 @@ class StLabel(object):
 
 
 class StShortcutsMenu(object):
+    # keys font size is fixed
     html_tpl = '''
     <html>
         <style>
@@ -75,7 +76,7 @@ class StShortcutsMenu(object):
                 color: #444446;
                 background-color: #F3F3F4;
                 font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-                font-size: 0.7rem;
+                font-size: 8pt;
                 padding: 2px;
                 padding-left: 6px;
                 padding-right: 6px;
@@ -92,7 +93,7 @@ class StShortcutsMenu(object):
             span.kbdplus {
                 color: #DCDCDC;
                 font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-                font-size: 0.7rem;
+                font-size: 8pt;
                 border-radius: 2px;
                 padding: 2px;
                 padding-left: 4px;
@@ -101,7 +102,7 @@ class StShortcutsMenu(object):
 
             span.keyname {
                 color: #c0c0c0;
-                font-size: 0.8rem;
+                font-size: 8pt;
                 font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
                 padding: 0.2rem;
                 padding-left: 0.5rem;
@@ -109,7 +110,7 @@ class StShortcutsMenu(object):
             }
 
             li {
-                margin-left: -2.2rem;
+                margin-left: -40px;
                 padding: 0.2rem;
             }
         </style>
@@ -124,22 +125,23 @@ class StShortcutsMenu(object):
     html_key_tpl = '<span class="%(kbdclass)s">%(key)s</span>'
     html_key_plus = '<span class="kbdplus">+</span>'
 
-    def __init__(self, view, shortcuts, cols=5):
+    def __init__(self, view, shortcuts, cols=5, by_cols=None):
         if not shortcuts:
             return
 
-        if cols:
-            shortcuts_by_cols = [[] for _ in range(cols)]
+        if isinstance(cols, int):
+            cols_cnt = cols
+            cols = [[] for _ in range(cols_cnt)]
             for idx, k in enumerate(shortcuts.keys()):
-                shortcuts_by_cols[self.key_col(cols, idx)].append(k)
-        else:
-            shortcuts_by_cols = [[k for k in shortcuts.keys()]]
+                cols[self.key_col(cols_cnt, idx)].append(k)
+        elif cols is None:
+            cols = [[k for k in shortcuts.keys()]]
 
         cols_html = []
-        for col in shortcuts_by_cols:
+        for col in cols:
             keys = []
             for k in col:
-                line = self.html_shortcut_tpl % {'keyname': self.show_key(k), 'cmdname': shortcuts[k]}
+                line = self.html_shortcut_tpl % {'keyname': self.show_key(shortcuts[k][0]), 'cmdname': shortcuts[k][1]}
                 keys.append(line)
             col_html = self.html_col_tpl % {'list': ''.join(keys)}
             cols_html.append(col_html)

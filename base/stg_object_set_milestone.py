@@ -15,7 +15,7 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
                 gitlab.milestone_del(obj)
             else:
                 oid = milestones[index - 1].id
-                gitlab.milestone_add(oid, obj)
+                gitlab.milestone_set(oid, obj)
             self.view.run_command('st_gitlab_object_refresh')
 
         utils.stg_validate_screen(

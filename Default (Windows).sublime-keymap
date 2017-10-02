@@ -12,6 +12,12 @@
         ]
     },
     {
+        "keys": ["m"], "command": "st_gitlab_branch_create_merge",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_branches"}
+        ]
+    },
+    {
         "keys": ["escape"], "command": "st_gitlab_editbox_cancel",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_editbox"},
@@ -20,6 +26,12 @@
     },
     {
         "keys": ["c"], "command": "st_gitlab_object_add_note",
+        "context": [
+            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+        ]
+    },
+    {
+        "keys": ["alt+c"], "command": "st_gitlab_object_change_note",
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
         ]
@@ -187,25 +199,25 @@
         ]
     },
     {
-        "keys": ["u"], "command": "st_gitlab_toggle_selectable",
+        "keys": ["alt+u"], "command": "st_gitlab_toggle_selectable",
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline"]}
         ]
     },
     {
-        "keys": ["n"], "command": "st_gitlab_toggle_system_notes",
+        "keys": ["alt+r"], "command": "st_gitlab_toggle_system_notes",
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline"]}
         ]
     },
     {
-        "keys": ["w"], "command": "st_gitlab_merge_toggle_wip",
+        "keys": ["i"], "command": "st_gitlab_merge_toggle_wip",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_merge"}
         ]
     },
     {
-        "keys": ["m"], "command": "st_gitlab_merge_accept",
+        "keys": ["p"], "command": "st_gitlab_merge_accept",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_merge"}
         ]
