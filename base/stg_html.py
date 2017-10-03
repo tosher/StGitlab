@@ -8,6 +8,8 @@ import sublime
 
 class StLabel(object):
 
+    EDGE_LIGHT = 150
+
     # label font-size 0.9 to base
     html_tpl = '''
     <html>
@@ -50,7 +52,7 @@ class StLabel(object):
         rgb = (int(hexcolor[0:2], 16), int(hexcolor[2:4], 16), int(hexcolor[4:6], 16))
         pairs = list(itertools.combinations(rgb, 2))
         for pair in pairs:
-            if all([x < 127 for x in pair]):
+            if all([x < self.EDGE_LIGHT for x in pair]):
                 return '#fff'
         return '#000'
 

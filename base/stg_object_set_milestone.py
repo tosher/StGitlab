@@ -28,9 +28,10 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
         gitlab = utils.gl.get()
         milestones_menu = ['[Remove]']
         obj = gitlab.object_by_view()
-        milestones = gitlab.milestones(state='active')
+        # milestones = gitlab.milestones(state='active')
+        milestones = gitlab.milestones(all=True)
 
-        if milestones:
+        if milestones is not None:
             for mile in milestones:
                 milestones_menu.append(mile.title)
             sublime.set_timeout(lambda: sublime.active_window().show_quick_panel(milestones_menu, on_done), 1)
