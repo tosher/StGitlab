@@ -21,7 +21,8 @@
         "keys": ["escape"], "command": "st_gitlab_editbox_cancel",
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_editbox"},
-            { "key": "auto_complete_visible", "operator": "equal", "operand": false }
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true }
         ]
     },
     {
@@ -196,6 +197,12 @@
         "args": {"action": "del_label"},
         "context": [
             {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+        ]
+    },
+    {
+        "keys": ["x"], "command": "st_gitlab_object_check_box_toggle",
+        "context": [
+            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
         ]
     },
     {

@@ -9,14 +9,6 @@ from . import stg_utils as utils
 class StGitlabProjectListRefreshCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         cursor = self.view.sel()[0]
-        utils.stg_validate_screen(
-            [
-                utils.object_commands.get('issue', {}).get('screen_list'),
-                utils.object_commands.get('merge', {}).get('screen_list'),
-                utils.object_commands.get('pipeline', {}).get('screen_list'),
-                utils.object_commands.get('branch', {}).get('screen_list')
-            ]
-        )
         query_params = self.view.settings().get('query_params')
         per_page = utils.stg_get_setting('list_page_size')
         query_params['per_page'] = per_page
@@ -33,3 +25,17 @@ class StGitlabProjectListRefreshCommand(sublime_plugin.TextCommand):
             self.view.show(cursor)
             self.view.set_read_only(True)
 
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_list'),
+            utils.object_commands.get('merge', {}).get('screen_list'),
+            utils.object_commands.get('pipeline', {}).get('screen_list'),
+            utils.object_commands.get('branch', {}).get('screen_list')
+        ]
+
+        if screen in valid_screens:
+            return True
+        return False

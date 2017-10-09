@@ -19,12 +19,22 @@ class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
             sublime.status_message('Issue #%r was moved to %s' % (issue.id, project_new.name))
             self.view.run_command('st_gitlab_object_refresh')
 
-        utils.stg_validate_screen('st_gitlab_issue')
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         issue = gitlab.issue()
         if project and issue:
             panel = ProjectSelectPanel(callback=on_done)
             panel.show_input()
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
+
 

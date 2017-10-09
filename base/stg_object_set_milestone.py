@@ -18,13 +18,6 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
                 gitlab.milestone_set(oid, obj)
             self.view.run_command('st_gitlab_object_refresh')
 
-        utils.stg_validate_screen(
-            [
-                'st_gitlab_issue',
-                'st_gitlab_merge'
-            ]
-        )
-
         gitlab = utils.gl.get()
         milestones_menu = ['[Remove]']
         obj = gitlab.object_by_view()
@@ -35,3 +28,15 @@ class StGitlabObjectSetMilestoneCommand(sublime_plugin.TextCommand):
             for mile in milestones:
                 milestones_menu.append(mile.title)
             sublime.set_timeout(lambda: sublime.active_window().show_quick_panel(milestones_menu, on_done), 1)
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False

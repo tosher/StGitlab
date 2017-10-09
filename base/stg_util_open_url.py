@@ -59,3 +59,11 @@ class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
                 self.view.run_command('st_gitlab_merge_fetcher', {'obj_id': merge_id})
         except Exception:
             pass
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        if screen in ['st_gitlab_issue', 'st_gitlab_merge']:
+            return True
+        return False

@@ -12,13 +12,6 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
     def run(self, edit, note_id):
         if not note_id:
             return
-
-        utils.stg_validate_screen(
-            [
-                'st_gitlab_issue',
-                'st_gitlab_merge'
-            ]
-        )
         gitlab = utils.gl.get()
         project = gitlab.project()
         obj = gitlab.object_by_view()
@@ -36,6 +29,18 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
             object_id=obj.iid,
             note_id=note_id
         )
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
 
 
 class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):

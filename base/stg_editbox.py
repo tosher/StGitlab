@@ -13,6 +13,14 @@ class StGitlabEditboxSaveCommand(sublime_plugin.TextCommand):
         cmd = self.view.settings().get('on_done')
         self.view.run_command(cmd, {'text': text})
 
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        if screen in ['st_gitlab_editbox']:
+            return True
+        return False
+
 
 class StGitlabEditboxCancelCommand(sublime_plugin.TextCommand):
 
@@ -23,6 +31,14 @@ class StGitlabEditboxCancelCommand(sublime_plugin.TextCommand):
         base_id = self.view.settings().get('base_id')
         eb = StEditbox(base_id)
         eb.layout_base()
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        if screen in ['st_gitlab_editbox']:
+            return True
+        return False
 
 
 class StEditbox(object):

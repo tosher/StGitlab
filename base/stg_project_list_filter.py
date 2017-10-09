@@ -15,14 +15,6 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
     project_id = None
 
     def run(self, edit):
-        utils.stg_validate_screen(
-            [
-                utils.object_commands.get('issue', {}).get('screen_list'),
-                utils.object_commands.get('merge', {}).get('screen_list'),
-                utils.object_commands.get('pipeline', {}).get('screen_list'),
-                utils.object_commands.get('branch', {}).get('screen_list')
-            ]
-        )
         self.filter_types = utils.filter_types
         self.project_id = self.view.settings().get('project_id', None)
         self.view.window().show_quick_panel(list(self.filter_types.keys()), self.filter_done)
@@ -105,3 +97,17 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
         self.view.settings().set('query_params', query_params)
         self.view.run_command('st_gitlab_project_list_refresh')
 
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_list'),
+            utils.object_commands.get('merge', {}).get('screen_list'),
+            utils.object_commands.get('pipeline', {}).get('screen_list'),
+            utils.object_commands.get('branch', {}).get('screen_list')
+        ]
+
+        if screen in valid_screens:
+            return True
+        return False

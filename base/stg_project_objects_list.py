@@ -3,6 +3,7 @@
 
 import sys
 import os
+from datetime import datetime, timedelta
 # import sublime
 import sublime_plugin
 from collections import OrderedDict
@@ -67,11 +68,15 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         cols = self.get_columns_properties()
         tbl_header = [col['colname'] for col in cols]
         table_data = [tbl_header]
+        cols_special = self.special_cols()
 
         for obj in self.objects:
             objs = []
             for col in cols:
-                objs.append(utils.stg_get_property_value(obj, col))
+                if col.get('special', False):
+                    objs.append(cols_special.get(getattr(obj, col['key']), {}).get(col['prop'], ''))
+                else:
+                    objs.append(utils.stg_get_property_value(obj, col))
             table_data.append(objs)
 
         objects_table = SingleTable(table_data)
@@ -79,6 +84,9 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
     def get_objects(self):
         return []
+
+    def special_cols(self):
+        return {}
 
 
 class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
@@ -99,10 +107,11 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
     ])
 
     cols = [
-        ['open', 'refresh', 'new'],
+        ['refresh', 'new', 'filter'],
         ['labeladd', 'mileset', 'assigneeset'],
         ['labeldel', 'miledel', 'assigneedel'],
-        ['filter', 'ppage', 'npage']
+        ['open', 'delete'],
+        ['ppage', 'npage']
     ]
 
     def get_objects(self):
@@ -189,3 +198,29 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
 
     def get_columns_properties(self):
         return utils.stg_get_setting('branches_list_columns', {})
+
+    def special_cols(self):
+        def diff(master, flomaster):
+            master = set(master)
+            flomaster_ids = [c.id for c in flomaster]
+            return [item.id for item in master if item.id not in flomaster_ids]
+
+        COMMITS_PERIOD_WEEKS = 2 * 4  # diff commits for 2 month
+        cols = {}
+        project = self.gitlab.project()
+        since_date = (datetime.now() - timedelta(weeks=COMMITS_PERIOD_WEEKS)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        commits_master = project.commits.list(ref_name='master')
+        for branch in self.objects:
+            cols[branch.name] = {}
+            if branch.name == 'master':
+                cols[branch.name]['behind'] = 0
+                cols[branch.name]['ahead'] = 0
+                cols[branch.name]['commits_summary'] = ''
+            else:
+                commits = project.commits.list(ref_name=branch.name, since=since_date)
+                behind = diff(commits_master, commits)
+                ahead = diff(commits, commits_master)
+                cols[branch.name]['behind'] = len(behind)
+                cols[branch.name]['ahead'] = len(ahead)
+                cols[branch.name]['commits_summary'] = 'Behind: %s, Ahead: %s' % (len(behind), len(ahead))
+        return cols

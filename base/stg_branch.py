@@ -20,6 +20,17 @@ class StGitlabBranchCommand(StGitlabObjectCommand):
         # elif self.screen == utils.object_commands.get('branch', {}).get('screen_view'):
         #     self.view.run_command('st_gitlab_object_refresh')
 
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('branch', {}).get('screen_list')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
+
 
 class StGitlabBranchToggleProtectCommand(StGitlabBranchCommand):
 

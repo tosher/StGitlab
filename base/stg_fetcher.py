@@ -21,6 +21,26 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
     obj_name = ''
     obj_name_sub = ''
 
+    @classmethod
+    def present(cls, obj):
+        cols_data = []
+        cols_prop = '%s_view_columns' % cls.obj_name_sub
+        cols = utils.stg_get_setting(cols_prop, [])
+        cols_present_prop = '%s_view_columns_present' % cls.obj_name_sub
+        cols_present = utils.stg_get_setting(cols_present_prop, [])
+        char = utils.object_commands.get(cls.obj_name_sub, {}).get('char', '')
+
+        for col in cols:
+            if col['prop'] not in cols_present:
+                continue
+            value = utils.stg_get_property_value(obj, col)
+
+            if value is not None:
+                cols_data.append('%s: %s%s' % (col['colname'], char if col['prop'] in ['id', 'iid'] else '', value))
+        cols_data[1] = '**%s**' % cols_data[1]
+        cols_data_print = ' | '.join(cols_data)
+        return '* %s\n' % cols_data_print
+
     def run(self, edit, obj_id=None, project_id=None):
         self.obj_id = obj_id if obj_id else self.view.settings().get('object_id')
         self.project_id = project_id if project_id else self.view.settings().get('project_id')
@@ -65,6 +85,8 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
 
         cols_data_print = '\n'.join(cols_data)
         header += cols_data_print
+        header += '\n'
+        header += BLOCK_LINE
         return header
 
     def get_description(self, obj):
@@ -151,10 +173,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         content = ''
         # content += shortcuts_print
         content += '\n'
-        content += '\n'
         content += header_print
-        content += '\n'
-        content += BLOCK_LINE
         if object_custom_print:
             content += '\n'
             content += object_custom_print
@@ -191,7 +210,8 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
         ('togglenotes', ['Alt+r', 'toggle system notes']),
         ('openlink', ['w', 'open link']),
         ('change', ['Enter', 'change']),
-        ('delete', ['Delete', 'delete'])
+        ('delete', ['Delete', 'delete']),
+        ('toggletask', ['x', 'toggle task'])
     ])
 
     cols = [
@@ -199,7 +219,7 @@ class StGitlabIssueFetcherCommand(StGitlabFetcherCommand):
         ['addnote', 'labeladd', 'setmile', 'assign'],
         ['chnote', 'labeldel', 'togglemode', 'togglenotes'],
         ['browser', 'openlink', 'move', 'branch'],
-        ['delete', 'change']
+        ['toggletask', 'delete', 'change']
     ]
 
     obj_name = 'Issue'
@@ -236,7 +256,8 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         ('togglenotes', ['Alt+r', 'toggle system notes']),
         ('openlink', ['w', 'open link']),
         ('change', ['Enter', 'change']),
-        ('accept', ['p', 'accept'])
+        ('accept', ['p', 'accept']),
+        ('toggletask', ['x', 'toggle task'])
     ])
 
     cols = [
@@ -244,7 +265,7 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         ['addnote', 'labeladd', 'setmile', 'assign'],
         ['chnote', 'labeldel', 'togglemode', 'togglenotes'],
         ['browser', 'openlink', 'wip', 'accept'],
-        ['change']
+        ['toggletask', 'change']
     ]
 
     obj_name = 'Merge-request'
@@ -257,30 +278,29 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
         if issues or commits:
             content += '## Data\n'
             content += BLOCK_LINE
-        if issues:
-            content += '### Closes issues\n'
-            for issue in issues:
-                content += '#%s **%s**\n' % (issue.iid, issue.title)
-        if commits:
-            content += '\n### Commits (%s)\n' % len(commits)
-            for commit in commits:
-                content += '- By %s: [%s](%s)\n' % (
-                    commit.committer_name,
-                    commit.title,
-                    self.get_commit_url(commit)
-                )
-        branch_name = obj.attributes.get('ref')
+            if issues:
+                content += '### Closes issues\n'
+                for issue in issues:
+                    issue_content = StGitlabIssueFetcherCommand.present(issue)
+                    content += issue_content
+                    content += '\n'
+            if commits:
+                content += '### Commits (%s)\n' % len(commits)
+                for commit in commits:
+                    content += '- By %s: [%s](%s)\n' % (
+                        commit.committer_name,
+                        commit.title,
+                        self.get_commit_url(commit)
+                    )
+            content += '\n'
+        branch_name = obj.attributes.get('source_branch')
         pipelines = self.gitlab.pipelines(ref=branch_name)
         if pipelines:
+            content += '## Pipeline\n'
             pipeline_id = max([p.id for p in pipelines])
             pipeline = self.gitlab.pipeline(oid=pipeline_id)
-            line_format = '\t{:<8}: {:<}\n'
-            content += '\n### Pipeline: %s\n' % pipeline.id
-            content += line_format.format('**Status**', pipeline.attributes.get('status'))
-            content += line_format.format('**Started**', utils.stg_get_datetime(pipeline.attributes.get('started_at')))
-            content += line_format.format('**Updated**', utils.stg_get_datetime(pipeline.attributes.get('updated_at')))
-            content += line_format.format('**Finished**', utils.stg_get_datetime(pipeline.attributes.get('finished_at')))
-            content += BLOCK_LINE
+            pipeline_content = StGitlabPipelineFetcherCommand.present(pipeline)
+            content += pipeline_content
         return content
 
     def get_commit_url(self, commit):
@@ -309,28 +329,6 @@ class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
     obj_name_sub = 'pipeline'
 
     def get_title(self, obj):
-        # branch_name = obj.attributes.get('ref')
-        # branch = self.gitlab.branch(oid=branch_name)
-        # print(branch.attributes)
-        # attributes
-        # {'commit': {'message': 'logging actor name\n', 'id': 'aa8a07339ddf2bba609725336c908e680891d80d', 'authored_date': '2017-09-25T17:34:29.000+03:00',
-        # 'parent_ids': ['9e086eca2bab2aea0b4e5028bd6e3a5a13c13e72'], 'committed_date': '2017-09-25T17:34:29.000+03:00', 'author_email': 'anton.gnidenko@rcntec.com',
-        # 'created_at': '2017-09-25T17:34:29.000+03:00', 'author_name': 'Anton Gnidenko', 'short_id': 'aa8a0733', 'committer_email': 'anton.gnidenko@rcntec.com',
-        # 'title': 'logging actor name', 'committer_name': 'Anton Gnidenko'}, 'project_id': 247, 'merged': False, 'protected': False, 'name': '500-',
-        # 'developers_can_merge': False, 'developers_can_push': False}
-        # print(obj.attributes)
-        # commit_sha = obj.attributes.get('sha')
-        # commit = self.gitlab.commit(sha=commit_sha)
-        # <class 'gitlab.v4.objects.ProjectCommit'> => {'message': 'logging actor name\n', 'id': 'aa8a07339ddf2bba609725336c908e680891d80d',
-        # 'authored_date': '2017-09-25T17:34:29.000+03:00', 'parent_ids': ['9e086eca2bab2aea0b4e5028bd6e3a5a13c13e72'], 'committed_date': '2017-09-25T17:34:29.000+03:00',
-        # 'author_email': 'anton.gnidenko@rcntec.com', 'created_at': '2017-09-25T17:34:29.000+03:00', 'author_name': 'Anton Gnidenko', 'status': 'success',
-        # 'committer_email': 'anton.gnidenko@rcntec.com', 'committer_name': 'Anton Gnidenko', 'stats': {'deletions': 1, 'total': 2, 'additions': 1},
-        # 'title': 'logging actor name', 'short_id': 'aa8a0733'}
-        # ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattr__', '__getattribute__', '__gt__', '__hash__',
-        # '__init__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__',
-        # '__subclasshook__', '__weakref__', '_attrs', '_create_managers', '_id_attr', '_managers', '_module', '_parent_attrs', '_short_print_attr',
-        # '_update_attrs', '_updated_attrs', 'attributes', 'cherry_pick', 'comments', 'diff', 'get_id', 'manager', 'statuses']
-        # print(self.gitlab.pipelines(ref=branch_name))
         return obj.attributes.get('ref', '')
 
     def get_description(self, obj):
@@ -338,3 +336,17 @@ class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
 
     def get_notes(self, obj):
         return ''
+
+    def get_object_custom(self, obj):
+        jobs = self.gitlab.jobs()
+        if not jobs:
+            return
+        pipeline_jobs = [j for j in jobs if j.attributes.get('pipeline') == obj.id]
+        content = ''
+        if pipeline_jobs:
+            content += '## Jobs\n'
+            content += BLOCK_LINE
+            for job in pipeline_jobs:
+                content += '* %s **%s**' % (job.id, job.name)
+                content += '\n'
+        return content

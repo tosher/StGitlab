@@ -67,3 +67,15 @@ class StGitlabIssueDeleteCommand(StGitlabIssueCommand):
         issue.delete()
         self.refresh()
 
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('issue', {}).get('screen_list')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
+

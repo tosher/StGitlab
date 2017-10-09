@@ -10,20 +10,11 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
     MARKDOWN_SCOPE = 'text.html.markdown.gfm'
 
     def run(self, edit):
-
-        utils.stg_validate_screen(
-            [
-                'st_gitlab_issue',
-                'st_gitlab_merge',
-                'st_gitlab_pipeline'
-            ]
-        )
-
         object_name = self.view.settings().get('object_name', None)
-        is_unselectable = self.view.settings().get('st_gitlab_unselectable', True)
-        if not is_unselectable:
-            self.view.settings().set('st_gitlab_unselectable', True)
-            self.view.sel().add(self.view.line(self.view.sel()[0].end()))
+        # is_unselectable = self.view.settings().get('st_gitlab_unselectable', True)
+        # if not is_unselectable:
+        #     self.view.settings().set('st_gitlab_unselectable', True)
+        #     self.view.sel().add(self.view.line(self.view.sel()[0].end()))
 
         # header_pattern = '^##\s.*$'
         header_pattern = r'^#{2,3}\s.*$'
@@ -76,3 +67,17 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
                             self.view.run_command('st_gitlab_object_add_label')
                         else:
                             sublime.message_dialog('Not implemented in this version')
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view'),
+            utils.object_commands.get('pipeline', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
+

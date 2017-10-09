@@ -47,3 +47,6 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
                 StLabel(label['label'], lbl_color).get(),
                 sublime.LAYOUT_INLINE
             )
+
+    def is_visible(self, *args):
+        return False

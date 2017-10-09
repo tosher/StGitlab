@@ -10,13 +10,6 @@ from .stg_editbox import StEditbox
 class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-        utils.stg_validate_screen(
-            [
-                'st_gitlab_issue',
-                'st_gitlab_merge'
-            ]
-        )
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         obj = gitlab.object_by_view()
@@ -30,6 +23,18 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
             project_id=project.id,
             object_id=obj.iid
         )
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
 
 
 class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):

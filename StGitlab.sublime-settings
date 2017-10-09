@@ -44,7 +44,8 @@
     "branches_list_columns": [
         { "prop": "name", "colname": "Branch"},
         { "prop": "merged", "colname": "Merged?"},
-        { "prop": "protected", "colname": "Protected?"}
+        { "prop": "protected", "colname": "Protected?"},
+        { "prop": "commits_summary", "colname": "Commits", "special": true, "key": "name"}
     ],
     "issue_view_columns": [
         { "prop": "iid", "colname": "ID"},
@@ -56,6 +57,7 @@
         { "prop": "milestone", "colname": "Milestone", "attr": "title"},
         { "prop": "labels", "colname": "Labels", "type": "list"}
     ],
+    "issue_view_columns_present": ["iid", "title", "author", "assignee", "state"],
     "merge_view_columns": [
         { "prop": "iid", "colname": "ID"},
         { "prop": "title", "colname": "Title"},
@@ -69,6 +71,7 @@
         { "prop": "labels", "colname": "Labels", "type": "list"},
         { "prop": "merge_status", "colname": "Merge status"}
     ],
+    "merge_view_columns_present": ["iid", "title", "author", "assignee", "state", "work_in_progress"],
     "pipeline_view_columns": [
         { "prop": "id", "colname": "ID"},
         { "prop": "ref", "colname": "Branch"},
@@ -78,6 +81,12 @@
         { "prop": "started_at", "colname": "Started", "type": "datetime" },
         { "prop": "updated_at", "colname": "Updated", "type": "datetime" },
         { "prop": "finished_at", "colname": "Finished", "type": "datetime" },
-        { "prop": "duration", "colname": "Duration" }
-    ]
+        { "prop": "duration", "colname": "Duration", "type": "seconds" }
+    ],
+    "pipeline_view_columns_present": ["id", "ref", "status", "user"]
+    // ,"syntax_specific": {
+    //     "Markdown": {
+    //         "auto_complete_triggers": [ {"selector": "text.html.markdown", "characters": "#!"} ]
+    //     }
+    // }
 }

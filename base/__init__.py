@@ -28,6 +28,7 @@ from .stg_object_change_note import StGitlabObjectChangeNoteDoneCommand
 from .stg_object_refresh import StGitlabObjectRefreshCommand
 from .stg_object_set_milestone import StGitlabObjectSetMilestoneCommand
 from .stg_object_change_state import StGitlabObjectChangeStateCommand
+from .stg_object_checkbox_toggle import StGitlabObjectCheckBoxToggleCommand
 from .stg_toggle_selectable import StGitlabToggleSelectableCommand
 from .stg_toggle_system_notes import StGitlabToggleSystemNotesCommand
 from .stg_project_issues import StGitlabProjectIssuesCommand
@@ -54,6 +55,8 @@ from .stg_branch import StGitlabBranchCreateMergeCommand
 from .stg_project_branches import StGitlabProjectBranchesCommand
 from .stg_view_show_labels import StGitlabViewShowLabelsCommand
 from .stg_util_open_url import StGitlabUtilOpenUrlCommand
+from .stg_project_issues_board import StGitlabProjectIssuesBoardCommand
+from .stg_project_objects_board import StGitlabProjectIssuesBoardDrawCommand
 
 __all__ = [
     'StGitlabResetCommand',
@@ -65,6 +68,8 @@ __all__ = [
     'StGitlabIssueDeleteCommand',
     'StGitlabChangeProjectCommand',
     'StGitlabIssueCreateBranchCommand',
+    'StGitlabProjectIssuesBoardCommand',
+    'StGitlabProjectIssuesBoardDrawCommand',
 
     'StGitlabMergeCommand',
     'StGitlabMergeToggleWipCommand',
@@ -96,6 +101,7 @@ __all__ = [
     'StGitlabObjectChangeAssignedCommand',
     'StGitlabObjectChangeStateCommand',
     'StGitlabObjectInBrowserCommand',
+    'StGitlabObjectCheckBoxToggleCommand',
     'StGitlabToggleSelectableCommand',
     'StGitlabToggleSystemNotesCommand',
 

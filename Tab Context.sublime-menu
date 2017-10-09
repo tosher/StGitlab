@@ -1,0 +1,17 @@
+[
+    {
+        "command": "st_gitlab_toggle_system_notes", "caption": "Gitlab: Toggle system notes"
+    },
+    {
+        "command": "st_gitlab_object_add_label", "caption": "Gitlab: Add label"
+    },
+    {
+        "command": "st_gitlab_object_remove_label", "caption": "Gitlab: Remove label"
+    },
+    {
+        "command": "st_gitlab_object_add_note", "caption": "Gitlab: Add note"
+    },
+    {
+        "command": "st_gitlab_object_set_milestone", "caption": "Gitlab: Set milestone"
+    }
+]

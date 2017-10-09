@@ -4,7 +4,7 @@ import re
 import base64
 import requests
 import sublime
-from datetime import datetime
+from datetime import datetime, timedelta
 from .stg_gitlab import StGitlab
 from ..libs import dimensions
 
@@ -22,15 +22,19 @@ filter_types = {
 
 object_commands = {
     'issue': {
+        'char': '#',
         'screen_view': 'st_gitlab_issue',
         'screen_list': 'st_gitlab_issues',
+        'screen_board': 'st_gitlab_issues_board',
         'view': 'st_gitlab_issue',
         'list': 'st_gitlab_project_issues_list',
         'fetch': 'st_gitlab_issue_fetcher'
     },
     'merge': {
+        'char': '!',
         'screen_view': 'st_gitlab_merge',
         'screen_list': 'st_gitlab_merges',
+        'screen_board': None,
         'view': 'st_gitlab_merge',
         'list': 'st_gitlab_project_merges_list',
         'fetch': 'st_gitlab_merge_fetcher'
@@ -38,6 +42,7 @@ object_commands = {
     'pipeline': {
         'screen_view': 'st_gitlab_pipeline',
         'screen_list': 'st_gitlab_pipelines',
+        'screen_board': None,
         'view': 'st_gitlab_pipeline',
         'list': 'st_gitlab_project_pipelines_list',
         'fetch': 'st_gitlab_pipeline_fetcher'
@@ -45,6 +50,7 @@ object_commands = {
     'branch': {
         'screen_view': None,
         'screen_list': 'st_gitlab_branches',
+        'screen_board': None,
         'view': None,
         'list': 'st_gitlab_project_branches_list',
         'fetch': None
@@ -65,16 +71,16 @@ def stg_set_setting(key, value):
     sublime.save_settings('Mediawiker.sublime-settings')
 
 
-def stg_validate_screen(screen_type):
-    if isinstance(screen_type, list):
-        is_valid = sublime.active_window().active_view().settings().get('screen', None) in screen_type
-        object_name = ', '.join([screen.split('_')[-1] for screen in screen_type])
-    else:
-        is_valid = screen_type == sublime.active_window().active_view().settings().get('screen', None)
-        object_name = screen_type.split('_')[-1]
+# def stg_validate_screen(screen_type):
+#     if isinstance(screen_type, list):
+#         is_valid = sublime.active_window().active_view().settings().get('screen', None) in screen_type
+#         object_name = ', '.join([screen.split('_')[-1] for screen in screen_type])
+#     else:
+#         is_valid = screen_type == sublime.active_window().active_view().settings().get('screen', None)
+#         object_name = screen_type.split('_')[-1]
 
-    if not is_valid:
-        sublime.message_dialog('This command is provided for the %s screen!' % object_name)
+#     if not is_valid:
+#         sublime.message_dialog('This command is provided for the %s screen!' % object_name)
 
 
 def stg_get_datetime(datetime_str):
@@ -117,13 +123,22 @@ def stg_get_datetime(datetime_str):
         return datetime_str.replace('T', ' ').replace('Z', '')
 
 
-def stg_get_property_value(obj, prop):
-    def cut(val, maxlen):
-        if maxlen:
-            if len(val) > maxlen:
-                return '%s..' % val[:maxlen - 2].strip()
-        return val
+def stg_get_seconds(seconds):
+    try:
+        return str(timedelta(seconds=int(seconds)))
+    except Exception as e:
+        print('Duration convert exception for value "%s": %s' % (seconds, e))
+        return seconds
 
+
+def stg_cut(val, maxlen):
+    if maxlen:
+        if len(val) > maxlen:
+            return '%s..' % val[:maxlen - 2].strip()
+    return val
+
+
+def stg_get_property_value(obj, prop):
     val = ''
     label_char = stg_get_setting('label_char')
     prop_type = prop.get('type', 'string')
@@ -136,6 +151,8 @@ def stg_get_property_value(obj, prop):
                 val = ', '.join(attrs.get(prop['prop'], ''))
         elif prop_type == 'datetime':
             val = stg_get_datetime(attrs.get(prop['prop'], ''))
+        elif prop_type == 'seconds':
+            val = stg_get_seconds(attrs.get(prop['prop'], ''))
         elif prop_type == 'bool':
             val = str(attrs.get(prop['prop'], ''))
         elif prop.get('attr', None):
@@ -147,7 +164,7 @@ def stg_get_property_value(obj, prop):
                     val = val_obj.get(prop['attr'], '')
         else:
             val = attrs.get(prop['prop'], '')
-        return cut(val, prop.get('maxlen', None))
+        return stg_cut(val, prop.get('maxlen', None))
     except Exception as e:
         print('Exception while get %s value: %s' % (prop, e))
         return attrs.get(prop['prop'], '')

@@ -170,8 +170,14 @@ class StGitlab(object):
     def branches(self, project_id=None, **kwargs):
         return self.project(project_id).branches.list(**kwargs)
 
+    def jobs(self, project_id=None, **kwargs):
+        return self.project(project_id).jobs.list(**kwargs)
+
     def commits(self, project_id=None, **kwargs):
         return self.project(project_id).commits.list(**kwargs)
+
+    def boards(self, project_id=None, **kwargs):
+        return self.project(project_id).boards.list(**kwargs)
 
     def commit(self, sha, project_id=None):
         return self.project(project_id).commits.get(sha)

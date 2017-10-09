@@ -36,6 +36,7 @@
    { "caption": "Gitlab: Open in browser", "command": "st_gitlab_object_in_browser" },
    { "caption": "Gitlab: Show labels", "command": "st_gitlab_view_show_labels" },
    { "caption": "Gitlab: Open Url", "command": "st_gitlab_util_open_url" },
+   { "caption": "Gitlab: Checkbox toggle", "command": "st_gitlab_object_check_box_toggle" },
    // project lists: issues, merges, pipelines, etc.
    { "caption": "Gitlab project: List refresh", "command": "st_gitlab_project_list_refresh" },
    { "caption": "Gitlab project: Set filter", "command": "st_gitlab_project_list_filter" },
@@ -45,6 +46,7 @@
    { "caption": "Gitlab project: Next page", "command": "st_gitlab_project_list_page", "args": {"direction": 1} },
    // project issues
    { "caption": "Gitlab project: Issues", "command": "st_gitlab_project_issues" },
+   { "caption": "Gitlab project: Issues Board", "command": "st_gitlab_project_issues_board" },
    // project merge-requests
    { "caption": "Gitlab project: Merge-requests", "command": "st_gitlab_project_merges" },
    // project pipelines

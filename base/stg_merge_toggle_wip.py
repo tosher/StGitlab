@@ -9,9 +9,6 @@ from . import stg_utils as utils
 
 class StGitlabMergeToggleWipCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-
-        utils.stg_validate_screen('st_gitlab_merge')
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         merge = gitlab.merge()
@@ -21,5 +18,16 @@ class StGitlabMergeToggleWipCommand(sublime_plugin.TextCommand):
             title = 'WIP:%s' % title if val else re.sub(r'^wip[:\s]', '', title, flags=re.IGNORECASE)
             merge.save(title=title)
         self.view.run_command('st_gitlab_object_refresh')
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('merge', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
 
 

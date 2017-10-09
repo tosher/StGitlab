@@ -10,14 +10,6 @@ from . import stg_utils as utils
 # Issue: Open in Browser
 class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        utils.stg_validate_screen(
-            [
-                'st_gitlab_issue',
-                'st_gitlab_merge',
-                'st_gitlab_pipeline'
-            ]
-        )
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         screen = self.view.settings().get('screen', None)
@@ -36,3 +28,16 @@ class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
                 'pid': obj.id
             }
         webbrowser.open(web_url)
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view'),
+            utils.object_commands.get('pipeline', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False

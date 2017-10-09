@@ -8,14 +8,22 @@ from . import stg_utils as utils
 
 class StGitlabMergeAcceptCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-
-        utils.stg_validate_screen('st_gitlab_merge')
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         merge = gitlab.merge()
         if project and merge:
             merge.merge()
         self.view.run_command('st_gitlab_object_refresh')
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('merge', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
 
 

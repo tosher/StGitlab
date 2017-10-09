@@ -18,8 +18,6 @@ class StGitlabIssueCreateBranchCommand(sublime_plugin.TextCommand):
             project.branches.create({'branch': name, 'ref': 'master'})
             self.view.run_command('st_gitlab_object_refresh')
 
-        utils.stg_validate_screen('st_gitlab_issue')
-
         gitlab = utils.gl.get()
         project = gitlab.project()
         self.issue = gitlab.issue()
@@ -37,3 +35,15 @@ class StGitlabIssueCreateBranchCommand(sublime_plugin.TextCommand):
             .replace('.', '')
             .replace(' ', '-')
         )
+
+    def is_visible(self, *args):
+        screen = self.view.settings().get('screen')
+        if not screen:
+            return False
+        valid_screens = [
+            utils.object_commands.get('issue', {}).get('screen_view')
+        ]
+        if screen in valid_screens:
+            return True
+        return False
+
