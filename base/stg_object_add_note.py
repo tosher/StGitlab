@@ -20,7 +20,7 @@ class StGitlabObjectAddNoteCommand(sublime_plugin.TextCommand):
             on_done,
             '',
             project_id=project.id,
-            object_id=obj.iid
+            object_id=obj.iid if hasattr(obj, 'iid') else obj.id
         )
 
     def is_visible(self, *args):

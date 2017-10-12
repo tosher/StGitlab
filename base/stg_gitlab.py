@@ -182,3 +182,12 @@ class StGitlab(object):
     def commit(self, sha, project_id=None):
         return self.project(project_id).commits.get(sha)
 
+    def snippets(self, project_id=None, **kwargs):
+        return self.project(project_id).snippets.list(**kwargs)
+
+    def snippet(self, project_id=None, oid=None):
+        if oid is None:
+            oid = self.view.settings().get('object_id', None)
+        if not oid:
+            raise Exception('Snippet id is not defined')
+        return self.project(project_id).snippets.get(oid)

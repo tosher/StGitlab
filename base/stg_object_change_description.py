@@ -21,7 +21,7 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
             on_done,
             description,
             project_id=project.id,
-            object_id=obj.iid
+            object_id=obj.iid if hasattr(obj, 'iid') else obj.id
         )
 
     def is_visible(self, *args):
@@ -45,5 +45,5 @@ class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):
         gitlab = utils.gl.get(eb.view)
         obj = gitlab.object_by_view()
         obj.description = text
-        obj.save()
+        obj.save(title=obj.title)
         eb.view.run_command('st_gitlab_object_refresh')

@@ -52,5 +52,7 @@
    // project pipelines
    { "caption": "Gitlab project: Pipelines", "command": "st_gitlab_project_pipelines" },
    // project branches
-   { "caption": "Gitlab project: Branches", "command": "st_gitlab_project_branches" }
+   { "caption": "Gitlab project: Branches", "command": "st_gitlab_project_branches" },
+   // project snippets
+   { "caption": "Gitlab project: Snippets", "command": "st_gitlab_project_snippets" }
 ]

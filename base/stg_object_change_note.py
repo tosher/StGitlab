@@ -26,7 +26,7 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
             on_done,
             note.attributes.get('body', ''),
             project_id=project.id,
-            object_id=obj.iid,
+            object_id=obj.iid if hasattr(obj, 'iid') else obj.id,
             note_id=note_id
         )
 
@@ -52,6 +52,9 @@ class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):
         gitlab = utils.gl.get(eb.view)
         obj = gitlab.object_by_view()
         note = obj.notes.get(note_id)
+        if not hasattr(note, 'save'):
+            sublime.message_dialog('Sorry, note save for %s is not implemened in Python Gitlab API.' % obj.__class__.__name__)
+            return
         note.body = text
         note.save()
         eb.view.run_command('st_gitlab_object_refresh')

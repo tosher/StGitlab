@@ -15,9 +15,6 @@ from terminaltables.other_tables import WindowsTable as SingleTable
 
 class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
-    shortcuts = {}
-    cols = None
-
     def run(self, edit, title):
         self.title = title
         self.gitlab = utils.gl.get()
@@ -35,7 +32,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         self.view.show(0)
 
     def show_shortcuts(self):
-        StShortcutsMenu(self.view, shortcuts=self.shortcuts, cols=self.cols)
+        StShortcutsMenu(self.view, shortcuts=self.shortcuts(), cols=self.cols())
 
     def show_header(self):
         header = '\n'
@@ -90,29 +87,36 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
 
 
 class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
-    shortcuts = OrderedDict([
-        ('new', ['n', 'new']),
-        ('open', ['Enter', 'open']),
-        ('refresh', ['F5', 'refresh']),
-        ('delete', ['Delete', 'delete']),
-        ('filter', ['f', 'filter']),
-        ('labeladd', ['l', 'add label']),
-        ('labeldel', ['Alt+l', 'delete label']),
-        ('mileset', ['m', 'set milestone']),
-        ('miledel', ['Alt+m', 'unset milestone']),
-        ('assigneeset', ['a', 'set assignee']),
-        ('assigneedel', ['Alt+a', 'unset assignee']),
-        ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-        ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
-    ])
 
-    cols = [
-        ['refresh', 'new', 'filter'],
-        ['labeladd', 'mileset', 'assigneeset'],
-        ['labeldel', 'miledel', 'assigneedel'],
-        ['open', 'delete'],
-        ['ppage', 'npage']
-    ]
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('new', ['n', 'new']),
+            ('open', ['Enter', 'open']),
+            ('refresh', ['F5', 'refresh']),
+            ('delete', ['Delete', 'delete']),
+            ('filter', ['f', 'filter']),
+            ('labeladd', ['l', 'add label']),
+            ('labeldel', ['Alt+l', 'delete label']),
+            ('mileset', ['m', 'set milestone']),
+            ('miledel', ['Alt+m', 'unset milestone']),
+            ('assigneeset', ['a', 'set assignee']),
+            ('assigneedel', ['Alt+a', 'unset assignee']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
+
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['refresh', 'new', 'filter'],
+            ['labeladd', 'mileset', 'assigneeset'],
+            ['labeldel', 'miledel', 'assigneedel'],
+            ['open', 'delete'],
+            ['ppage', 'npage']
+        ]
+        return cols
 
     def get_objects(self):
         return self.gitlab.issues(**self.query_params)
@@ -122,28 +126,35 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
 
 
 class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
-    shortcuts = OrderedDict([
-        ('new', ['n', 'new']),
-        ('open', ['Enter', 'open']),
-        ('refresh', ['F5', 'refresh']),
-        ('delete', ['Delete', 'delete']),
-        ('filter', ['f', 'filter']),
-        ('labeladd', ['l', 'add label']),
-        ('labeldel', ['Alt+l', 'delete label']),
-        ('mileset', ['m', 'set milestone']),
-        ('miledel', ['Alt+m', 'unset milestone']),
-        ('assigneeset', ['a', 'set assignee']),
-        ('assigneedel', ['Alt+a', 'unset assignee']),
-        ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-        ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
-    ])
 
-    cols = [
-        ['open', 'refresh', 'new'],
-        ['labeladd', 'mileset', 'assigneeset'],
-        ['labeldel', 'miledel', 'assigneedel'],
-        ['filter', 'ppage', 'npage']
-    ]
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('new', ['n', 'new']),
+            ('open', ['Enter', 'open']),
+            ('refresh', ['F5', 'refresh']),
+            ('delete', ['Delete', 'delete']),
+            ('filter', ['f', 'filter']),
+            ('labeladd', ['l', 'add label']),
+            ('labeldel', ['Alt+l', 'delete label']),
+            ('mileset', ['m', 'set milestone']),
+            ('miledel', ['Alt+m', 'unset milestone']),
+            ('assigneeset', ['a', 'set assignee']),
+            ('assigneedel', ['Alt+a', 'unset assignee']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
+
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['open', 'refresh', 'new'],
+            ['labeladd', 'mileset', 'assigneeset'],
+            ['labeldel', 'miledel', 'assigneedel'],
+            ['filter', 'ppage', 'npage']
+        ]
+        return cols
 
     def get_objects(self):
         return self.gitlab.merges(**self.query_params)
@@ -153,22 +164,28 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
 
 
 class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
-    shortcuts = OrderedDict([
-        ('open', ['Enter', 'open']),
-        ('refresh', ['F5', 'refresh']),
-        ('retry', ['b', 'retry']),
-        ('cancel', ['c', 'cancel']),
-        ('filter', ['f', 'filter']),
-        ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-        ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
-    ])
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('open', ['Enter', 'open']),
+            ('refresh', ['F5', 'refresh']),
+            ('retry', ['b', 'retry']),
+            ('cancel', ['c', 'cancel']),
+            ('filter', ['f', 'filter']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
 
-    cols = [
-        ['open'],
-        ['refresh', 'filter'],
-        ['retry', 'cancel'],
-        ['ppage', 'npage']
-    ]
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['open'],
+            ['refresh', 'filter'],
+            ['retry', 'cancel'],
+            ['ppage', 'npage']
+        ]
+        return cols
 
     def get_objects(self):
         return self.gitlab.pipelines(**self.query_params)
@@ -178,20 +195,26 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
 
 
 class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
-    shortcuts = OrderedDict([
-        ('refresh', ['F5', 'refresh']),
-        ('merge', ['m', 'merge-request']),
-        ('toggleprotect', ['p', 'toggle protect']),
-        ('filter', ['f', 'filter']),
-        ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-        ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
-    ])
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('refresh', ['F5', 'refresh']),
+            ('merge', ['m', 'merge-request']),
+            ('toggleprotect', ['p', 'toggle protect']),
+            ('filter', ['f', 'filter']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
 
-    cols = [
-        ['refresh', 'filter'],
-        ['merge', 'toggleprotect'],
-        ['ppage', 'npage']
-    ]
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['refresh', 'filter'],
+            ['merge', 'toggleprotect'],
+            ['ppage', 'npage']
+        ]
+        return cols
 
     def get_objects(self):
         return self.gitlab.branches(**self.query_params)
@@ -224,3 +247,32 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
                 cols[branch.name]['ahead'] = len(ahead)
                 cols[branch.name]['commits_summary'] = 'Behind: %s, Ahead: %s' % (len(behind), len(ahead))
         return cols
+
+
+class StGitlabProjectSnippetsListCommand(StGitlabProjectObjectsListCommand):
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('open', ['Enter', 'open']),
+            ('refresh', ['F5', 'refresh']),
+            ('delete', ['Delete', 'delete']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
+
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['open'],
+            ['refresh', 'delete'],
+            ['ppage', 'npage']
+        ]
+        return cols
+
+    def get_objects(self):
+        print(self.gitlab.snippets(**self.query_params)[0])
+        return self.gitlab.snippets(**self.query_params)
+
+    def get_columns_properties(self):
+        return utils.stg_get_setting('snippets_list_columns', {})

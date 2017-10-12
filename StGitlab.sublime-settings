@@ -47,6 +47,14 @@
         { "prop": "protected", "colname": "Protected?"},
         { "prop": "commits_summary", "colname": "Commits", "special": true, "key": "name"}
     ],
+    "snippets_list_columns": [
+        { "prop": "id", "colname": "Id"},
+        { "prop": "title", "colname": "Title"},
+        { "prop": "author", "colname": "Author", "attr": "name"},
+        { "prop": "file_name", "colname": "File name", "attr": "name"},
+        { "prop": "updated_at", "colname": "Last updated", "type": "datetime"},
+        { "prop": "description", "colname": "Description", "maxlen": 50}
+    ],
     "issue_view_columns": [
         { "prop": "iid", "colname": "ID"},
         { "prop": "title", "colname": "Title"},
@@ -83,10 +91,13 @@
         { "prop": "finished_at", "colname": "Finished", "type": "datetime" },
         { "prop": "duration", "colname": "Duration", "type": "seconds" }
     ],
-    "pipeline_view_columns_present": ["id", "ref", "status", "user"]
-    // ,"syntax_specific": {
-    //     "Markdown": {
-    //         "auto_complete_triggers": [ {"selector": "text.html.markdown", "characters": "#!"} ]
-    //     }
-    // }
+    "pipeline_view_columns_present": ["id", "ref", "status", "user"],
+    "snippet_view_columns": [
+        { "prop": "id", "colname": "Id"},
+        { "prop": "title", "colname": "Title"},
+        { "prop": "author", "colname": "Author", "attr": "name"},
+        { "prop": "file_name", "colname": "File name", "attr": "name"},
+        { "prop": "updated_at", "colname": "Last updated", "type": "datetime"}
+    ],
+    "snippet_view_columns_present": ["id", "name"]
 }

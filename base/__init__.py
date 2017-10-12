@@ -19,6 +19,7 @@ from .stg_fetcher import StGitlabFetcherCommand
 from .stg_fetcher import StGitlabIssueFetcherCommand
 from .stg_fetcher import StGitlabMergeFetcherCommand
 from .stg_fetcher import StGitlabPipelineFetcherCommand
+from .stg_fetcher import StGitlabSnippetFetcherCommand
 from .stg_object_in_browser import StGitlabObjectInBrowserCommand
 from .stg_object_change_any import StGitlabObjectChangeAnyCommand
 from .stg_object_add_note import StGitlabObjectAddNoteCommand
@@ -42,6 +43,7 @@ from .stg_project_objects_list import StGitlabProjectIssuesListCommand
 from .stg_project_objects_list import StGitlabProjectMergesListCommand
 from .stg_project_objects_list import StGitlabProjectPipelinesListCommand
 from .stg_project_objects_list import StGitlabProjectBranchesListCommand
+from .stg_project_objects_list import StGitlabProjectSnippetsListCommand
 from .stg_project_objects_list_action import StGitlabProjectObjectsListActionCommand
 from .stg_merge import StGitlabMergeCommand
 from .stg_merge_toggle_wip import StGitlabMergeToggleWipCommand
@@ -57,6 +59,11 @@ from .stg_view_show_labels import StGitlabViewShowLabelsCommand
 from .stg_util_open_url import StGitlabUtilOpenUrlCommand
 from .stg_project_issues_board import StGitlabProjectIssuesBoardCommand
 from .stg_project_objects_board import StGitlabProjectIssuesBoardDrawCommand
+from .stg_project_snippets import StGitlabProjectSnippetsCommand
+from .stg_snippet import StGitlabSnippetCommand
+from .stg_snippet import StGitlabSnippetCreateCommand
+from .stg_snippet import StGitlabSnippetDeleteCommand
+
 
 __all__ = [
     'StGitlabResetCommand',
@@ -84,6 +91,12 @@ __all__ = [
     'StGitlabBranchCommand',
     'StGitlabBranchToggleProtectCommand',
     'StGitlabBranchCreateMergeCommand',
+
+    'StGitlabSnippetCommand',
+    'StGitlabSnippetCreateCommand',
+    'StGitlabSnippetDeleteCommand',
+    'StGitlabSnippetFetcherCommand',
+    'StGitlabProjectSnippetsListCommand',
 
     'StGitlabFetcherCommand',
     'StGitlabObjectAddLabelCommand',
@@ -115,6 +128,7 @@ __all__ = [
     'StGitlabProjectMergesCommand',
     'StGitlabProjectPipelinesCommand',
     'StGitlabProjectBranchesCommand',
+    'StGitlabProjectSnippetsCommand',
     'StGitlabProjectListFilterCommand',
     'StGitlabProjectListRefreshCommand',
     'StGitlabProjectListPageCommand',

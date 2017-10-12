@@ -350,3 +350,46 @@ class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
                 content += '* %s **%s**' % (job.id, job.name)
                 content += '\n'
         return content
+
+
+class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
+
+    shortcuts = OrderedDict([
+        ('refresh', ['F5', 'refresh']),
+        ('title', ['F2', 'change title']),
+        ('descr', ['d', 'change description']),
+        ('addnote', ['c', 'add note']),
+        ('chnote', ['Alt+c', 'change note']),
+        ('browser', ['g', 'open in browser']),
+        ('togglemode', ['Alt+u', 'toggle select mode']),
+        ('togglenotes', ['Alt+r', 'toggle system notes']),
+        ('openlink', ['w', 'open link']),
+        ('change', ['Enter', 'change']),
+        ('delete', ['Delete', 'delete']),
+        ('toggletask', ['x', 'toggle task'])
+    ])
+
+    cols = [
+        ['refresh', 'title', 'descr'],
+        ['addnote'],
+        ['chnote', 'togglemode', 'togglenotes'],
+        ['browser', 'openlink'],
+        ['toggletask', 'delete', 'change']
+    ]
+
+    obj_name = 'Snippet'
+    obj_name_sub = 'snippet'
+
+    def get_object_custom(self, obj):
+        raw = obj.content()
+        print(raw)
+        if not raw:
+            return
+        from io import BytesIO
+        fp = BytesIO(raw)
+        content = '## %s\n' % obj.file_name
+        content += BLOCK_LINE
+        content += fp.read().decode('utf-8').replace('\r', '')
+        content += '\n'
+        return content
+

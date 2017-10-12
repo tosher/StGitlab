@@ -54,6 +54,14 @@ object_commands = {
         'view': None,
         'list': 'st_gitlab_project_branches_list',
         'fetch': None
+    },
+    'snippet': {
+        'screen_view': 'st_gitlab_snippet',
+        'screen_list': 'st_gitlab_snippets',
+        'screen_board': None,
+        'view': 'st_gitlab_snippet',
+        'list': 'st_gitlab_project_snippets_list',
+        'fetch': 'st_gitlab_snippet_fetcher'
     }
 }
 

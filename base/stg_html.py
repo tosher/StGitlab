@@ -130,7 +130,6 @@ class StShortcutsMenu(object):
     def __init__(self, view, shortcuts, cols=5, by_cols=None):
         if not shortcuts:
             return
-
         if isinstance(cols, int):
             cols_cnt = cols
             cols = [[] for _ in range(cols_cnt)]
