@@ -174,12 +174,12 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         # content += shortcuts_print
         content += '\n'
         content += header_print
-        if object_custom_print:
-            content += '\n'
-            content += object_custom_print
         if description_print:
             content += '\n'
             content += description_print
+        if object_custom_print:
+            content += '\n'
+            content += object_custom_print
         if notes_print:
             content += '\n'
             content += notes_print
@@ -272,27 +272,54 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
     obj_name_sub = 'merge'
 
     def get_object_custom(self, obj):
+        project = self.gitlab.project()
         issues = obj.closes_issues()
         commits = obj.commits()
+        # diffs = obj.diffs.list()
         content = ''
-        if issues or commits:
-            content += '## Data\n'
-            content += BLOCK_LINE
-            if issues:
-                content += '### Closes issues\n'
-                for issue in issues:
-                    issue_content = StGitlabIssueFetcherCommand.present(issue)
-                    content += issue_content
-                    content += '\n'
-            if commits:
-                content += '### Commits (%s)\n' % len(commits)
-                for commit in commits:
-                    content += '- By %s: [%s](%s)\n' % (
-                        commit.committer_name,
-                        commit.title,
-                        self.get_commit_url(commit)
-                    )
+        if issues:
+            content += '### Closes issues\n'
+            for issue in issues:
+                issue_content = StGitlabIssueFetcherCommand.present(issue)
+                content += issue_content
+                content += '\n'
+
+        if commits:
+            compare_result_ahead = project.repository_compare('master', obj.source_branch)
+            compare_result_behind = project.repository_compare(obj.source_branch, 'master')
+            ahead = len(compare_result_ahead['commits'])
+            behind = len(compare_result_behind['commits'])
+            content += '### Commits: %s (branch: %s - %s behind, %s ahead)\n' % (
+                len(commits),
+                obj.source_branch,
+                behind,
+                ahead
+            )
+
+            for commit in commits:
+                content += '- By %s: [%s](%s)\n' % (
+                    commit.committer_name,
+                    commit.title,
+                    self.get_commit_url(commit)
+                )
             content += '\n'
+        else:
+            commits = []
+
+        # TODO: possib to show by click on commit in separate view
+        # if diffs:
+        #     content += '### Changes (%s)\n' % len(diffs)
+        #     for diff in diffs:
+        #         print(diff)
+        #         d = obj.diffs.get(diff.id)
+        #         print(d)
+        #         for patch in d.diffs:
+        #             content += BLOCK_MD_LINE_START
+        #             content += '```diff\n'
+        #             content += patch['diff']
+        #             content += '```\n'
+        #             content += BLOCK_MD_LINE_STOP
+
         branch_name = obj.attributes.get('source_branch')
         pipelines = self.gitlab.pipelines(ref=branch_name)
         if pipelines:
@@ -309,6 +336,12 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
             'project': self.gitlab.project(oid=self.project_id).attributes.get('path_with_namespace'),
             'pid': commit.id
         }
+
+    def is_commit_in_merge(self, commits, commit_id):
+        for commit in commits:
+            if commit_id == commit.id:
+                return True
+        return False
 
 
 class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
@@ -358,6 +391,7 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
         ('refresh', ['F5', 'refresh']),
         ('title', ['F2', 'change title']),
         ('descr', ['d', 'change description']),
+        ('chfile', ['f', 'change snippet']),
         ('addnote', ['c', 'add note']),
         ('chnote', ['Alt+c', 'change note']),
         ('browser', ['g', 'open in browser']),
@@ -371,7 +405,7 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
 
     cols = [
         ['refresh', 'title', 'descr'],
-        ['addnote'],
+        ['addnote', 'chfile'],
         ['chnote', 'togglemode', 'togglenotes'],
         ['browser', 'openlink'],
         ['toggletask', 'delete', 'change']
@@ -380,16 +414,24 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
     obj_name = 'Snippet'
     obj_name_sub = 'snippet'
 
+    def auto_syntax(self, name):
+        return utils.syntaxes.get(name.split('.')[-1])
+
     def get_object_custom(self, obj):
         raw = obj.content()
-        print(raw)
         if not raw:
             return
         from io import BytesIO
         fp = BytesIO(raw)
-        content = '## %s\n' % obj.file_name
-        content += BLOCK_LINE
+        syntax_file = self.auto_syntax(obj.file_name)
+        syntax_md = sublime.load_settings('SyntaxToMarkdown.sublime-settings')
+        lang_md = syntax_md.get(syntax_file, '')
+        content = '## Snippet file preview: %s\n' % obj.file_name
+        content += BLOCK_MD_LINE_START
+        content += '```%s\n' % lang_md
         content += fp.read().decode('utf-8').replace('\r', '')
+        content += '```\n'
+        content += BLOCK_MD_LINE_STOP
         content += '\n'
         return content
 

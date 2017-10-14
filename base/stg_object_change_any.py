@@ -39,6 +39,8 @@ class StGitlabObjectChangeAnyCommand(sublime_plugin.TextCommand):
                 self.view.run_command('st_gitlab_object_change_note', {'note_id': note_id})
             elif selected_header_str.startswith('Notes'):
                 self.view.run_command('st_gitlab_object_add_note')
+            elif selected_header_str.startswith('Snippet file'):
+                self.view.run_command('st_gitlab_snippet_change_file')
             else:
                 cols = utils.stg_get_setting('%s_view_columns' % object_name, [])
                 try:

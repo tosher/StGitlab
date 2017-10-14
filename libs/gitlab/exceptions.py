@@ -173,6 +173,14 @@ class GitlabTimeTrackingError(GitlabOperationError):
     pass
 
 
+class GitlabUploadError(GitlabOperationError):
+    pass
+
+
+class GitlabAttachFileError(GitlabOperationError):
+    pass
+
+
 class GitlabCherryPickError(GitlabOperationError):
     pass
 
@@ -230,6 +238,6 @@ def on_http_error(error):
             try:
                 return f(*args, **kwargs)
             except GitlabHttpError as e:
-                raise error(e.response_code, e.error_message)
+                raise error(e.error_message, e.response_code, e.response_body)
         return wrapped_f
     return wrap

@@ -272,5 +272,11 @@
         "context": [
             {"key": "stg_screen", "operand": "st_gitlab_branches"}
         ]
+    },
+    {
+        "keys": ["f"], "command": "st_gitlab_snippet_change_file",
+        "context": [
+            {"key": "stg_screen", "operand": "st_gitlab_snippet"}
+        ]
     }
 ]

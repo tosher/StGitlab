@@ -19,6 +19,8 @@
    // branch
    { "caption": "Gitlab branch: Toggle protect", "command": "st_gitlab_branch_toggle_protect" },
    { "caption": "Gitlab branch: Merge-request", "command": "st_gitlab_branch_create_merge" },
+   //snippet
+   { "caption": "Gitlab snippet: Change", "command": "st_gitlab_snippet_change_file" },
    // any possible object
    { "caption": "Gitlab: Refresh", "command": "st_gitlab_object_refresh" },
    { "caption": "Gitlab: Add label", "command": "st_gitlab_object_add_label" },

@@ -11,8 +11,6 @@ from . import stg_utils as utils
 # TODO: если несколько объектов в строке - показывать меню
 class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        utils.stg_validate_screen(['st_gitlab_issue', 'st_gitlab_merge'])
-
         # markdown urls
         try:
             text = self.view.substr(self.view.sel()[0])

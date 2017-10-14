@@ -1,7 +1,7 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-# import sublime
+import sublime
 import sublime_plugin
 from . import stg_utils as utils
 
@@ -12,6 +12,9 @@ class StGitlabMergeAcceptCommand(sublime_plugin.TextCommand):
         project = gitlab.project()
         merge = gitlab.merge()
         if project and merge:
+            if merge.merge_status != 'can_be_merged':
+                sublime.message_dialog('There are merge conflicts. Merge-request can not be accepted.')
+                return
             merge.merge()
         self.view.run_command('st_gitlab_object_refresh')
 

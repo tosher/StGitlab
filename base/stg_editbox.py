@@ -47,10 +47,12 @@ class StEditbox(object):
     CELL_MAIN_GROUP = 0  # index of base group in cells of layout
     CELL_EDIT_GROUP = 1  # index of editor group in cells of layout
 
-    def __init__(self, base_id):
+    def __init__(self, base_id, syntax_auto=False, height=None):
         self.base_id = base_id
         self.view = self.view_base()
         self.window = self.view.window()
+        self.syntax_auto = syntax_auto
+        self.height = height
 
     def edit(self, title, on_done, text=None, **kwargs):
         if not text:
@@ -59,8 +61,13 @@ class StEditbox(object):
         self.editbox = self.window.new_file()
         self.editbox.set_name(title)
         self.editbox.set_scratch(True)
-        syntax_file = utils.stg_get_setting('syntax_file_edit')
-        self.editbox.set_syntax_file(syntax_file)
+        if not self.syntax_auto:
+            syntax_file = utils.stg_get_setting('syntax_file_edit')
+            self.editbox.set_syntax_file(syntax_file)
+        else:
+            syntax_file = self.auto_syntax(title)
+            if syntax_file:
+                self.editbox.set_syntax_file(syntax_file)
         self.editbox.settings().set('on_done', on_done)
         self.editbox.settings().set('base_id', self.base_id)
         self.editbox.settings().set('screen', 'st_gitlab_editbox')
@@ -68,6 +75,9 @@ class StEditbox(object):
         for arg in kwargs.keys():
             self.editbox.settings().set(arg, kwargs[arg])
         self.editbox.run_command('st_gitlab_insert_text', {'position': 0, 'text': text})
+
+    def auto_syntax(self, name):
+        return utils.syntaxes.get(name.split('.')[-1])
 
     def layout(self):
         return self.window.layout()
@@ -96,7 +106,8 @@ class StEditbox(object):
         self.window.focus_group(self.CELL_MAIN_GROUP)
 
     def get_editbox_height(self):
-        h = utils.stg_get_setting('edit_height_percent')
+        h = self.height if self.height else utils.stg_get_setting('edit_height_percent')
+
         ratio = (100 - int(h)) / 100
         return ratio
 

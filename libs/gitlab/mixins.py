@@ -235,6 +235,8 @@ class DeleteMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabDeleteError: If the server cannot perform the request
         """
+        if not isinstance(id, int):
+            id = id.replace('/', '%2F')
         path = '%s/%s' % (self.path, id)
         self.gitlab.http_delete(path, **kwargs)
 

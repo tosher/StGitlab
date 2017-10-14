@@ -63,6 +63,8 @@ from .stg_project_snippets import StGitlabProjectSnippetsCommand
 from .stg_snippet import StGitlabSnippetCommand
 from .stg_snippet import StGitlabSnippetCreateCommand
 from .stg_snippet import StGitlabSnippetDeleteCommand
+from .stg_snippet_change_file import StGitlabSnippetChangeFileCommand
+from .stg_snippet_change_file import StGitlabSnippetChangeFileDoneCommand
 
 
 __all__ = [
@@ -96,6 +98,8 @@ __all__ = [
     'StGitlabSnippetCreateCommand',
     'StGitlabSnippetDeleteCommand',
     'StGitlabSnippetFetcherCommand',
+    'StGitlabSnippetChangeFileCommand',
+    'StGitlabSnippetChangeFileDoneCommand',
     'StGitlabProjectSnippetsListCommand',
 
     'StGitlabFetcherCommand',

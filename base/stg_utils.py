@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 import base64
+import plistlib
 import requests
 import sublime
 from datetime import datetime, timedelta
@@ -9,6 +10,7 @@ from .stg_gitlab import StGitlab
 from ..libs import dimensions
 
 
+syntaxes = {}
 filter_types = {
     'Author': 'author_id',
     'Assignee': 'assignee_id',
@@ -243,3 +245,55 @@ def stg_image_scale(width, height, max_width):
     if scaled:
         return int(width), int(height)
     return width, height
+
+
+def stg_generate_syntaxes():
+    def get_lazy_old_scope(text):
+        ext_found = False
+        for line in f.split('\n'):
+            if '<key>fileTypes</key>' in line:
+                ext_found = True
+                continue
+            if ext_found and '</array>' in line:
+                break
+            if ext_found and line.strip().startswith('<string>'):
+                if '<array>' in line:
+                    continue
+                ext = line.strip().split('<')[1].split('>')[1].strip()
+                if ext:
+                    ext_syn[ext] = synfile
+
+    global syntaxes
+    ext_syn = {}
+    syntax_files_new = sublime.find_resources('*.sublime-syntax')
+    syntax_files_old = sublime.find_resources('*.tmLanguage')
+    synfiles = syntax_files_new + syntax_files_old
+    for synfile in synfiles:
+        try:
+            f = sublime.load_resource(synfile)
+            if synfile.endswith('sublime-syntax'):
+                ext_found = False
+                for line in f.split('\n'):
+                    if 'file_extensions' in line:
+                        ext_found = True
+                        continue
+                    if ext_found and not line.strip().startswith('-'):
+                        break
+                    if ext_found and line.strip().startswith('-'):
+                        ext = line.strip().split('-')[-1].strip().split(' ')[0]
+                        if ext:
+                            ext_syn[ext] = synfile
+            else:
+                try:
+                    plist = plistlib.readPlistFromBytes(f.encode("utf-8"))
+                    if 'fileTypes' in plist:
+                        for ext in plist['fileTypes']:
+                            ext_syn[ext] = synfile
+                except Exception:
+                    get_lazy_old_scope(f.encode("utf-8"))
+        except Exception as e:
+            print('Get syntax exception for %s: %s (%s)' % (synfile, e, e.__class__))
+    syntaxes = ext_syn
+
+
+sublime.set_timeout_async(stg_generate_syntaxes, 0)

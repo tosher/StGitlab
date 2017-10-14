@@ -228,11 +228,8 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
             flomaster_ids = [c.id for c in flomaster]
             return [item.id for item in master if item.id not in flomaster_ids]
 
-        COMMITS_PERIOD_WEEKS = 2 * 4  # diff commits for 2 month
         cols = {}
         project = self.gitlab.project()
-        since_date = (datetime.now() - timedelta(weeks=COMMITS_PERIOD_WEEKS)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        commits_master = project.commits.list(ref_name='master')
         for branch in self.objects:
             cols[branch.name] = {}
             if branch.name == 'master':
@@ -240,12 +237,14 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
                 cols[branch.name]['ahead'] = 0
                 cols[branch.name]['commits_summary'] = ''
             else:
-                commits = project.commits.list(ref_name=branch.name, since=since_date)
-                behind = diff(commits_master, commits)
-                ahead = diff(commits, commits_master)
-                cols[branch.name]['behind'] = len(behind)
-                cols[branch.name]['ahead'] = len(ahead)
-                cols[branch.name]['commits_summary'] = 'Behind: %s, Ahead: %s' % (len(behind), len(ahead))
+                compare_result_ahead = project.repository_compare('master', branch.name)
+                compare_result_behind = project.repository_compare(branch.name, 'master')
+                cols[branch.name]['ahead'] = len(compare_result_ahead['commits'])
+                cols[branch.name]['behind'] = len(compare_result_behind['commits'])
+                cols[branch.name]['commits_summary'] = 'Behind: %s, Ahead: %s' % (
+                    cols[branch.name]['behind'],
+                    cols[branch.name]['ahead']
+                )
         return cols
 
 
@@ -271,7 +270,6 @@ class StGitlabProjectSnippetsListCommand(StGitlabProjectObjectsListCommand):
         return cols
 
     def get_objects(self):
-        print(self.gitlab.snippets(**self.query_params)[0])
         return self.gitlab.snippets(**self.query_params)
 
     def get_columns_properties(self):

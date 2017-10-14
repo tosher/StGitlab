@@ -19,8 +19,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import base64
 
-import six
-
 from gitlab.base import *  # noqa
 from gitlab import cli
 from gitlab.exceptions import *  # noqa
@@ -689,7 +687,7 @@ class ProjectJob(RESTObject):
             str: The artifacts if `streamed` is False, None otherwise.
         """
         path = '%s/%s/artifacts' % (self.manager.path, self.get_id())
-        result = self.manager.gitlab.get_http(path, streamed=streamed,
+        result = self.manager.gitlab.http_get(path, streamed=streamed,
                                               **kwargs)
         return utils.response_content(result, streamed, action, chunk_size)
 
@@ -715,7 +713,7 @@ class ProjectJob(RESTObject):
             str: The trace
         """
         path = '%s/%s/trace' % (self.manager.path, self.get_id())
-        result = self.manager.gitlab.get_http(path, streamed=streamed,
+        result = self.manager.gitlab.http_get(path, streamed=streamed,
                                               **kwargs)
         return utils.response_content(result, streamed, action, chunk_size)
 
@@ -735,7 +733,7 @@ class ProjectCommitStatusManager(GetFromListMixin, CreateMixin, RESTManager):
              '/statuses')
     _obj_cls = ProjectCommitStatus
     _from_parent_attrs = {'project_id': 'project_id', 'commit_id': 'id'}
-    _create_attrs = (('state', 'sha'),
+    _create_attrs = (('state', ),
                      ('description', 'name', 'context', 'ref', 'target_url',
                       'coverage'))
 
@@ -960,6 +958,12 @@ class ProjectIssueManager(CRUDMixin, RESTManager):
                                'milestone_id', 'labels', 'created_at',
                                'updated_at', 'state_event', 'due_date'))
 
+    def _sanitize_data(self, data, action):
+        new_data = data.copy()
+        if 'labels' in data:
+            new_data['labels'] = ','.join(data['labels'])
+        return new_data
+
 
 class ProjectMember(SaveMixin, ObjectDeleteMixin, RESTObject):
     _short_print_attr = 'username'
@@ -1016,7 +1020,8 @@ class ProjectTag(ObjectDeleteMixin, RESTObject):
             GitlabCreateError: If the server fails to create the release
             GitlabUpdateError: If the server fails to update the release
         """
-        path = '%s/%s/release' % (self.manager.path, self.get_id())
+        id = self.get_id().replace('/', '%2F')
+        path = '%s/%s/release' % (self.manager.path, id)
         data = {'description': description}
         if self.release is None:
             try:
@@ -1035,8 +1040,7 @@ class ProjectTag(ObjectDeleteMixin, RESTObject):
         self.release = server_data
 
 
-class ProjectTagManager(GetFromListMixin, CreateMixin, DeleteMixin,
-                        RESTManager):
+class ProjectTagManager(NoUpdateMixin, RESTManager):
     _path = '/projects/%(project_id)s/repository/tags'
     _obj_cls = ProjectTag
     _from_parent_attrs = {'project_id': 'id'}
@@ -1208,6 +1212,12 @@ class ProjectMergeRequestManager(CRUDMixin, RESTManager):
                                'milestone_id'))
     _list_filters = ('iids', 'state', 'order_by', 'sort')
 
+    def _sanitize_data(self, data, action):
+        new_data = data.copy()
+        if 'labels' in data:
+            new_data['labels'] = ','.join(data['labels'])
+        return new_data
+
 
 class ProjectMilestone(SaveMixin, ObjectDeleteMixin, RESTObject):
     _short_print_attr = 'title'
@@ -1349,6 +1359,7 @@ class ProjectFile(SaveMixin, ObjectDeleteMixin, RESTObject):
         """
         self.branch = branch
         self.commit_message = commit_message
+        self.file_path = self.file_path.replace('/', '%2F')
         super(ProjectFile, self).save(**kwargs)
 
     def delete(self, branch, commit_message, **kwargs):
@@ -1363,7 +1374,8 @@ class ProjectFile(SaveMixin, ObjectDeleteMixin, RESTObject):
             GitlabAuthenticationError: If authentication is not correct
             GitlabDeleteError: If the server cannot perform the request
         """
-        self.manager.delete(self.get_id(), branch, commit_message, **kwargs)
+        file_path = self.get_id().replace('/', '%2F')
+        self.manager.delete(file_path, branch, commit_message, **kwargs)
 
 
 class ProjectFileManager(GetMixin, CreateMixin, UpdateMixin, DeleteMixin,
@@ -1604,6 +1616,17 @@ class ProjectTriggerManager(CRUDMixin, RESTManager):
     _update_attrs = (('description', ), tuple())
 
 
+class ProjectUser(User):
+    pass
+
+
+class ProjectUserManager(ListMixin, RESTManager):
+    _path = '/projects/%(project_id)s/users'
+    _obj_cls = ProjectUser
+    _from_parent_attrs = {'project_id': 'id'}
+    _list_filters = ('search',)
+
+
 class ProjectVariable(SaveMixin, ObjectDeleteMixin, RESTObject):
     _id_attr = 'key'
 
@@ -1783,6 +1806,7 @@ class Project(SaveMixin, ObjectDeleteMixin, RESTObject):
         ('services', 'ProjectServiceManager'),
         ('snippets', 'ProjectSnippetManager'),
         ('tags', 'ProjectTagManager'),
+        ('users', 'ProjectUserManager'),
         ('triggers', 'ProjectTriggerManager'),
         ('variables', 'ProjectVariableManager'),
     )
@@ -1810,8 +1834,8 @@ class Project(SaveMixin, ObjectDeleteMixin, RESTObject):
             query_data['path'] = path
         if ref:
             query_data['ref'] = ref
-        return self.manager.gitlab.http_get(gl_path, query_data=query_data,
-                                            **kwargs)
+        return self.manager.gitlab.http_list(gl_path, query_data=query_data,
+                                             **kwargs)
 
     @cli.register_custom_action('Project', ('sha', ))
     @exc.on_http_error(exc.GitlabGetError)
@@ -1899,7 +1923,7 @@ class Project(SaveMixin, ObjectDeleteMixin, RESTObject):
             list: The contributors
         """
         path = '/projects/%s/repository/contributors' % self.get_id()
-        return self.manager.gitlab.http_get(path, **kwargs)
+        return self.manager.gitlab.http_list(path, **kwargs)
 
     @cli.register_custom_action('Project', tuple(), ('sha', ))
     @exc.on_http_error(exc.GitlabListError)
@@ -2067,10 +2091,61 @@ class Project(SaveMixin, ObjectDeleteMixin, RESTObject):
             GitlabCreateError: If the server failed to perform the request
         """
         path = '/projects/%s/trigger/pipeline' % self.get_id()
-        form = {r'variables[%s]' % k: v for k, v in six.iteritems(variables)}
-        post_data = {'ref': ref, 'token': token}
-        post_data.update(form)
+        post_data = {'ref': ref, 'token': token, 'variables': variables}
         self.manager.gitlab.http_post(path, post_data=post_data, **kwargs)
+
+    # see #56 - add file attachment features
+    @cli.register_custom_action('Project', ('filename', 'filepath'))
+    @exc.on_http_error(exc.GitlabUploadError)
+    def upload(self, filename, filedata=None, filepath=None, **kwargs):
+        """Upload the specified file into the project.
+
+        .. note::
+
+            Either ``filedata`` or ``filepath`` *MUST* be specified.
+
+        Args:
+            filename (str): The name of the file being uploaded
+            filedata (bytes): The raw data of the file being uploaded
+            filepath (str): The path to a local file to upload (optional)
+
+        Raises:
+            GitlabConnectionError: If the server cannot be reached
+            GitlabUploadError: If the file upload fails
+            GitlabUploadError: If ``filedata`` and ``filepath`` are not
+                specified
+            GitlabUploadError: If both ``filedata`` and ``filepath`` are
+                specified
+
+        Returns:
+            dict: A ``dict`` with the keys:
+                * ``alt`` - The alternate text for the upload
+                * ``url`` - The direct url to the uploaded file
+                * ``markdown`` - Markdown for the uploaded file
+        """
+        if filepath is None and filedata is None:
+            raise GitlabUploadError("No file contents or path specified")
+
+        if filedata is not None and filepath is not None:
+            raise GitlabUploadError("File contents and file path specified")
+
+        if filepath is not None:
+            with open(filepath, "rb") as f:
+                filedata = f.read()
+
+        url = ('/projects/%(id)s/uploads' % {
+            'id': self.id,
+        })
+        file_info = {
+            'file': (filename, filedata),
+        }
+        data = self.manager.gitlab.http_post(url, files=file_info)
+
+        return {
+            "alt": data['alt'],
+            "url": data['url'],
+            "markdown": data['markdown']
+        }
 
 
 class Runner(SaveMixin, ObjectDeleteMixin, RESTObject):
