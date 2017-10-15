@@ -3,7 +3,6 @@
 
 import sys
 import os
-from datetime import datetime, timedelta
 # import sublime
 import sublime_plugin
 from collections import OrderedDict

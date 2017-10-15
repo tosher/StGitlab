@@ -24,26 +24,26 @@ contexts:
   block_markdown:
     - match: (^┌─{3,}$)
       captures:
-        1: comment.1.tag.stgitlab
+        1: markup.other.special.gitlab
       push: Packages/MarkdownEditing/Markdown.sublime-syntax
       with_prototype:
         - match: (?=^└─{3,}\n)
           captures:
-            1: comment.2.tag.stgitlab
+            1: markup.other.special.gitlab
           pop: true
     - match: (^└─{3,}$)
       captures:
-        1: comment.2.tag.stgitlab
+        1: markup.other.special.gitlab
 
   block_meta:
     - match: (^═+$)
       captures:
-        1: comment.tag.stgitlab
+        1: markup.other.special.gitlab
       push:
         - meta_content_scope: markup.other.table.stgitlab
         - match: (\1)
           captures:
-            1: comment.tag.stgitlab
+            1: markup.other.special.gitlab
           pop: true
         - include: inline
 
@@ -60,7 +60,7 @@ contexts:
     - match: ^(#+)\s.*
       scope: markup.heading.stgitlab
       captures:
-        1: comment.stgitlab
+        1: markup.other.special.gitlab
     - match: (\*{2})(.*?)(\*{2})
       scope: meta.bold.stgitlab
       captures:
@@ -79,6 +79,10 @@ contexts:
         2: comment.stgitlab
         3: comment.italic.stgitlab
         4: comment.stgitlab
+    - match: ^(\>)(.*)$
+      captures:
+        1: meta.tag.source.gitlab
+        2: comment.stgitlab  # markup.other.special.gitlab
     - match: \s(?i:opened|reopened|closed|success)\s
       scope: string.status.stgitlab
       captures:

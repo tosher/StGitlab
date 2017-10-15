@@ -17,7 +17,9 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
         for label_r in labels:
             r = sublime.Region(label_r.a - r_offset, label_r.b - r_offset)
             lbl_text = self.view.substr(r)[1:-1]
-            labels_points.append({'label': lbl_text, 'point': label_r.a - r_offset})
+            line = self.view.substr(self.view.line(r))
+            is_in_note = True if line.startswith('> ') else False
+            labels_points.append({'label': lbl_text, 'point': label_r.a - r_offset, 'is_in_note': is_in_note})
             self.view.erase(edit, r)
             r_offset += r.size()
 
@@ -40,11 +42,11 @@ class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
         for label in labels_points:
             point = label['point']
             lbl_color = lbs_colors.get(label['label'], lbl_color_default)
+            grayed = True if label['is_in_note'] else False
             view.add_phantom(
                 'label',
                 sublime.Region(point, point),
-                # '<span style="background-color:%s;border-radius:0.2rem;font-size:1rem;margin:0;font-family:Arial,Consolas,Tahoma;">&nbsp;%s&nbsp;</span>' % (lbl_color, label['label']),
-                StLabel(label['label'], lbl_color).get(),
+                StLabel(label['label'], lbl_color, grayed=grayed).get(),
                 sublime.LAYOUT_INLINE
             )
 

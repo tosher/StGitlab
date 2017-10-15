@@ -4,6 +4,7 @@
 import math
 import itertools
 import sublime
+from . import stg_utils as utils
 
 
 class StLabel(object):
@@ -34,18 +35,41 @@ class StLabel(object):
         margin:0;
         margin-left:4px;
     }
+
+    div.in_note {
+        font-size: 0.7rem;
+        padding-top: 0px;
+        padding-bottom: 1px;
+    }
+
+    div.in_note_grayed {
+        font-size: 0.7rem;
+        background-color: color(var(--bg) blend(gray 30%%));
+        border-color: color(var(--bg) blend(gray 30%%));
+        padding-top: 0px;
+        padding-bottom: 1px;
+    }
+
     </style>
     <body>
-        <div class="label">%(text)s</div>
+        <div class="%(label_class)s">%(text)s</div>
     </body>
     </html>'''
 
-    def __init__(self, text, color):
+    def __init__(self, text, color, grayed=False):
         self.text = text
+        self.grayed = grayed
         self.color = color
 
     def get(self):
-        return self.html_tpl % {'text': self.text, 'color': self.color, 'color_inverted': self.blackwhite(self.color)}
+        is_grayout_labels_in_notes = utils.stg_get_setting('grayed_out_labels_in_notes')
+        label_class = 'label' if not self.grayed else 'label in_note_grayed' if is_grayout_labels_in_notes else 'label in_note'
+        return self.html_tpl % {
+            'text': self.text,
+            'color': self.color,
+            'color_inverted': self.blackwhite(self.color),
+            'label_class': label_class
+        }
 
     def blackwhite(self, hexcolor):
         hexcolor = hexcolor.lstrip('#')
@@ -169,3 +193,59 @@ class StShortcutsMenu(object):
         keys = keyname.split('+')
         # return '<span style="padding:1px;">+</span>'.join(['<span style="color:#FBB788;">%s</span>' % k for k in keys])
         return self.html_key_plus.join([self.html_key_tpl % {'kbdclass': self.key_class(k), 'key': k} for k in keys])
+
+
+class StNotesIcons(object):
+
+    # https://gitlab.com/gitlab-org/gitlab-ce/issues/33503
+    # /production/svg/
+    icon_markers = {
+        'label': 'lable.png',
+        'milestone': 'clock.png',
+        'task completed': 'task-done.png',
+        'task incomplete': 'task-undone.png',
+        'mention merge': 'systemnote-mentioned-mr.png',
+        'mention issue': 'icon-mention.png',
+        'assigned to': 'assignee.png',
+        'removed assigne': 'unassignee.png',
+        'changed': 'pencil.png',
+        'create branch': 'branch.png',
+        'move project': 'arrow-right.png',
+        'mommit': 'systemnote-commit.png',
+        'close': 'systemnote-status-closed.png',
+        'reopen': 'systemnote-status-open.png',
+        'comment': 'comment.png',
+        'duplicate': 'duplicate.png',
+        'confidential': 'eye-slash.png',
+        'visible': 'eye.png'
+    }
+
+    def __init__(self, view):
+        self.view = view
+        self.build()
+
+    def build(self):
+        self.view.erase_phantoms('note_icon')
+        pattern = r'^> \d+:(.*?)$'
+        notes = self.view.find_all(pattern)
+        for note in notes:
+            text = ' '.join(self.view.substr(note).split()[2:])
+            self.show(note.a, text)
+
+    def get_icon(self, text):
+        for marker in self.icon_markers.keys():
+            marker_tokens = marker.split()
+            if all([m in text.lower() for m in marker_tokens]):
+                return self.icon_markers[marker]
+        return None
+
+    def show(self, point, text):
+        icon = self.get_icon(text)
+        if not icon:
+            return
+        self.view.add_phantom(
+            'note_icon',
+            sublime.Region(point, point),
+            '<div style="padding:3px;"><img src="res://Packages/StGitlab/icons/%s" width="%s" height="%s" style="border:0;"></div>' % (icon, 16, 16),
+            sublime.LAYOUT_INLINE
+        )

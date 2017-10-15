@@ -6,7 +6,7 @@ import sublime
 import sublime_plugin
 from .base import *
 from .base import stg_utils as utils
-from .base.stg_html import StShortcutsMenu
+from .base.stg_html import StShortcutsMenu, StNotesIcons
 
 
 class StGitlabInsertTextCommand(sublime_plugin.TextCommand):
@@ -181,6 +181,12 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
                 shortcuts=StGitlabProjectSnippetsListCommand.shortcuts(),
                 cols=StGitlabProjectSnippetsListCommand.cols()
             )
+        if screen in [
+            utils.object_commands.get('issue', {}).get('screen_view'),
+            utils.object_commands.get('merge', {}).get('screen_view'),
+            utils.object_commands.get('snippet', {}).get('screen_view')
+        ]:
+            StNotesIcons(self.view)
 
     def on_query_completions(self, prefix, locations):
         if self.view.settings().get('screen') == 'st_gitlab_editbox':

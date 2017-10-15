@@ -9,6 +9,9 @@ from .stg_object import StGitlabObjectCommand
 
 
 class StGitlabSnippetCreateCommand(sublime_plugin.TextCommand):
+
+    visibility = ['private', 'internal', 'public']
+
     def run(self, edit):
         self.gitlab = utils.gl.get()
         self.project_id = self.view.settings().get('project_id', None)
@@ -24,10 +27,33 @@ class StGitlabSnippetCreateCommand(sublime_plugin.TextCommand):
         self.get_snippet_title()
 
     def get_snippet_title(self):
-        self.view.window().show_input_panel("New snippet title:", '', self.create_snippet, None, None)
+        self.view.window().show_input_panel("New snippet title:", '', self.get_snippet_file, None, None)
 
-    def create_snippet(self, title):
-        snippet = self.project.snippets.create({'title': title})
+    def get_snippet_file(self, title):
+        if not title:
+            return
+        self.title = title
+        self.view.window().show_input_panel("Snippet file name (for syntax highlight):", '', self.get_visibility, None, None)
+
+    def get_visibility(self, file_name):
+        if not file_name:
+            return
+        self.file_name = file_name
+        self.view.window().show_quick_panel(self.visibility, self.create_snippet)
+
+    def create_snippet(self, visibility_idx):
+        if visibility_idx < 0:
+            return
+        visibility_value = self.visibility[visibility_idx]
+        snippet = self.project.snippets.create(
+            {
+                'title': self.title,
+                'file_name': self.file_name,
+                'content': '-',
+                'code': '-',
+                'visibility': visibility_value
+            }
+        )
         r = sublime.active_window().new_file()
         r.set_scratch(True)
         syntax_file = utils.stg_get_setting('syntax_file')

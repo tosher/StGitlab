@@ -17,6 +17,7 @@
     "image_max_width": 1200,
     "char_right_arrow": "⮕", // →
     "char_left_arrow": "⬅", // ←
+    "grayed_out_labels_in_notes": true,
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },
         { "prop": "title", "colname": "Title", "maxlen": 50},

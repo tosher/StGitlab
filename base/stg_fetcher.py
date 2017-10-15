@@ -7,7 +7,7 @@ from collections import OrderedDict
 import traceback
 # import textwrap
 from . import stg_utils as utils
-from .stg_html import StShortcutsMenu
+from .stg_html import StShortcutsMenu, StNotesIcons
 
 BLOCK_LINE = '%s\n' % ('═' * 80)
 BLOCK_MD_LINE_START = '┌%s\n\n' % ('─' * 79)
@@ -118,20 +118,26 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             if not utils.stg_get_setting('show_system_notes') and note_is_system:
                 continue
 
-            if note_attrs.get('body'):  # and not note.system:
-                notes += '### Note:%s by %s\n' % (note.id, note_attrs.get('author', {}).get('name', ''))
-                if not note_is_system:
+            if note_attrs.get('body'):
+                if note_is_system:
+                    notes += '> %(id)s: %(author)s %(msg)s (%(timestamp)s)\n' % {
+                        'id': note.id,
+                        'author': note_attrs.get('author', {}).get('name', ''),
+                        'msg': utils.stg_msg_labels(note_attrs.get('body', ''), obj.project_id),
+                        'timestamp': utils.stg_get_datetime(note_attrs.get('created_at', None))
+                    }
+                else:
+                    notes += '\n### Note:%s by %s\n' % (note.id, note_attrs.get('author', {}).get('name', ''))
                     notes += BLOCK_MD_LINE_START
-                body = utils.stg_msg_labels(note_attrs.get('body', ''), obj.project_id)
-                notes += '%s\n' % body.replace('\r', '')
-                if not note_is_system:
+                    body = note_attrs.get('body', '')
+                    notes += '%s\n' % body.replace('\r', '')
                     notes += '\n'
                     notes += BLOCK_MD_LINE_STOP
-                notes += '*(%s)*\n' % (utils.stg_get_datetime(note_attrs.get('created_at', None)))
+                    notes += '*%s*\n\n' % (utils.stg_get_datetime(note_attrs.get('created_at', None)))
         if notes:
-            content += '## Notes\n'
+            content += '## Notes\n\n'
             content += notes
-        return content
+        return content.replace('\n\n\n', '\n\n')
 
     def screen_name(self):
         return 'st_gitlab_%s' % self.obj_name_sub
@@ -185,6 +191,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             content += notes_print
 
         r.insert(edit, 0, content)
+        StNotesIcons(r)
         sublime.set_timeout_async(utils.stg_show_images(r), 0)
         r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)
@@ -430,7 +437,7 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
         content += BLOCK_MD_LINE_START
         content += '```%s\n' % lang_md
         content += fp.read().decode('utf-8').replace('\r', '')
-        content += '```\n'
+        content += '\n```\n'
         content += BLOCK_MD_LINE_STOP
         content += '\n'
         return content
