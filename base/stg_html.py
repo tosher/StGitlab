@@ -209,6 +209,7 @@ class StNotesIcons(object):
         'assigned to': 'assignee.png',
         'removed assigne': 'unassignee.png',
         'changed': 'pencil.png',
+        'marked': 'pencil.png',
         'create branch': 'branch.png',
         'move project': 'arrow-right.png',
         'mommit': 'systemnote-commit.png',
