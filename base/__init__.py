@@ -65,6 +65,8 @@ from .stg_snippet import StGitlabSnippetCreateCommand
 from .stg_snippet import StGitlabSnippetDeleteCommand
 from .stg_snippet_change_file import StGitlabSnippetChangeFileCommand
 from .stg_snippet_change_file import StGitlabSnippetChangeFileDoneCommand
+from .stg_users import StGitlabUsersCommand
+from .stg_project_objects_list import StGitlabUsersListCommand
 
 
 __all__ = [
@@ -101,6 +103,9 @@ __all__ = [
     'StGitlabSnippetChangeFileCommand',
     'StGitlabSnippetChangeFileDoneCommand',
     'StGitlabProjectSnippetsListCommand',
+
+    'StGitlabUsersCommand',
+    'StGitlabUsersListCommand',
 
     'StGitlabFetcherCommand',
     'StGitlabObjectAddLabelCommand',

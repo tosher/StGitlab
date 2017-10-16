@@ -58,5 +58,7 @@
    // project branches
    { "caption": "Gitlab project: Branches", "command": "st_gitlab_project_branches" },
    // project snippets
-   { "caption": "Gitlab project: Snippets", "command": "st_gitlab_project_snippets" }
+   { "caption": "Gitlab project: Snippets", "command": "st_gitlab_project_snippets" },
+   // project snippets
+   { "caption": "Gitlab: Users", "command": "st_gitlab_users" }
 ]

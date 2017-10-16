@@ -64,6 +64,14 @@ object_commands = {
         'view': 'st_gitlab_snippet',
         'list': 'st_gitlab_project_snippets_list',
         'fetch': 'st_gitlab_snippet_fetcher'
+    },
+    'user': {
+        'screen_view': 'st_gitlab_user',
+        'screen_list': 'st_gitlab_users',
+        'screen_board': None,
+        'view': 'st_gitlab_user',
+        'list': 'st_gitlab_users_list',
+        'fetch': 'st_gitlab_user_fetcher'
     }
 }
 

@@ -56,6 +56,15 @@
         { "prop": "updated_at", "colname": "Last updated", "type": "datetime"},
         { "prop": "description", "colname": "Description", "maxlen": 50}
     ],
+    "users_list_columns": [
+        { "prop": "id", "colname": "Id"},
+        { "prop": "username", "colname": "Username"},
+        { "prop": "name", "colname": "Name"},
+        { "prop": "created_at", "colname": "Created", "type": "datetime"},
+        { "prop": "web_url", "colname": "User Url"},
+        { "prop": "issues_ratio", "colname": "Issues opened/closed", "special": true, "key": "id"},
+        { "prop": "merge_requests", "colname": "Merge requests", "special": true, "key": "id"}
+    ],
     "issue_view_columns": [
         { "prop": "iid", "colname": "ID"},
         { "prop": "title", "colname": "Title"},

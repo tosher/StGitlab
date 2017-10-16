@@ -39,7 +39,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         header += '\t**Total**: %s\n' % len(self.objects)
         page = self.query_params.get('page')
         per_page = self.query_params.get('per_page')
-        header += '\t**Page number**: %(page)s (%(per_page)s issues per page)\n' % {
+        header += '\t**Page number**: %(page)s (%(per_page)s per page)\n' % {
             'page': page,
             'per_page': per_page
         }
@@ -222,11 +222,6 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
         return utils.stg_get_setting('branches_list_columns', {})
 
     def special_cols(self):
-        def diff(master, flomaster):
-            master = set(master)
-            flomaster_ids = [c.id for c in flomaster]
-            return [item.id for item in master if item.id not in flomaster_ids]
-
         cols = {}
         project = self.gitlab.project()
         for branch in self.objects:
@@ -273,3 +268,46 @@ class StGitlabProjectSnippetsListCommand(StGitlabProjectObjectsListCommand):
 
     def get_columns_properties(self):
         return utils.stg_get_setting('snippets_list_columns', {})
+
+
+class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
+    @classmethod
+    def shortcuts(cls):
+        shortcuts = OrderedDict([
+            ('open', ['Enter', 'open']),
+            ('refresh', ['F5', 'refresh']),
+            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ])
+        return shortcuts
+
+    @classmethod
+    def cols(cls):
+        cols = [
+            ['open', 'refresh'],
+            ['ppage', 'npage']
+        ]
+        return cols
+
+    def get_objects(self):
+        return self.gitlab.users(**self.query_params)
+
+    def get_columns_properties(self):
+        return utils.stg_get_setting('users_list_columns', {})
+
+    def special_cols(self):
+        cols = {}
+        projects_filter = utils.stg_get_setting('projects_filter', [])
+        if projects_filter:
+            projects = [self.gitlab.project(oid=pid) for pid in projects_filter]
+        else:
+            projects = self.gitlab.projects(all=True)
+
+        for user in self.objects:
+            issues_opened_cnt = sum([len(self.gitlab.issues(p.id, assignee_id=user.id, state='opened')) for p in projects])
+            issues_closed_cnt = sum([len(self.gitlab.issues(p.id, assignee_id=user.id, state='closed')) for p in projects])
+            merges_cnt = sum([len(self.gitlab.merges(p.id, assignee_id=user.id)) for p in projects])
+            cols[user.id] = {}
+            cols[user.id]['issues_ratio'] = '%s/%s' % (issues_opened_cnt, issues_closed_cnt)
+            cols[user.id]['merge_requests'] = '%s' % (merges_cnt)
+        return cols

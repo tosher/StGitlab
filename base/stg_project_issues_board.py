@@ -23,7 +23,7 @@ class StGitlabProjectIssuesBoardCommand(sublime_plugin.TextCommand):
             'per_page': per_page,
             'state': 'opened'
         }
-        title = 'Issues Board: %s' % project.name
+        title = 'WIP:Issues Board: %s' % project.name
         r = self.view.window().new_file()
         r.set_name(title)
         syntax_file = utils.stg_get_setting('syntax_file')
