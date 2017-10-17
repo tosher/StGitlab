@@ -17,7 +17,7 @@ class StGitlabInsertTextCommand(sublime_plugin.TextCommand):
 
 # ### Events ###
 class StGitlabLoad(sublime_plugin.EventListener):
-    objects = ['issue', 'merge', 'pipeline', 'branch', 'snippet']
+    objects = ['issue', 'merge', 'pipeline', 'branch', 'snippet', 'user']
 
     def is_list_screen(self, view):
         for obj in self.objects:

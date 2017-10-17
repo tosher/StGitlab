@@ -290,7 +290,16 @@ class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
         return cols
 
     def get_objects(self):
-        return self.gitlab.users(**self.query_params)
+        users_group_filter = utils.stg_get_setting('users_group_filter', [])
+        users = []
+        if users_group_filter:
+            groups_lists = [self.gitlab.group(group).members.list(active=True) for group in users_group_filter]
+            for gr_users in groups_lists:
+                for user in gr_users:
+                    users.append(user)
+        else:
+            users = self.gitlab.users(all=True, active=True)
+        return users
 
     def get_columns_properties(self):
         return utils.stg_get_setting('users_list_columns', {})

@@ -8,9 +8,10 @@ import sublime_plugin
 from . import stg_utils as utils
 
 
-# TODO: если несколько объектов в строке - показывать меню
 class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
     def run(self, edit):
+        gitlab = utils.gl.get()
+        project = gitlab.project()
         # markdown urls
         try:
             text = self.view.substr(self.view.sel()[0])
@@ -18,8 +19,6 @@ class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
                 url = self.view.substr(self.view.sel()[0]).split('(')[1].split(')')[0]
                 if url:
                     if not url.startswith('http'):
-                        gitlab = utils.gl.get()
-                        project = gitlab.project()
                         project_name = project.attributes.get('path_with_namespace')
                         gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
                         url = '%s/%s/%s' % (gl_url, project_name, url.lstrip('/'))
@@ -41,20 +40,38 @@ class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
         # issues
         try:
             text = self.view.substr(self.view.sel()[0])
-            issues = re.findall(r'\#\d+', text)
+            issues = re.findall(r'([/\w]+)?\#(\d+)', text)
             if issues:
-                issue_id = issues[0][1:]
-                self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': issue_id})
+                project_path, issue_id = issues[0]
+                project_id = None
+                if project_path:
+                    if '/' in project_path:
+                        project_go = gitlab.project(oid=project_path)
+                    else:
+                        namespace = project.namespace.get('path', '')
+                        project_name = project_path
+                        project_go = gitlab.project(oid='%s/%s' % (namespace, project_name))
+                    project_id = project_go.id
+                self.view.run_command('st_gitlab_issue_fetcher', {'obj_id': issue_id, 'project_id': project_id})
         except Exception:
             pass
 
         # merge-requests
         try:
             text = self.view.substr(self.view.sel()[0])
-            merges = re.findall(r'\!\d+', text)
+            merges = re.findall(r'([/\w]+)?\!(\d+)', text)
             if merges:
-                merge_id = merges[0][1:]
-                self.view.run_command('st_gitlab_merge_fetcher', {'obj_id': merge_id})
+                project_path, merge_id = merges[0]
+                project_id = None
+                if project_path:
+                    if '/' in project_path:
+                        project_go = gitlab.project(oid=project_path)
+                    else:
+                        namespace = project.namespace.get('path', '')
+                        project_name = project_path
+                        project_go = gitlab.project(oid='%s/%s' % (namespace, project_name))
+                    project_id = project_go.id
+                self.view.run_command('st_gitlab_merge_fetcher', {'obj_id': merge_id, 'project_id': project_id})
         except Exception:
             pass
 

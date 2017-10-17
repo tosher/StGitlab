@@ -3,6 +3,7 @@
 
 import math
 import itertools
+from collections import OrderedDict
 import sublime
 from . import stg_utils as utils
 
@@ -198,28 +199,30 @@ class StShortcutsMenu(object):
 class StNotesIcons(object):
 
     # https://gitlab.com/gitlab-org/gitlab-ce/issues/33503
-    # /production/svg/
-    icon_markers = {
-        'label': 'lable.png',
-        'milestone': 'clock.png',
-        'task completed': 'task-done.png',
-        'task incomplete': 'task-undone.png',
-        'mention merge': 'systemnote-mentioned-mr.png',
-        'mention issue': 'icon-mention.png',
-        'assigned to': 'assignee.png',
-        'removed assigne': 'unassignee.png',
-        'changed': 'pencil.png',
-        'marked': 'pencil.png',
-        'create branch': 'branch.png',
-        'move project': 'arrow-right.png',
-        'mommit': 'systemnote-commit.png',
-        'close': 'systemnote-status-closed.png',
-        'reopen': 'systemnote-status-open.png',
-        'comment': 'comment.png',
-        'duplicate': 'duplicate.png',
-        'confidential': 'eye-slash.png',
-        'visible': 'eye.png'
-    }
+    icon_markers = OrderedDict([
+        ('label', 'lable.png'),
+        ('marked', 'pencil.png'),
+        ('milestone', 'clock.png'),
+        ('task completed', 'task-done.png'),
+        ('task incomplete', 'task-undone.png'),
+        ('mention merge', 'systemnote-mentioned-mr.png'),
+        ('enabled merge', 'icon-merge-request.png'),
+        ('approved', 'approval.png'),
+        ('merged', 'icon-merge-request.png'),
+        ('mention issue', 'icon-mention.png'),
+        ('assigned to', 'assignee.png'),
+        ('removed assigne', 'unassignee.png'),
+        ('changed', 'pencil.png'),
+        ('create branch', 'branch.png'),
+        ('move project', 'arrow-right.png'),
+        ('commit', 'systemnote-commit.png'),
+        ('close', 'systemnote-status-closed.png'),
+        ('reopen', 'systemnote-status-open.png'),
+        ('comment', 'comment.png'),
+        ('duplicate', 'duplicate.png'),
+        ('confidential', 'eye-slash.png'),
+        ('visible', 'eye.png')
+    ])
 
     def __init__(self, view):
         self.view = view
