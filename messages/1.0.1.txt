@@ -1,0 +1,3 @@
+StGitlab 1.0.1 changelog:
+
+ * Plugin as sublime-package

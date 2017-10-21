@@ -1,2 +1,3 @@
 #python
 *.pyc
+__build__.py

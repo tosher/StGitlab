@@ -5,10 +5,7 @@ import sys
 import os
 import sublime
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
-import gitlab
-
-# TODO: request use for ssl validation
-# requests = settings.get('connection_options')
+from ..libs import gitlab
 
 
 class StGitlab(object):

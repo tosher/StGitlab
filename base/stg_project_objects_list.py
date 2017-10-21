@@ -1,15 +1,12 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sys
-import os
 # import sublime
 import sublime_plugin
 from collections import OrderedDict
 from . import stg_utils as utils
 from .stg_html import StShortcutsMenu
-sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
-from terminaltables.other_tables import WindowsTable as SingleTable
+from ..libs.terminaltables.other_tables import WindowsTable as SingleTable
 
 
 class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):

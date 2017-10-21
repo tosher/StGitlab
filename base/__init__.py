@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python\n
+#!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
 from .stg_gitlab_reset import StGitlabResetCommand
