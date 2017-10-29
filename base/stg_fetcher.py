@@ -103,6 +103,27 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
     def get_object_custom(self, obj):
         return None
 
+    def note_commit(self, msg):
+        MARKER = 'mentioned in commit'
+        commit_hash = None
+        if MARKER in msg:
+            commit_hash = msg.split(MARKER)[1].strip()
+        if commit_hash:
+            project = self.gitlab.project()
+            project_name = project.attributes.get('path_with_namespace')
+            commit = project.commits.get(commit_hash[:8])
+            if commit:
+                msg_parts = msg.split(commit_hash)
+                gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
+                url = '%s/%s/commit/%s' % (gl_url, project_name, commit_hash[:8])
+                return '%s [%s](%s) %s' % (
+                    msg_parts[0],
+                    commit.title,
+                    url,
+                    msg_parts[-1]
+                )
+        return msg
+
     def get_notes(self, obj):
         notes = ''
         content = ''
@@ -120,10 +141,12 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
 
             if note_attrs.get('body'):
                 if note_is_system:
+                    msg = utils.stg_msg_labels(note_attrs.get('body', ''), obj.project_id)
+                    msg = self.note_commit(msg)
                     notes += '> %(id)s: %(author)s %(msg)s (%(timestamp)s)\n' % {
                         'id': note.id,
                         'author': note_attrs.get('author', {}).get('name', ''),
-                        'msg': utils.stg_msg_labels(note_attrs.get('body', ''), obj.project_id),
+                        'msg': msg,
                         'timestamp': utils.stg_get_datetime(note_attrs.get('created_at', None))
                     }
                 else:
