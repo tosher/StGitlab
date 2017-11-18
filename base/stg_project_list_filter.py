@@ -90,9 +90,9 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
     def get_list(self, query_params):
         per_page = utils.stg_get_setting('list_page_size')
         query_params['per_page'] = per_page
-        if self.filter_name != 'state':
+        if self.filter_name != 'state' and 'state' not in query_params:
             query_params['state'] = 'opened'
-        if self.filter_name != 'page':
+        if self.filter_name != 'page' and 'page' not in query_params:
             query_params['page'] = 1
         self.view.settings().set('query_params', query_params)
         self.view.run_command('st_gitlab_project_list_refresh')
