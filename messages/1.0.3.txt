@@ -1,0 +1,5 @@
+StGitlab 1.0.3 changelog:
+
+* Fixed: StGitlab syntax compatibility with ST builds after 3153
+* Fixed: Users list in completions
+* Fixed: Users completions fires

@@ -191,10 +191,11 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
     def on_query_completions(self, prefix, locations):
         if self.view.settings().get('screen') == 'st_gitlab_editbox':
             gitlab = utils.gl.get()
-            pattern_issue = re.compile(r'(^|.*\s)(\#)(\d+)?')
             completions = []
             cursor_position = locations[0]
-            chars_before = self.view.substr(sublime.Region(cursor_position - 10, cursor_position))
+            chars_before = self.view.substr(sublime.Region(cursor_position - 2, cursor_position))
+
+            pattern_issue = re.compile(r'(^|\s)(\#)(\d+)?')
             m = pattern_issue.match(chars_before)
             if m and m.group(2):
                 issues = gitlab.issues()
@@ -205,7 +206,7 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
             if completions:
                 return completions
 
-            pattern_merge = re.compile(r'(^|.*\s)(\!)(\d+)?')
+            pattern_merge = re.compile(r'(^|\s)(\!)(\d+)?')
             m = pattern_merge.match(chars_before)
             if m and m.group(2):
                 merges = gitlab.merges()
@@ -216,14 +217,20 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
             if completions:
                 return completions
 
-            pattern_user = re.compile(r'(^|.*\s)(\@)(\d+)?')
+            pattern_user = re.compile(r'(^|\s)(\@)(\w+)?')
             m = pattern_user.match(chars_before)
             if m and m.group(2):
-                users = gitlab.users()
+                users_group_filter = utils.stg_get_setting('users_group_filter', [])
+                if users_group_filter:
+                    users = utils.users_filtered(users_group_filter)
+                else:
+                    users = utils.users_all()
+                # users = gitlab.users()
                 for user in users:
-                    if m.group(3) and not user.name.startswith(m.group(3)):
+                    print(user.username)
+                    if m.group(3) and not user.username.lower().startswith(m.group(3).lower()):
                         continue
-                    completions.append(('%s\tGitlab user' % user.name, user.name))
+                    completions.append(('%s - %s\tGitlab user' % (user.username, user.name), user.username))
             if completions:
                 return completions
 

@@ -10,30 +10,36 @@ contexts:
     - include: block_meta
     - include: inline
 
-  # block_markdown2:
-  #   - match: ^(─{3,})$
-  #     captures:
-  #       1: comment.1.tag.stgitlab
-  #     push:
-  #       - meta_include_prototype: false
-  #       - meta_content_scope: meta.environment.embedded.text.html.markdown.gfm.stgitlab text.html.markdown.gfm.embedded
-  #       - match: (\1)
-  #         pop: true
-  #       - include: scope:text.html.markdown.gfm
-
+  # After Build 3153
+  # https://forum.sublimetext.com/t/dev-build-3153/33014/8
+  # https://github.com/sublimehq/Packages/commit/72bd6bdae9e185d9ebedab9679a55cd8ae8c3e60
   block_markdown:
     - match: (^┌─{3,}$)
       captures:
         1: markup.other.special.gitlab
-      push: Packages/MarkdownEditing/Markdown.sublime-syntax
-      with_prototype:
-        - match: (?=^└─{3,}\n)
-          captures:
-            1: markup.other.special.gitlab
-          pop: true
+      # embed: Packages/MarkdownEditing/Markdown.sublime-syntax
+      embed: scope:text.html.markdown.gfm
+      embed_scope: text.html.markdown.gfm.embedded.gitlab
+      escape: (?=^└─{3,}$)
     - match: (^└─{3,}$)
       captures:
         1: markup.other.special.gitlab
+
+  # Before build 3153
+  # Apparent recursion within a with_prototype action: 25000 context sanity limit hit
+  # block_markdown:
+  #   - match: (^┌─{3,}$)
+  #     captures:
+  #       1: markup.other.special.gitlab
+  #     push: Packages/MarkdownEditing/Markdown.sublime-syntax
+  #     with_prototype:
+  #       - match: (?=^└─{3,}\n)
+  #         captures:
+  #           1: markup.other.special.gitlab
+  #         pop: true
+  #   - match: (^└─{3,}$)
+  #     captures:
+  #       1: markup.other.special.gitlab
 
   block_meta:
     - match: (^═+$)

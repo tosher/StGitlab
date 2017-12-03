@@ -67,6 +67,12 @@ Example:
 }
 ```
 
+## Hints
+For auto-completions show, add option to syntax specific settings (markdown):
+
+```
+"auto_complete_triggers": [ {"selector": "text.html.markdown", "characters": "#!@"} ]
+```
 
 ## External dependencies
 * [Python Gitlab](http://python-gitlab.readthedocs.io/en/stable/index.html)
