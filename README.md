@@ -37,7 +37,7 @@ The easiest way to install this is with [Package Control](http://wbond.net/subli
  * If you just went and installed Package Control, you probably need to restart Sublime Text before doing this next bit.
  * Bring up the Command Palette (<kbd>Command+Shift+p</kbd> on OS X, <kbd>Control+Shift+p</kbd> on Linux/Windows).
  * Select "Package Control: Install Package" (it'll take a few seconds)
- * Select Redlime when the list appears.
+ * Select `StGitlab` when the list appears.
 
 Package Control will automatically keep **StGitlab** up to date with the latest version.
 
