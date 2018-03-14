@@ -1,7 +1,7 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
+# import sublime
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_project import ProjectSelectPanel
@@ -16,7 +16,7 @@ class StGitlabChangeProjectCommand(sublime_plugin.TextCommand):
             issue.move(project_id_new)
             self.view.settings().set('project_id', project_new.id)
             self.view.settings().set('object_id', issue.iid)
-            sublime.status_message('Issue #%r was moved to %s' % (issue.id, project_new.name))
+            self.view.window().status_message('Issue #%r was moved to %s' % (issue.id, project_new.name))
             self.view.run_command('st_gitlab_object_refresh')
 
         gitlab = utils.gl.get()

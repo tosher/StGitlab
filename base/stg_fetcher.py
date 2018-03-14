@@ -55,7 +55,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             self.st_gitlab_view(edit)
         except Exception as e:
             traceback.print_exc()
-            sublime.status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
+            self.view.window().sublime.status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
 
     def get_shortcuts(self, view):
         StShortcutsMenu(view, shortcuts=self.shortcuts, cols=self.cols)

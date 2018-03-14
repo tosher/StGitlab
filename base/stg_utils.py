@@ -304,4 +304,20 @@ def stg_generate_syntaxes():
     syntaxes = ext_syn
 
 
+def users_filtered(users_group_filter):
+    users = []
+    gitlab = gl.get()
+    groups_lists = [gitlab.group(group).members.list(active=True) for group in users_group_filter]
+    for gr_users in groups_lists:
+        for user in gr_users:
+            # users.append(user)
+            users.append(gitlab.user(oid=user.id))
+    return users
+
+
+def users_all():
+    gitlab = gl.get()
+    return gitlab.users(all=True, active=True)
+
+
 sublime.set_timeout_async(stg_generate_syntaxes, 0)

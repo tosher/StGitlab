@@ -1,7 +1,7 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
+# import sublime
 import sublime_plugin
 from . import stg_utils as utils
 from .stg_user import UserSelectPanel
@@ -47,7 +47,7 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
                 if key in list(self.filter_types.values()):
                     del query_params[key]
             self.get_list(query_params)
-            sublime.status_message('All filters was cleared.')
+            self.view.window().status_message('All filters was cleared.')
             return
 
         if self.filter_values:
