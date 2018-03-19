@@ -1,0 +1,4 @@
+StGitlab 1.0.5 changelog:
+
+* Pipeline's jobs showing fix
+* Python-gitlab updated to v1.3.0

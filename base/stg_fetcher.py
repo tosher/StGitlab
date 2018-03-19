@@ -55,7 +55,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             self.st_gitlab_view(edit)
         except Exception as e:
             traceback.print_exc()
-            self.view.window().sublime.status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
+            self.view.window().status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
 
     def get_shortcuts(self, view):
         StShortcutsMenu(view, shortcuts=self.shortcuts, cols=self.cols)
@@ -404,13 +404,16 @@ class StGitlabPipelineFetcherCommand(StGitlabFetcherCommand):
         jobs = self.gitlab.jobs()
         if not jobs:
             return
-        pipeline_jobs = [j for j in jobs if j.attributes.get('pipeline') == obj.id]
+
+        pipeline_jobs = [j for j in jobs if j.attributes.get('pipeline').get('id', None) == obj.id]
         content = ''
         if pipeline_jobs:
+            print('draw jobs')
             content += '## Jobs\n'
             content += BLOCK_LINE
             for job in pipeline_jobs:
-                content += '* %s **%s**' % (job.id, job.name)
+                runner_name = 'on %s' % (job.runner.get('description', '<Uknown runner>')) if job.runner else ''
+                content += '* [ %s ] %s **%s** %s' % (job.status, job.id, job.name, runner_name)
                 content += '\n'
         return content
 

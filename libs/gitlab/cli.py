@@ -77,8 +77,9 @@ def cls_to_what(cls):
     return camel_re.sub(r'\1-\2', cls.__name__).lower()
 
 
-def _get_base_parser():
+def _get_base_parser(add_help=True):
     parser = argparse.ArgumentParser(
+        add_help=add_help,
         description="GitLab API Command Line Interface")
     parser.add_argument("--version", help="Display the version.",
                         action="store_true")
@@ -86,7 +87,7 @@ def _get_base_parser():
                         help="Verbose mode (legacy format only)",
                         action="store_true")
     parser.add_argument("-d", "--debug",
-                        help="Debug mode (display HTTP requests",
+                        help="Debug mode (display HTTP requests)",
                         action="store_true")
     parser.add_argument("-c", "--config-file", action='append',
                         help=("Configuration file to use. Can be used "
@@ -114,19 +115,38 @@ def _get_parser(cli_module):
     return cli_module.extend_parser(parser)
 
 
+def _parse_value(v):
+    if isinstance(v, str) and v.startswith('@'):
+        # If the user-provided value starts with @, we try to read the file
+        # path provided after @ as the real value. Exit on any error.
+        try:
+            return open(v[1:]).read()
+        except Exception as e:
+            sys.stderr.write("%s\n" % e)
+            sys.exit(1)
+
+    return v
+
+
 def main():
     if "--version" in sys.argv:
         print(gitlab.__version__)
         exit(0)
 
-    parser = _get_base_parser()
+    parser = _get_base_parser(add_help=False)
+    # This first parsing step is used to find the gitlab config to use, and
+    # load the propermodule (v3 or v4) accordingly. At that point we don't have
+    # any subparser setup
     (options, args) = parser.parse_known_args(sys.argv)
 
     config = gitlab.config.GitlabConfigParser(options.gitlab,
                                               options.config_file)
     cli_module = importlib.import_module('gitlab.v%s.cli' % config.api_version)
+
+    # Now we build the entire set of subcommands and do the complete parsing
     parser = _get_parser(cli_module)
     args = parser.parse_args(sys.argv[1:])
+
     config_files = args.config_file
     gitlab_id = args.gitlab
     verbose = args.verbose
@@ -143,11 +163,12 @@ def main():
     for item in ('gitlab', 'config_file', 'verbose', 'debug', 'what', 'action',
                  'version', 'output'):
         args.pop(item)
-    args = {k: v for k, v in args.items() if v is not None}
+    args = {k: _parse_value(v) for k, v in args.items() if v is not None}
 
     try:
         gl = gitlab.Gitlab.from_config(gitlab_id, config_files)
-        gl.auth()
+        if gl.private_token or gl.oauth_token:
+            gl.auth()
     except Exception as e:
         die(str(e))
 

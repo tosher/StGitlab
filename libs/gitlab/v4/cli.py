@@ -83,7 +83,7 @@ class GitlabCLI(object):
 
     def do_get(self):
         id = None
-        if gitlab.mixins.GetWithoutIdMixin not in inspect.getmro(self.cls):
+        if gitlab.mixins.GetWithoutIdMixin not in inspect.getmro(self.mgr_cls):
             id = self.args.pop(self.cls._id_attr)
 
         try:
@@ -99,7 +99,9 @@ class GitlabCLI(object):
             cli.die("Impossible to destroy object", e)
 
     def do_update(self):
-        id = self.args.pop(self.cls._id_attr)
+        id = None
+        if gitlab.mixins.GetWithoutIdMixin not in inspect.getmro(self.mgr_cls):
+            id = self.args.pop(self.cls._id_attr)
         try:
             return self.mgr.update(id, self.args)
         except Exception as e:
@@ -152,11 +154,11 @@ def _populate_sub_parser_by_class(cls, sub_parser):
             if hasattr(mgr_cls, '_create_attrs'):
                 [sub_parser_action.add_argument("--%s" % x.replace('_', '-'),
                                                 required=True)
-                 for x in mgr_cls._create_attrs[0] if x != cls._id_attr]
+                 for x in mgr_cls._create_attrs[0]]
 
                 [sub_parser_action.add_argument("--%s" % x.replace('_', '-'),
                                                 required=False)
-                 for x in mgr_cls._create_attrs[1] if x != cls._id_attr]
+                 for x in mgr_cls._create_attrs[1]]
 
         if action_name == "update":
             if cls._id_attr is not None:
@@ -239,6 +241,7 @@ def extend_parser(parser):
         object_group = subparsers.add_parser(arg_name)
 
         object_subparsers = object_group.add_subparsers(
+            title='action',
             dest='action', help="Action to execute.")
         _populate_sub_parser_by_class(cls, object_subparsers)
         object_subparsers.required = True
@@ -246,18 +249,36 @@ def extend_parser(parser):
     return parser
 
 
+def get_dict(obj, fields):
+    if isinstance(obj, six.string_types):
+        return obj
+
+    if fields:
+        return {k: v for k, v in obj.attributes.items()
+                if k in fields}
+    return obj.attributes
+
+
 class JSONPrinter(object):
     def display(self, d, **kwargs):
         import json  # noqa
-
         print(json.dumps(d))
+
+    def display_list(self, data, fields, **kwargs):
+        import json  # noqa
+        print(json.dumps([get_dict(obj, fields) for obj in data]))
 
 
 class YAMLPrinter(object):
     def display(self, d, **kwargs):
         import yaml  # noqa
-
         print(yaml.safe_dump(d, default_flow_style=False))
+
+    def display_list(self, data, fields, **kwargs):
+        import yaml  # noqa
+        print(yaml.safe_dump(
+            [get_dict(obj, fields) for obj in data],
+            default_flow_style=False))
 
 
 class LegacyPrinter(object):
@@ -282,18 +303,30 @@ class LegacyPrinter(object):
                 return
 
             # not a dict, we assume it's a RESTObject
-            id = getattr(obj, obj._id_attr, None)
-            print('%s: %s' % (obj._id_attr, id))
+            if obj._id_attr:
+                id = getattr(obj, obj._id_attr, None)
+                print('%s: %s' % (obj._id_attr, id))
             attrs = obj.attributes
-            attrs.pop(obj._id_attr)
+            if obj._id_attr:
+                attrs.pop(obj._id_attr)
             display_dict(attrs, padding)
 
         else:
-            id = getattr(obj, obj._id_attr)
-            print('%s: %s' % (obj._id_attr.replace('_', '-'), id))
+            if obj._id_attr:
+                id = getattr(obj, obj._id_attr)
+                print('%s: %s' % (obj._id_attr.replace('_', '-'), id))
             if hasattr(obj, '_short_print_attr'):
                 value = getattr(obj, obj._short_print_attr)
                 print('%s: %s' % (obj._short_print_attr, value))
+
+    def display_list(self, data, fields, **kwargs):
+        verbose = kwargs.get('verbose', False)
+        for obj in data:
+            if isinstance(obj, gitlab.base.RESTObject):
+                self.display(get_dict(obj, fields), verbose=verbose, obj=obj)
+            else:
+                print(obj)
+            print('')
 
 
 PRINTERS = {
@@ -305,28 +338,15 @@ PRINTERS = {
 
 def run(gl, what, action, args, verbose, output, fields):
     g_cli = GitlabCLI(gl, what, action, args)
-    ret_val = g_cli()
+    data = g_cli()
 
     printer = PRINTERS[output]()
 
-    def get_dict(obj):
-        if fields:
-            return {k: v for k, v in obj.attributes.items()
-                    if k in fields}
-        return obj.attributes
-
-    if isinstance(ret_val, dict):
-        printer.display(ret_val, verbose=True, obj=ret_val)
-    elif isinstance(ret_val, list):
-        for obj in ret_val:
-            if isinstance(obj, gitlab.base.RESTObject):
-                printer.display(get_dict(obj), verbose=verbose, obj=obj)
-            else:
-                print(obj)
-            print('')
-    elif isinstance(ret_val, dict):
-        printer.display(ret_val, verbose=verbose, obj=ret_val)
-    elif isinstance(ret_val, gitlab.base.RESTObject):
-        printer.display(get_dict(ret_val), verbose=verbose, obj=ret_val)
-    elif isinstance(ret_val, six.string_types):
-        print(ret_val)
+    if isinstance(data, dict):
+        printer.display(data, verbose=True, obj=data)
+    elif isinstance(data, list):
+        printer.display_list(data, fields, verbose=verbose)
+    elif isinstance(data, gitlab.base.RESTObject):
+        printer.display(get_dict(data, fields), verbose=verbose, obj=data)
+    elif isinstance(data, six.string_types):
+        print(data)

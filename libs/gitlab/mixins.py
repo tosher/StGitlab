@@ -51,7 +51,7 @@ class GetMixin(object):
 
 class GetWithoutIdMixin(object):
     @exc.on_http_error(exc.GitlabGetError)
-    def get(self, **kwargs):
+    def get(self, id=None, **kwargs):
         """Retrieve a single object.
 
         Args:
@@ -66,6 +66,25 @@ class GetWithoutIdMixin(object):
         """
         server_data = self.gitlab.http_get(self.path, **kwargs)
         return self._obj_cls(self, server_data)
+
+
+class RefreshMixin(object):
+    @exc.on_http_error(exc.GitlabGetError)
+    def refresh(self, **kwargs):
+        """Refresh a single object from server.
+
+        Args:
+            **kwargs: Extra options to send to the Gitlab server (e.g. sudo)
+
+        Returns None (updates the object)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabGetError: If the server cannot perform the request
+        """
+        path = '%s/%s' % (self.manager.path, self.id)
+        server_data = self.manager.gitlab.http_get(path, **kwargs)
+        self._update_attrs(server_data)
 
 
 class ListMixin(object):
@@ -113,7 +132,12 @@ class GetFromListMixin(ListMixin):
             GitlabAuthenticationError: If authentication is not correct
             GitlabGetError: If the server cannot perform the request
         """
-        gen = self.list()
+        try:
+            gen = self.list()
+        except exc.GitlabListError:
+            raise exc.GitlabGetError(response_code=404,
+                                     error_message="Not found")
+
         for obj in gen:
             if str(obj.get_id()) == str(id):
                 return obj
@@ -222,6 +246,29 @@ class UpdateMixin(object):
         return self.gitlab.http_put(path, post_data=data, **kwargs)
 
 
+class SetMixin(object):
+    @exc.on_http_error(exc.GitlabSetError)
+    def set(self, key, value, **kwargs):
+        """Create or update the object.
+
+        Args:
+            key (str): The key of the object to create/update
+            value (str): The value to set for the object
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabSetError: If an error occured
+
+        Returns:
+            obj: The created/updated attribute
+        """
+        path = '%s/%s' % (self.path, key.replace('/', '%2F'))
+        data = {'value': value}
+        server_data = self.gitlab.http_put(path, post_data=data, **kwargs)
+        return self._obj_cls(self, server_data)
+
+
 class DeleteMixin(object):
     @exc.on_http_error(exc.GitlabDeleteError)
     def delete(self, id, **kwargs):
@@ -275,6 +322,9 @@ class SaveMixin(object):
             GitlabUpdateError: If the server cannot perform the request
         """
         updated_data = self._get_updated_data()
+        # Nothing to update. Server fails if sent an empty dict.
+        if not updated_data:
+            return
 
         # call the manager
         obj_id = self.get_id()
@@ -359,7 +409,7 @@ class SubscribableMixin(object):
 
 class TodoMixin(object):
     @cli.register_custom_action(('ProjectIssue', 'ProjectMergeRequest'))
-    @exc.on_http_error(exc.GitlabHttpError)
+    @exc.on_http_error(exc.GitlabTodoError)
     def todo(self, **kwargs):
         """Create a todo associated to the object.
 

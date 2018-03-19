@@ -53,7 +53,6 @@ class GitlabConfigParser(object):
 
         try:
             self.url = self._config.get(self.gitlab_id, 'url')
-            self.token = self._config.get(self.gitlab_id, 'private_token')
         except Exception:
             raise GitlabDataError("Impossible to get gitlab informations from "
                                   "configuration (%s)" % self.gitlab_id)
@@ -96,6 +95,19 @@ class GitlabConfigParser(object):
         except Exception:
             pass
 
+        self.private_token = None
+        try:
+            self.private_token = self._config.get(self.gitlab_id,
+                                                  'private_token')
+        except Exception:
+            pass
+
+        self.oauth_token = None
+        try:
+            self.oauth_token = self._config.get(self.gitlab_id, 'oauth_token')
+        except Exception:
+            pass
+
         self.http_username = None
         self.http_password = None
         try:
@@ -106,7 +118,21 @@ class GitlabConfigParser(object):
         except Exception:
             pass
 
-        self.api_version = '3'
+        self.http_username = None
+        self.http_password = None
+        try:
+            self.http_username = self._config.get(self.gitlab_id,
+                                                  'http_username')
+            self.http_password = self._config.get(self.gitlab_id,
+                                                  'http_password')
+        except Exception:
+            pass
+
+        self.api_version = '4'
+        try:
+            self.api_version = self._config.get('global', 'api_version')
+        except Exception:
+            pass
         try:
             self.api_version = self._config.get(self.gitlab_id, 'api_version')
         except Exception:

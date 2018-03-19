@@ -77,6 +77,10 @@ class GitlabDeleteError(GitlabOperationError):
     pass
 
 
+class GitlabSetError(GitlabOperationError):
+    pass
+
+
 class GitlabProtectError(GitlabOperationError):
     pass
 
@@ -182,6 +186,14 @@ class GitlabAttachFileError(GitlabOperationError):
 
 
 class GitlabCherryPickError(GitlabOperationError):
+    pass
+
+
+class GitlabHousekeepingError(GitlabOperationError):
+    pass
+
+
+class GitlabOwnershipError(GitlabOperationError):
     pass
 
 

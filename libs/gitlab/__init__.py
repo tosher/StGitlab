@@ -34,11 +34,11 @@ from gitlab.exceptions import *  # noqa
 from gitlab.v3.objects import *  # noqa
 
 __title__ = 'python-gitlab'
-__version__ = '1.0.2'
+__version__ = '1.3.0'
 __author__ = 'Gauvain Pocentek'
 __email__ = 'gauvain@pocentek.net'
 __license__ = 'LGPL3'
-__copyright__ = 'Copyright 2013-2017 Gauvain Pocentek'
+__copyright__ = 'Copyright 2013-2018 Gauvain Pocentek'
 
 warnings.filterwarnings('default', category=DeprecationWarning,
                         module='^gitlab')
@@ -59,18 +59,22 @@ class Gitlab(object):
     Args:
         url (str): The URL of the GitLab server.
         private_token (str): The user private token
+        oauth_token (str): An oauth token
         email (str): The user email or login.
         password (str): The user password (associated with email).
-        ssl_verify (bool): Whether SSL certificates should be validated.
+        ssl_verify (bool|str): Whether SSL certificates should be validated. If
+            the value is a string, it is the path to a CA file used for
+            certificate validation.
         timeout (float): Timeout to use for requests to the GitLab server.
         http_username (str): Username for HTTP authentication
         http_password (str): Password for HTTP authentication
         api_version (str): Gitlab API version to use (3 or 4)
     """
 
-    def __init__(self, url, private_token=None, email=None, password=None,
-                 ssl_verify=True, http_username=None, http_password=None,
-                 timeout=None, api_version='3', session=None):
+    def __init__(self, url, private_token=None, oauth_token=None, email=None,
+                 password=None, ssl_verify=True, http_username=None,
+                 http_password=None, timeout=None, api_version='4',
+                 session=None):
 
         self._api_version = str(api_version)
         self._server_version = self._server_revision = None
@@ -79,15 +83,19 @@ class Gitlab(object):
         self.timeout = timeout
         #: Headers that will be used in request to GitLab
         self.headers = {}
-        self._set_token(private_token)
+
         #: The user email
         self.email = email
         #: The user password (associated with email)
         self.password = password
         #: Whether SSL certificates should be validated
         self.ssl_verify = ssl_verify
+
+        self.private_token = private_token
         self.http_username = http_username
         self.http_password = http_password
+        self.oauth_token = oauth_token
+        self._set_auth_info()
 
         #: Create a session object for requests
         self.session = session or requests.Session()
@@ -114,10 +122,13 @@ class Gitlab(object):
         self.users = objects.UserManager(self)
         self.todos = objects.TodoManager(self)
         if self._api_version == '3':
-            self.keys = objects.KeyManager(self)
             self.teams = objects.TeamManager(self)
         else:
             self.dockerfiles = objects.DockerfileManager(self)
+            self.events = objects.EventManager(self)
+            self.features = objects.FeatureManager(self)
+            self.pagesdomains = objects.PagesDomainManager(self)
+            self.user_activities = objects.UserActivitiesManager(self)
 
         if self._api_version == '3':
             # build the "submanagers"
@@ -135,6 +146,23 @@ class Gitlab(object):
                     var_name = '%s_%s' % (prefix, var)
                     manager = getattr(objects, cls_name)(self)
                     setattr(self, var_name, manager)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.session.close()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state.pop('_objects')
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        objects = importlib.import_module('gitlab.v%s.objects' %
+                                          self._api_version)
+        self._objects = objects
 
     @property
     def api_version(self):
@@ -164,7 +192,8 @@ class Gitlab(object):
         """
         config = gitlab.config.GitlabConfigParser(gitlab_id=gitlab_id,
                                                   config_files=config_files)
-        return Gitlab(config.url, private_token=config.token,
+        return Gitlab(config.url, private_token=config.private_token,
+                      oauth_token=config.oauth_token,
                       ssl_verify=config.ssl_verify, timeout=config.timeout,
                       http_username=config.http_username,
                       http_password=config.http_password,
@@ -178,21 +207,12 @@ class Gitlab(object):
         The `user` attribute will hold a `gitlab.objects.CurrentUser` object on
         success.
         """
-        if self.private_token:
+        if self.private_token or self.oauth_token:
             self._token_auth()
         else:
             self._credentials_auth()
 
-    def credentials_auth(self):
-        """Performs an authentication using email/password."""
-        warnings.warn('credentials_auth() is deprecated and will be removed.',
-                      DeprecationWarning)
-        self._credentials_auth()
-
     def _credentials_auth(self):
-        if not self.email or not self.password:
-            raise GitlabAuthenticationError("Missing email/password")
-
         data = {'email': self.email, 'password': self.password}
         if self.api_version == '3':
             r = self._raw_post('/session', json.dumps(data),
@@ -203,14 +223,8 @@ class Gitlab(object):
             r = self.http_post('/session', data)
             manager = self._objects.CurrentUserManager(self)
             self.user = self._objects.CurrentUser(manager, r)
-
-        self._set_token(self.user.private_token)
-
-    def token_auth(self):
-        """Performs an authentication using the private token."""
-        warnings.warn('token_auth() is deprecated and will be removed.',
-                      DeprecationWarning)
-        self._token_auth()
+        self.private_token = self.user.private_token
+        self._set_auth_info()
 
     def _token_auth(self):
         if self.api_version == '3':
@@ -241,17 +255,6 @@ class Gitlab(object):
 
         return self._server_version, self._server_revision
 
-    def set_url(self, url):
-        """Updates the GitLab URL.
-
-        Args:
-            url (str): Base URL of the GitLab server.
-        """
-        warnings.warn('set_url() is deprecated, create a new Gitlab instance '
-                      'if you need an updated URL.',
-                      DeprecationWarning)
-        self._url = '%s/api/v%s' % (url, self._api_version)
-
     def _construct_url(self, id_, obj, parameters, action=None):
         if 'next_url' in parameters:
             return parameters['next_url']
@@ -276,36 +279,30 @@ class Gitlab(object):
         else:
             return url
 
-    def set_token(self, token):
-        """Sets the private token for authentication.
+    def _set_auth_info(self):
+        if self.private_token and self.oauth_token:
+            raise ValueError("Only one of private_token or oauth_token should "
+                             "be defined")
+        if ((self.http_username and not self.http_password)
+           or (not self.http_username and self.http_password)):
+            raise ValueError("Both http_username and http_password should "
+                             "be defined")
+        if self.oauth_token and self.http_username:
+            raise ValueError("Only one of oauth authentication or http "
+                             "authentication should be defined")
 
-        Args:
-            token (str): The private token.
-        """
-        warnings.warn('set_token() is deprecated, use the private_token '
-                      'argument of the Gitlab constructor.',
-                      DeprecationWarning)
-        self._set_token(token)
+        self._http_auth = None
+        if self.private_token:
+            self.headers['PRIVATE-TOKEN'] = self.private_token
+            self.headers.pop('Authorization', None)
 
-    def _set_token(self, token):
-        self.private_token = token if token else None
-        if token:
-            self.headers["PRIVATE-TOKEN"] = token
-        elif "PRIVATE-TOKEN" in self.headers:
-            del self.headers["PRIVATE-TOKEN"]
+        if self.oauth_token:
+            self.headers['Authorization'] = "Bearer %s" % self.oauth_token
+            self.headers.pop('PRIVATE-TOKEN', None)
 
-    def set_credentials(self, email, password):
-        """Sets the email/login and password for authentication.
-
-        Args:
-            email (str): The user email or login.
-            password (str): The user password.
-        """
-        warnings.warn('set_credentials() is deprecated, use the email and '
-                      'password arguments of the Gitlab constructor.',
-                      DeprecationWarning)
-        self.email = email
-        self.password = password
+        if self.http_username:
+            self._http_auth = requests.auth.HTTPBasicAuth(self.http_username,
+                                                          self.http_password)
 
     def enable_debug(self):
         import logging
@@ -327,16 +324,10 @@ class Gitlab(object):
             request_headers['Content-type'] = content_type
         return request_headers
 
-    def _create_auth(self):
-        if self.http_username and self.http_password:
-            return requests.auth.HTTPBasicAuth(self.http_username,
-                                               self.http_password)
-        return None
-
     def _get_session_opts(self, content_type):
         return {
             'headers': self._create_headers(content_type),
-            'auth': self._create_auth(),
+            'auth': self._http_auth,
             'timeout': self.timeout,
             'verify': self.ssl_verify
         }
@@ -658,8 +649,22 @@ class Gitlab(object):
             return parsed._replace(path=new_path).geturl()
 
         url = self._build_url(path)
-        params = query_data.copy()
-        params.update(kwargs)
+
+        def copy_dict(dest, src):
+            for k, v in src.items():
+                if isinstance(v, dict):
+                    # Transform dict values in new attributes. For example:
+                    # custom_attributes: {'foo', 'bar'} =>
+                    #   custom_attributes['foo']: 'bar'
+                    for dict_k, dict_v in v.items():
+                        dest['%s[%s]' % (k, dict_k)] = dict_v
+                else:
+                    dest[k] = v
+
+        params = {}
+        copy_dict(params, query_data)
+        copy_dict(params, kwargs)
+
         opts = self._get_session_opts(content_type='application/json')
 
         # don't set the content-type header when uploading files
@@ -679,8 +684,9 @@ class Gitlab(object):
                                files=files, **opts)
         prepped = self.session.prepare_request(req)
         prepped.url = sanitized_url(prepped.url)
-        result = self.session.send(prepped, stream=streamed, verify=verify,
-                                   timeout=timeout)
+        settings = self.session.merge_environment_settings(
+            prepped.url, {}, streamed, verify, None)
+        result = self.session.send(prepped, timeout=timeout, **settings)
 
         if 200 <= result.status_code < 300:
             return result
@@ -761,7 +767,7 @@ class Gitlab(object):
         if get_all is True:
             return list(GitlabList(self, url, query_data, **kwargs))
 
-        if 'page' in kwargs or 'per_page' in kwargs or as_list is True:
+        if 'page' in kwargs or as_list is True:
             # pagination requested, we return a list
             return list(GitlabList(self, url, query_data, get_next=False,
                                    **kwargs))
@@ -862,6 +868,7 @@ class GitlabList(object):
         except KeyError:
             self._next_url = None
         self._current_page = result.headers.get('X-Page')
+        self._prev_page = result.headers.get('X-Prev-Page')
         self._next_page = result.headers.get('X-Next-Page')
         self._per_page = result.headers.get('X-Per-Page')
         self._total_pages = result.headers.get('X-Total-Pages')
@@ -874,6 +881,42 @@ class GitlabList(object):
                 error_message="Failed to parse the server message")
 
         self._current = 0
+
+    @property
+    def current_page(self):
+        """The current page number."""
+        return int(self._current_page)
+
+    @property
+    def prev_page(self):
+        """The next page number.
+
+        If None, the current page is the last.
+        """
+        return int(self._prev_page) if self._prev_page else None
+
+    @property
+    def next_page(self):
+        """The next page number.
+
+        If None, the current page is the last.
+        """
+        return int(self._next_page) if self._next_page else None
+
+    @property
+    def per_page(self):
+        """The number of items per page."""
+        return int(self._per_page)
+
+    @property
+    def total_pages(self):
+        """The total number of pages."""
+        return int(self._total_pages)
+
+    @property
+    def total(self):
+        """The total number of items."""
+        return int(self._total)
 
     def __iter__(self):
         return self

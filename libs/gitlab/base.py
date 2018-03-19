@@ -416,6 +416,17 @@ class GitlabObject(object):
         if not hasattr(self, "id"):
             self.id = None
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        module = state.pop('_module')
+        state['_module_name'] = module.__name__
+        return state
+
+    def __setstate__(self, state):
+        module_name = state.pop('_module_name')
+        self.__dict__.update(state)
+        self._module = importlib.import_module(module_name)
+
     def _set_manager(self, var, cls, attrs):
         manager = cls(self.gitlab, self, attrs)
         setattr(self, var, manager)
@@ -553,11 +564,18 @@ class RESTObject(object):
             '_module': importlib.import_module(self.__module__)
         })
         self.__dict__['_parent_attrs'] = self.manager.parent_attrs
-
-        # TODO(gpocentek): manage the creation of new objects from the received
-        # data (_constructor_types)
-
         self._create_managers()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        module = state.pop('_module')
+        state['_module_name'] = module.__name__
+        return state
+
+    def __setstate__(self, state):
+        module_name = state.pop('_module_name')
+        self.__dict__.update(state)
+        self._module = importlib.import_module(module_name)
 
     def __getattr__(self, name):
         try:
@@ -674,6 +692,42 @@ class RESTObjectList(object):
         data = self._list.next()
         return self._obj_cls(self.manager, data)
 
+    @property
+    def current_page(self):
+        """The current page number."""
+        return self._list.current_page
+
+    @property
+    def prev_page(self):
+        """The next page number.
+
+        If None, the current page is the last.
+        """
+        return self._list.prev_page
+
+    @property
+    def next_page(self):
+        """The next page number.
+
+        If None, the current page is the last.
+        """
+        return self._list.next_page
+
+    @property
+    def per_page(self):
+        """The number of items per page."""
+        return self._list.per_page
+
+    @property
+    def total_pages(self):
+        """The total number of pages."""
+        return self._list.total_pages
+
+    @property
+    def total(self):
+        """The total number of items."""
+        return self._list.total
+
 
 class RESTManager(object):
     """Base class for CRUD operations on objects.
@@ -710,7 +764,7 @@ class RESTManager(object):
         if self._parent is None or not hasattr(self, '_from_parent_attrs'):
             return path
 
-        data = {self_attr: getattr(self._parent, parent_attr)
+        data = {self_attr: getattr(self._parent, parent_attr, None)
                 for self_attr, parent_attr in self._from_parent_attrs.items()}
         self._parent_attrs = data
         return path % data
