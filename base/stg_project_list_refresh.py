@@ -24,6 +24,7 @@ class StGitlabProjectListRefreshCommand(sublime_plugin.TextCommand):
             self.view.sel().add(cursor)
             self.view.show(cursor)
             self.view.set_read_only(True)
+            self.view.window().status_message('%ss list was refreshed.' % object_name.title())
 
     def is_visible(self, *args):
         screen = self.view.settings().get('screen')

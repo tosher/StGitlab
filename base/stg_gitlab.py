@@ -145,16 +145,14 @@ class StGitlab(object):
             return self.project(project_id).labels.list(**kwargs)
 
     def label_add(self, label, obj):
-        obj_labels = obj.attributes.get('labels', [])
-        if label not in obj_labels:
-            obj_labels.append(label)
-        obj.save(labels=','.join(obj_labels))
+        if label not in obj.labels:
+            obj.labels.append(label)
+        obj.save()
 
     def label_del(self, label, obj):
-        obj_labels = obj.attributes.get('labels', [])
-        if label in obj_labels:
-            obj_labels.remove(label)
-        obj.save(labels=','.join(obj_labels))
+        if label in obj.labels:
+            obj.labels.remove(label)
+        obj.save()
 
     def milestones(self, project_id=None, **kwargs):
         return self.project(project_id).milestones.list(**kwargs)
