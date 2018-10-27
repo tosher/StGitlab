@@ -4,7 +4,7 @@
 import re
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabMergeToggleWipCommand(sublime_plugin.TextCommand):

@@ -3,7 +3,7 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_project import ProjectSelectPanel
 
 
@@ -16,7 +16,7 @@ class StGitlabProjectBranchesCommand(sublime_plugin.TextCommand):
     def get_branches(self, project_id):
         gitlab = utils.gl.get()
         project = gitlab.project(oid=project_id)
-        per_page = utils.stg_get_setting('list_page_size')
+        per_page = utils.get_setting('list_page_size')
         query_params = {
             'project_id': project_id,
             'page': 1,
@@ -25,7 +25,7 @@ class StGitlabProjectBranchesCommand(sublime_plugin.TextCommand):
         title = 'Branches: %s' % project.name
         r = self.view.window().new_file()
         r.set_name(title)
-        syntax_file = utils.stg_get_setting('syntax_file')
+        syntax_file = utils.get_setting('syntax_file')
         r.set_syntax_file(syntax_file)
         r.settings().set('query_params', query_params)
         r.settings().set('screen', utils.object_commands.get('branch', {}).get('screen_list'))

@@ -1,7 +1,7 @@
 [
    // tmp
    { "caption": "Gitlab: Reset connection", "command": "st_gitlab_reset" },
-   { "caption": "Gitlab: Save edit", "command": "st_gitlab_editbox_save" },
+   { "caption": "Gitlab: Save edit", "command": "editbox_save" },
    // issue
    { "caption": "Gitlab issue: Open", "command": "st_gitlab_issue" },
    { "caption": "Gitlab issue: Create", "command": "st_gitlab_issue_create" },

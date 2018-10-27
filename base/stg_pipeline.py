@@ -3,7 +3,7 @@
 
 import sublime
 from .stg_object import StGitlabObjectCommand
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabPipelineCommand(StGitlabObjectCommand):

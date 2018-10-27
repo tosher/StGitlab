@@ -3,7 +3,7 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_project import ProjectSelectPanel
 
 
@@ -26,7 +26,7 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
             return
         self.screen = self.view.settings().get('screen', None)
         if self.screen == self.screen_list:
-            colsep = utils.stg_get_setting('table_column_separator')
+            colsep = utils.get_setting('table_column_separator')
             try:
                 line = self.view.substr(self.view.line(self.view.sel()[0].end()))
                 self.obj_id = line.split(colsep)[1].strip()

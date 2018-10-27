@@ -6,7 +6,7 @@ import os
 # import sublime
 import sublime_plugin
 from collections import OrderedDict
-from . import stg_utils as utils
+from . import utils
 from .stg_html import StShortcutsMenu
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
 from terminaltables.other_tables import WindowsTable as SingleTable
@@ -26,8 +26,8 @@ class StGitlabProjectIssuesBoardDrawCommand(sublime_plugin.TextCommand):
         ('miledel', ['Alt+m', 'unset milestone']),
         ('assigneeset', ['a', 'set assignee']),
         ('assigneedel', ['Alt+a', 'unset assignee']),
-        ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-        ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+        ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+        ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
     ])
 
     cols = [
@@ -75,7 +75,7 @@ class StGitlabProjectIssuesBoardDrawCommand(sublime_plugin.TextCommand):
         for name in utils.filter_types.values():
             if name in self.query_params:
                 if name == 'labels':
-                    lbl_char = utils.stg_get_setting('label_char')
+                    lbl_char = utils.get_setting('label_char')
                     labels = ', '.join(['%(lbl_char)s%(label)s%(lbl_char)s' % {'lbl_char': lbl_char, 'label': label} for label in self.query_params.get(name)])
                     filters += '\t\t**%s**: %s\n' % (name, labels)
                 else:
@@ -109,7 +109,7 @@ class StGitlabProjectIssuesBoardDrawCommand(sublime_plugin.TextCommand):
         return li.get('label', {}).get('name')
 
     # def get_columns_properties(self):
-    #     return utils.stg_get_setting('issue_list_columns', {})
+    #     return utils.get_setting('issue_list_columns', {})
 
     # TODO: issue with important & in_progress: which list?
     def show_table(self):

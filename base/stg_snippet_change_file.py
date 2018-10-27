@@ -4,8 +4,8 @@
 from io import BytesIO
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
-from .stg_editbox import StEditbox
+from . import utils
+from .editbox import Editbox
 
 
 class StGitlabSnippetChangeFileCommand(sublime_plugin.TextCommand):
@@ -18,7 +18,7 @@ class StGitlabSnippetChangeFileCommand(sublime_plugin.TextCommand):
         fp = BytesIO(raw)
         text = fp.read().decode('utf-8').replace('\r', '')
         on_done = 'st_gitlab_snippet_change_file_done'
-        eb = StEditbox(self.view.id(), syntax_auto=True, height=80)
+        eb = Editbox(self.view.id(), syntax_auto=True, height=80)
         eb.edit(
             obj.file_name,
             on_done,
@@ -40,11 +40,10 @@ class StGitlabSnippetChangeFileCommand(sublime_plugin.TextCommand):
 
 
 class StGitlabSnippetChangeFileDoneCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text):
-        base_id = self.view.settings().get('base_id')
-        eb = StEditbox(base_id)
-        eb.layout_base()
-        gitlab = utils.gl.get(eb.view)
+    def run(self, edit, text, obj_kwargs):
+        gitlab = utils.gl.get(self.view)
         obj = gitlab.object_by_view()
-        obj.save(code=text)
-        eb.view.run_command('st_gitlab_object_refresh')
+        # obj.save(code=text)
+        obj.code = text
+        obj.save()
+        self.view.run_command('st_gitlab_object_refresh')

@@ -5,7 +5,7 @@ import re
 import sublime
 import sublime_plugin
 from .base import *
-from .base import stg_utils as utils
+from .base import utils
 from .base.stg_html import StShortcutsMenu, StNotesIcons
 
 
@@ -46,7 +46,7 @@ class StGitlabLoad(sublime_plugin.EventListener):
         # move left => error
         line = view.line(view.sel()[0].end())
         line_text = view.substr(line)
-        splitter = utils.stg_get_setting('table_column_separator')
+        splitter = utils.get_setting('table_column_separator')
         if not line_text.startswith(splitter):
             return False
         cols = line_text.split(splitter)[1:-1]
@@ -84,7 +84,7 @@ class StGitlabLoad(sublime_plugin.EventListener):
             return
 
         if view.is_read_only() and self.is_unselectable(view):
-            splitter = utils.stg_get_setting('table_column_separator')
+            splitter = utils.get_setting('table_column_separator')
             line = view.substr(view.line(view.sel()[0].end()))
 
             if view.settings().get('screen', '').endswith('board') and line.startswith(splitter):
@@ -189,7 +189,7 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
             StNotesIcons(self.view)
 
     def on_query_completions(self, prefix, locations):
-        if self.view.settings().get('screen') == 'st_gitlab_editbox':
+        if self.view.settings().get('screen') == 'editbox':
             gitlab = utils.gl.get()
             completions = []
             cursor_position = locations[0]
@@ -220,7 +220,7 @@ class StGitlabViewEvents(sublime_plugin.ViewEventListener):
             pattern_user = re.compile(r'(^|\s)(\@)(\w+)?')
             m = pattern_user.match(chars_before)
             if m and m.group(2):
-                users_group_filter = utils.stg_get_setting('users_group_filter', [])
+                users_group_filter = utils.get_setting('users_group_filter', [])
                 if users_group_filter:
                     users = utils.users_filtered(users_group_filter)
                 else:

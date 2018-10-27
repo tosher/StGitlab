@@ -4,7 +4,7 @@
 # import sublime
 import sublime_plugin
 from collections import OrderedDict
-from . import stg_utils as utils
+from . import utils
 from .stg_html import StShortcutsMenu
 from ..libs.terminaltables.other_tables import WindowsTable as SingleTable
 
@@ -47,7 +47,7 @@ class StGitlabProjectObjectsListCommand(sublime_plugin.TextCommand):
         for name in utils.filter_types.values():
             if name in self.query_params:
                 if name == 'labels':
-                    lbl_char = utils.stg_get_setting('label_char')
+                    lbl_char = utils.get_setting('label_char')
                     labels = ', '.join(['%(lbl_char)s%(label)s%(lbl_char)s' % {'lbl_char': lbl_char, 'label': label} for label in self.query_params.get(name)])
                     filters += '\t\t**%s**: %s\n' % (name, labels)
                 else:
@@ -98,8 +98,8 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
             ('miledel', ['Alt+m', 'unset milestone']),
             ('assigneeset', ['a', 'set assignee']),
             ('assigneedel', ['Alt+a', 'unset assignee']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -118,7 +118,7 @@ class StGitlabProjectIssuesListCommand(StGitlabProjectObjectsListCommand):
         return self.gitlab.issues(**self.query_params)
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('issue_list_columns', {})
+        return utils.get_setting('issue_list_columns', {})
 
 
 class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
@@ -137,8 +137,8 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
             ('miledel', ['Alt+m', 'unset milestone']),
             ('assigneeset', ['a', 'set assignee']),
             ('assigneedel', ['Alt+a', 'unset assignee']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -156,7 +156,7 @@ class StGitlabProjectMergesListCommand(StGitlabProjectObjectsListCommand):
         return self.gitlab.merges(**self.query_params)
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('merge_requests_list_columns', {})
+        return utils.get_setting('merge_requests_list_columns', {})
 
 
 class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
@@ -168,8 +168,8 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
             ('retry', ['b', 'retry']),
             ('cancel', ['c', 'cancel']),
             ('filter', ['f', 'filter']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -187,7 +187,7 @@ class StGitlabProjectPipelinesListCommand(StGitlabProjectObjectsListCommand):
         return self.gitlab.pipelines(**self.query_params)
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('pipelines_list_columns', {})
+        return utils.get_setting('pipelines_list_columns', {})
 
 
 class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
@@ -198,8 +198,8 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
             ('merge', ['m', 'merge-request']),
             ('toggleprotect', ['p', 'toggle protect']),
             ('filter', ['f', 'filter']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -216,7 +216,7 @@ class StGitlabProjectBranchesListCommand(StGitlabProjectObjectsListCommand):
         return self.gitlab.branches(**self.query_params)
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('branches_list_columns', {})
+        return utils.get_setting('branches_list_columns', {})
 
     def special_cols(self):
         cols = {}
@@ -246,8 +246,8 @@ class StGitlabProjectSnippetsListCommand(StGitlabProjectObjectsListCommand):
             ('open', ['Enter', 'open']),
             ('refresh', ['F5', 'refresh']),
             ('delete', ['Delete', 'delete']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -264,7 +264,7 @@ class StGitlabProjectSnippetsListCommand(StGitlabProjectObjectsListCommand):
         return self.gitlab.snippets(**self.query_params)
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('snippets_list_columns', {})
+        return utils.get_setting('snippets_list_columns', {})
 
 
 class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
@@ -273,8 +273,8 @@ class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
         shortcuts = OrderedDict([
             ('open', ['Enter', 'open']),
             ('refresh', ['F5', 'refresh']),
-            ('ppage', ['Shift+%s' % utils.stg_get_setting('char_left_arrow'), 'prev. page']),
-            ('npage', ['Shift+%s' % utils.stg_get_setting('char_right_arrow'), 'next page'])
+            ('ppage', ['Shift+%s' % utils.get_setting('char_left_arrow'), 'prev. page']),
+            ('npage', ['Shift+%s' % utils.get_setting('char_right_arrow'), 'next page'])
         ])
         return shortcuts
 
@@ -287,7 +287,7 @@ class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
         return cols
 
     def get_objects(self):
-        users_group_filter = utils.stg_get_setting('users_group_filter', [])
+        users_group_filter = utils.get_setting('users_group_filter', [])
         users = []
         if users_group_filter:
             groups_lists = [self.gitlab.group(group).members.list(active=True) for group in users_group_filter]
@@ -299,11 +299,11 @@ class StGitlabUsersListCommand(StGitlabProjectObjectsListCommand):
         return users
 
     def get_columns_properties(self):
-        return utils.stg_get_setting('users_list_columns', {})
+        return utils.get_setting('users_list_columns', {})
 
     def special_cols(self):
         cols = {}
-        projects_filter = utils.stg_get_setting('projects_filter', [])
+        projects_filter = utils.get_setting('projects_filter', [])
         if projects_filter:
             projects = [self.gitlab.project(oid=pid) for pid in projects_filter]
         else:

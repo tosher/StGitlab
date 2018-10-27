@@ -3,7 +3,7 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_user import UserSelectPanel
 
 
@@ -88,7 +88,7 @@ class StGitlabProjectListFilterCommand(sublime_plugin.TextCommand):
         self.get_list(query_params)
 
     def get_list(self, query_params):
-        per_page = utils.stg_get_setting('list_page_size')
+        per_page = utils.get_setting('list_page_size')
         query_params['per_page'] = per_page
         if self.filter_name != 'state' and 'state' not in query_params:
             query_params['state'] = 'opened'

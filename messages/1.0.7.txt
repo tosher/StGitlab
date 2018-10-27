@@ -1,0 +1,3 @@
+StGitlab 1.0.7 changelog:
+
+* Projects settings support via `stgitlab.` prefix. For example: `stgitlab.projects_filter`.

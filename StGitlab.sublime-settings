@@ -18,6 +18,7 @@
     "char_right_arrow": "⮕", // →
     "char_left_arrow": "⬅", // ←
     "grayed_out_labels_in_notes": true,
+    "insert_text_command": "st_gitlab_insert_text",
     "issue_list_columns": [
         { "prop": "iid", "colname": "#", "align": "right" },
         { "prop": "title", "colname": "Title", "maxlen": 50},

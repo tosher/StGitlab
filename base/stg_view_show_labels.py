@@ -3,14 +3,14 @@
 
 import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_html import StLabel
 
 
 class StGitlabViewShowLabelsCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         labels_points = []
-        lbl_chr = utils.stg_get_setting('label_char')
+        lbl_chr = utils.get_setting('label_char')
         lbl_pattern = r'\%(lchr)s[^\%(lchr)s]+\%(lchr)s' % {'lchr': lbl_chr}
         labels = self.view.find_all(lbl_pattern)
         r_offset = 0

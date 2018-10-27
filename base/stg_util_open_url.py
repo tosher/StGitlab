@@ -5,7 +5,7 @@ import re
 import webbrowser
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
@@ -20,7 +20,7 @@ class StGitlabUtilOpenUrlCommand(sublime_plugin.TextCommand):
                 if url:
                     if not url.startswith('http'):
                         project_name = project.attributes.get('path_with_namespace')
-                        gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
+                        gl_url = utils.get_setting('gitlab_url').rstrip('/')
                         url = '%s/%s/%s' % (gl_url, project_name, url.lstrip('/'))
                     webbrowser.open(url)
                     return

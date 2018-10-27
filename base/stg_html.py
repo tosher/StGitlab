@@ -5,7 +5,7 @@ import math
 import itertools
 from collections import OrderedDict
 import sublime
-from . import stg_utils as utils
+from . import utils
 
 
 class StLabel(object):
@@ -63,7 +63,7 @@ class StLabel(object):
         self.color = color
 
     def get(self):
-        is_grayout_labels_in_notes = utils.stg_get_setting('grayed_out_labels_in_notes')
+        is_grayout_labels_in_notes = utils.get_setting('grayed_out_labels_in_notes')
         label_class = 'label' if not self.grayed else 'label in_note_grayed' if is_grayout_labels_in_notes else 'label in_note'
         return self.html_tpl % {
             'text': self.text,

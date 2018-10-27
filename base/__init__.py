@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from .stg_gitlab_reset import StGitlabResetCommand
-from .stg_editbox import StGitlabEditboxSaveCommand
-from .stg_editbox import StGitlabEditboxCancelCommand
+from .editbox import EditboxSaveCommand
+from .editbox import EditboxCancelCommand
 from .stg_issue import StGitlabIssueCommand
 from .stg_issue import StGitlabIssueCreateCommand
 from .stg_issue import StGitlabIssueDeleteCommand
@@ -68,11 +68,10 @@ from .stg_snippet_change_file import StGitlabSnippetChangeFileDoneCommand
 from .stg_users import StGitlabUsersCommand
 from .stg_project_objects_list import StGitlabUsersListCommand
 
-
 __all__ = [
     'StGitlabResetCommand',
-    'StGitlabEditboxSaveCommand',
-    'StGitlabEditboxCancelCommand',
+    'EditboxSaveCommand',
+    'EditboxCancelCommand',
     'StGitlabIssueCommand',
     'StGitlabIssueFetcherCommand',
     'StGitlabIssueCreateCommand',

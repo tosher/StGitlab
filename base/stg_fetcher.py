@@ -6,7 +6,7 @@ import sublime_plugin
 from collections import OrderedDict
 import traceback
 # import textwrap
-from . import stg_utils as utils
+from . import utils
 from .stg_html import StShortcutsMenu, StNotesIcons
 
 BLOCK_LINE = '%s\n' % ('═' * 80)
@@ -25,9 +25,9 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
     def present(cls, obj):
         cols_data = []
         cols_prop = '%s_view_columns' % cls.obj_name_sub
-        cols = utils.stg_get_setting(cols_prop, [])
+        cols = utils.get_setting(cols_prop, [])
         cols_present_prop = '%s_view_columns_present' % cls.obj_name_sub
-        cols_present = utils.stg_get_setting(cols_present_prop, [])
+        cols_present = utils.get_setting(cols_present_prop, [])
         char = utils.object_commands.get(cls.obj_name_sub, {}).get('char', '')
 
         for col in cols:
@@ -70,7 +70,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         header += BLOCK_LINE
 
         cols_prop = '%s_view_columns' % self.obj_name_sub
-        cols = utils.stg_get_setting(cols_prop, [])
+        cols = utils.get_setting(cols_prop, [])
         cols_maxlen = len(max([col['colname'] for col in cols], key=len)) + 5  # +4* +1
         cols_data = []
         line_format = '\t{:<%s}: {:<}' % cols_maxlen
@@ -114,7 +114,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             commit = project.commits.get(commit_hash[:8])
             if commit:
                 msg_parts = msg.split(commit_hash)
-                gl_url = utils.stg_get_setting('gitlab_url').rstrip('/')
+                gl_url = utils.get_setting('gitlab_url').rstrip('/')
                 url = '%s/%s/commit/%s' % (gl_url, project_name, commit_hash[:8])
                 return '%s [%s](%s) %s' % (
                     msg_parts[0],
@@ -136,7 +136,7 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
             note_attrs = note.attributes
             note_is_system = note_attrs.get('system', False)
 
-            if not utils.stg_get_setting('show_system_notes') and note_is_system:
+            if not utils.get_setting('show_system_notes') and note_is_system:
                 continue
 
             if note_attrs.get('body'):
@@ -184,11 +184,11 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         else:
             r = sublime.active_window().new_file()
             r.set_scratch(True)
-            syntax_file = utils.stg_get_setting('syntax_file')
+            syntax_file = utils.get_setting('syntax_file')
             r.set_syntax_file(syntax_file)
 
         # self.gitlab = utils.gl.get()  # creates with current view => r
-        self.gitlab = utils.gl.get()  # creates with current view => r
+        self.gitlab = utils.gl.get(r)  # creates with current view => r
         self.set_view_settings(r)
         # obj = self.gitlab.object_by_screen(r.settings().get('screen'))
         obj = self.gitlab.object_by_view()
@@ -362,7 +362,7 @@ class StGitlabMergeFetcherCommand(StGitlabFetcherCommand):
 
     def get_commit_url(self, commit):
         return '%(url)s/%(project)s/commit/%(pid)s' % {
-            'url': utils.stg_get_setting('gitlab_url'),
+            'url': utils.get_setting('gitlab_url'),
             'project': self.gitlab.project(oid=self.project_id).attributes.get('path_with_namespace'),
             'pid': commit.id
         }

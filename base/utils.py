@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from .stg_gitlab import StGitlab
 from ..libs import dimensions
 
+PROJECT_SETTINGS_PREFIX = 'stgitlab'
 
 syntaxes = {}
 filter_types = {
@@ -78,15 +79,19 @@ object_commands = {
 gl = StGitlab()
 
 
-def stg_get_setting(key, default_value=None):
+def get_setting(key, default_value=None):
     settings = sublime.load_settings('StGitlab.sublime-settings')
-    return settings.get(key, default_value)
+    view = sublime.active_window().active_view()
+    val = None
+    if view is not None:
+        val = sublime.active_window().active_view().settings().get('%s.%s' % (PROJECT_SETTINGS_PREFIX, key), None)
+    return settings.get(key, default_value) if val is None else val
 
 
-def stg_set_setting(key, value):
+def set_setting(key, value):
     settings = sublime.load_settings('StGitlab.sublime-settings')
     settings.set(key, value)
-    sublime.save_settings('Mediawiker.sublime-settings')
+    sublime.save_settings('StGitlab.sublime-settings')
 
 
 # def stg_validate_screen(screen_type):
@@ -105,10 +110,10 @@ def stg_get_datetime(datetime_str):
     if not datetime_str:
         return datetime_str
 
-    dt_format_in = stg_get_setting('datetime_format')
+    dt_format_in = get_setting('datetime_format')
     dt_format_sys_1 = '%Y-%m-%dT%H:%M:%S.%fZ'
     dt_format_sys_2 = '%Y-%m-%dT%H:%M:%S.%f%z'
-    dt_format_out = stg_get_setting('datetime_format_show')
+    dt_format_out = get_setting('datetime_format_show')
 
     dt_str_cnv = str(datetime_str)
     if '%z' in dt_format_in:
@@ -158,7 +163,7 @@ def stg_cut(val, maxlen):
 
 def stg_get_property_value(obj, prop):
     val = ''
-    label_char = stg_get_setting('label_char')
+    label_char = get_setting('label_char')
     prop_type = prop.get('type', 'string')
     attrs = obj.attributes
     try:
@@ -196,7 +201,7 @@ def stg_msg_labels(msg, project_id):
             return '%(lchr)s%(lname)s%(lchr)s' % {'lchr': lbl_chr, 'lname': labs[0]}
         return '~%s' % label_id
 
-    lbl_chr = stg_get_setting('label_char')
+    lbl_chr = get_setting('label_char')
     label_pattern = r'(^|\s)\~(\d+)'
     m = re.search(label_pattern, msg)
     if not m or not m.group(2):
@@ -209,7 +214,7 @@ def stg_msg_labels(msg, project_id):
 
 
 def stg_get_image(url):
-    max_width = stg_get_setting('image_max_width')
+    max_width = get_setting('image_max_width')
     response = requests.get(url)
     dims = dimensions.get_dimensions_from_stream(response.content)
     w, h = stg_image_scale(dims[0], dims[1], max_width)

@@ -3,7 +3,7 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabObjectChangeTitleCommand(sublime_plugin.TextCommand):

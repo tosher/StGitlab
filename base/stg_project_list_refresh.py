@@ -3,14 +3,14 @@
 
 import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabProjectListRefreshCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         cursor = self.view.sel()[0]
         query_params = self.view.settings().get('query_params')
-        per_page = utils.stg_get_setting('list_page_size')
+        per_page = utils.get_setting('list_page_size')
         query_params['per_page'] = per_page
         if query_params:
             self.view.settings().set('query_params', query_params)

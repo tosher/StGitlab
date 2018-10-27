@@ -3,7 +3,7 @@
 
 import sublime
 # import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class UserSelectPanel(object):
@@ -16,7 +16,7 @@ class UserSelectPanel(object):
         self.user_names = []
         self.user_ids = []
 
-        users_group_filter = utils.stg_get_setting('users_group_filter', [])
+        users_group_filter = utils.get_setting('users_group_filter', [])
         if users_group_filter:
             users = utils.users_filtered(users_group_filter)
         else:

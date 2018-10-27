@@ -5,7 +5,7 @@ import sys
 import os
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), "../libs"))
 from transliterate import translit
 
@@ -26,7 +26,7 @@ class StGitlabIssueCreateBranchCommand(sublime_plugin.TextCommand):
             self.view.window().show_input_panel("Title:", branch_name, on_done, None, None)
 
     def get_branch_name(self):
-        translit_lang = utils.stg_get_setting('issue_to_branch_transliterate_lang')
+        translit_lang = utils.get_setting('issue_to_branch_transliterate_lang')
         if not translit_lang:
             return ''
         return (

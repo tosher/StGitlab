@@ -49,6 +49,8 @@ class StGitlab(object):
 
     def object_by_view(self, **kwargs):
         obj_name = self.view_object_name()
+        if obj_name is None:
+            raise Exception('Object name is not defined for view %s (%s)' % (self.view.id(), self.view.name()))
         if hasattr(self, obj_name):
             funcobj = getattr(self, obj_name)
             return funcobj(**kwargs)

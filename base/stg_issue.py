@@ -3,7 +3,7 @@
 
 import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_project import ProjectSelectPanel
 from .stg_object import StGitlabObjectCommand
 
@@ -33,7 +33,7 @@ class StGitlabIssueCreateCommand(sublime_plugin.TextCommand):
         issue = self.project.issues.create({'title': title})
         r = sublime.active_window().new_file()
         r.set_scratch(True)
-        syntax_file = utils.stg_get_setting('syntax_file')
+        syntax_file = utils.get_setting('syntax_file')
         r.set_syntax_file(syntax_file)
         r.settings().set('object_id', issue.iid)
         r.settings().set('project_id', self.project_id)

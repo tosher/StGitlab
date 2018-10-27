@@ -3,13 +3,13 @@
 
 import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabProjectListPageCommand(sublime_plugin.TextCommand):
     def run(self, edit, direction):
         query_params = self.view.settings().get('query_params')
-        per_page = utils.stg_get_setting('list_page_size')
+        per_page = utils.get_setting('list_page_size')
         page = query_params.get('page', 1)
         if direction:
             page += 1

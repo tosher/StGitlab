@@ -3,8 +3,8 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
-from .stg_editbox import StEditbox
+from . import utils
+from .editbox import Editbox
 
 
 class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
@@ -15,7 +15,7 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
         obj = gitlab.object_by_view()
         on_done = 'st_gitlab_object_change_description_done'
         description = obj.description if obj.description else ''
-        eb = StEditbox(self.view.id())
+        eb = Editbox(self.view.id())
         eb.edit(
             'Description',
             on_done,
@@ -38,12 +38,9 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
 
 
 class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text):
-        base_id = self.view.settings().get('base_id')
-        eb = StEditbox(base_id)
-        eb.layout_base()
-        gitlab = utils.gl.get(eb.view)
+    def run(self, edit, text, obj_kwargs):
+        gitlab = utils.gl.get(self.view)
         obj = gitlab.object_by_view()
         obj.description = text
         obj.save(title=obj.title)
-        eb.view.run_command('st_gitlab_object_refresh')
+        self.view.run_command('st_gitlab_object_refresh')

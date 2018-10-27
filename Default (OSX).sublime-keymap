@@ -1,8 +1,8 @@
 [
     {
-        "keys": ["super+s"], "command": "st_gitlab_editbox_save",
+        "keys": ["super+s"], "command": "editbox_save",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_editbox"}
+            {"key": "stg_screen", "operand": "editbox"}
         ]
     },
     {
@@ -24,9 +24,9 @@
         ]
     },
     {
-        "keys": ["escape"], "command": "st_gitlab_editbox_cancel",
+        "keys": ["escape"], "command": "editbox_cancel",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_editbox"},
+            {"key": "stg_screen", "operand": "editbox"},
             { "key": "auto_complete_visible", "operator": "equal", "operand": false },
             { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true }
         ]

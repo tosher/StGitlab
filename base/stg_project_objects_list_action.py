@@ -3,7 +3,7 @@
 
 # import sublime
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 from .stg_user import UserSelectPanel
 
 
@@ -20,7 +20,7 @@ class StGitlabProjectObjectsListActionCommand(sublime_plugin.TextCommand):
     def run(self, edit, action):
         self.action = action
         self.gitlab = utils.gl.get()
-        colsep = utils.stg_get_setting('table_column_separator')
+        colsep = utils.get_setting('table_column_separator')
         self.view.set_read_only(False)
         selection = self.view.sel()
         obj_ids = []

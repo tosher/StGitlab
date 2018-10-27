@@ -3,8 +3,8 @@
 
 import sublime
 import sublime_plugin
-from . import stg_utils as utils
-from .stg_editbox import StEditbox
+from . import utils
+from .editbox import Editbox
 
 
 class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
@@ -20,7 +20,7 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
             sublime.message_dialog("Unable to edit system message.")
             return
         on_done = 'st_gitlab_object_change_note_done'
-        eb = StEditbox(self.view.id())
+        eb = Editbox(self.view.id())
         eb.edit(
             'Note %s' % note_id,
             on_done,
@@ -44,12 +44,12 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
 
 
 class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text):
-        base_id = self.view.settings().get('base_id')
-        note_id = self.view.settings().get('note_id')
-        eb = StEditbox(base_id)
-        eb.layout_base()
-        gitlab = utils.gl.get(eb.view)
+    def run(self, edit, text, obj_kwargs):
+        if obj_kwargs is None:
+            raise Exception('Note arguments is empty')
+
+        note_id = obj_kwargs.get('note_id')
+        gitlab = utils.gl.get(self.view)
         obj = gitlab.object_by_view()
         note = obj.notes.get(note_id)
         if not hasattr(note, 'save'):
@@ -57,4 +57,4 @@ class StGitlabObjectChangeNoteDoneCommand(sublime_plugin.TextCommand):
             return
         note.body = text
         note.save()
-        eb.view.run_command('st_gitlab_object_refresh')
+        self.view.run_command('st_gitlab_object_refresh')

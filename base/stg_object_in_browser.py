@@ -4,7 +4,7 @@
 # import sublime
 import webbrowser
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 # Issue: Open in Browser
@@ -23,7 +23,7 @@ class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
             # url not exists in api now
             obj = gitlab.pipeline()
             web_url = '%(url)s/%(project)s/pipelines/%(pid)s' % {
-                'url': utils.stg_get_setting('gitlab_url'),
+                'url': utils.get_setting('gitlab_url'),
                 'project': project.attributes.get('path_with_namespace'),
                 'pid': obj.id
             }

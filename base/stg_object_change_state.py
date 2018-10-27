@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sublime_plugin
-from . import stg_utils as utils
+from . import utils
 
 
 class StGitlabObjectChangeStateCommand(sublime_plugin.TextCommand):
