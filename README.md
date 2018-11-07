@@ -19,15 +19,15 @@ SublimeText 3 plugin to manage Gitlab projects:
 
 **Project issues list**
 
-![p1](https://github.com/tosher/StGitlab/wiki/stgl_issues.png)
+![p1](https://raw.githubusercontent.com/wiki/tosher/StGitlab/stgl_issues.png)
 
 **Issue**
 
-![p2](https://github.com/tosher/StGitlab/wiki/stgl_issue.png)
+![p2](https://raw.githubusercontent.com/wiki/tosher/StGitlab/stgl_issue.png)
 
 **Snippet**
 
-![p3](https://github.com/tosher/StGitlab/wiki/stgl_snippet.png)
+![p3](https://raw.githubusercontent.com/wiki/tosher/StGitlab/stgl_snippet.png)
 
 ## Install
 
@@ -57,11 +57,13 @@ Example:
 
 ```json
 {
-    "redmine_url" : "URL to your Gitlab",
+    "gitlab_url": "URL to your Gitlab",
     "api_token": "Set your Gitlab API token",
+    "ssl_verify": true,
     "projects_filter": ["mygroup/MyProject"],
     "users_group_filter": ["mygroup"],
     "list_page_size": 40,
+    "show_system_notes": true,
     "syntax_file": "Packages/StGitlab/StGitlab.sublime-syntax",
     "syntax_file_edit": "Packages/MarkdownEditing/Markdown.sublime-syntax",
 }
