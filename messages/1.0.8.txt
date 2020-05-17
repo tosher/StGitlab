@@ -1,0 +1,4 @@
+StGitlab 1.0.8 changelog:
+
+* New approach for project selection
+* Python-gitlab API module updated to [1.15.0](https://github.com/python-gitlab/python-gitlab/releases/tag/v1.15.0)

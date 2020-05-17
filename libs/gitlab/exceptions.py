@@ -19,8 +19,7 @@ import functools
 
 
 class GitlabError(Exception):
-    def __init__(self, error_message="", response_code=None,
-                 response_body=None):
+    def __init__(self, error_message="", response_code=None, response_body=None):
 
         Exception.__init__(self, error_message)
         # Http status code
@@ -28,7 +27,12 @@ class GitlabError(Exception):
         # Full http response
         self.response_body = response_body
         # Parsed error message from gitlab
-        self.error_message = error_message
+        try:
+            # if we receive str/bytes we try to convert to unicode/str to have
+            # consistent message types (see #616)
+            self.error_message = error_message.decode()
+        except Exception:
+            self.error_message = error_message
 
     def __str__(self):
         if self.response_code is not None:
@@ -38,6 +42,10 @@ class GitlabError(Exception):
 
 
 class GitlabAuthenticationError(GitlabError):
+    pass
+
+
+class RedirectError(GitlabError):
     pass
 
 
@@ -149,6 +157,14 @@ class GitlabUnblockError(GitlabOperationError):
     pass
 
 
+class GitlabDeactivateError(GitlabOperationError):
+    pass
+
+
+class GitlabActivateError(GitlabOperationError):
+    pass
+
+
 class GitlabSubscribeError(GitlabOperationError):
     pass
 
@@ -158,6 +174,14 @@ class GitlabUnsubscribeError(GitlabOperationError):
 
 
 class GitlabMRForbiddenError(GitlabOperationError):
+    pass
+
+
+class GitlabMRApprovalError(GitlabOperationError):
+    pass
+
+
+class GitlabMRRebaseError(GitlabOperationError):
     pass
 
 
@@ -197,41 +221,32 @@ class GitlabOwnershipError(GitlabOperationError):
     pass
 
 
-def raise_error_from_response(response, error, expected_code=200):
-    """Tries to parse gitlab error message from response and raises error.
+class GitlabSearchError(GitlabOperationError):
+    pass
 
-    Do nothing if the response status is the expected one.
 
-    If response status code is 401, raises instead GitlabAuthenticationError.
+class GitlabStopError(GitlabOperationError):
+    pass
 
-    Args:
-        response: requests response object
-        error: Error-class or dict {return-code => class} of possible error
-               class to raise. Should be inherited from GitLabError
-    """
 
-    if isinstance(expected_code, int):
-        expected_codes = [expected_code]
-    else:
-        expected_codes = expected_code
+class GitlabMarkdownError(GitlabOperationError):
+    pass
 
-    if response.status_code in expected_codes:
-        return
 
-    try:
-        message = response.json()['message']
-    except (KeyError, ValueError, TypeError):
-        message = response.content
+class GitlabVerifyError(GitlabOperationError):
+    pass
 
-    if isinstance(error, dict):
-        error = error.get(response.status_code, GitlabOperationError)
-    else:
-        if response.status_code == 401:
-            error = GitlabAuthenticationError
 
-    raise error(error_message=message,
-                response_code=response.status_code,
-                response_body=response.content)
+class GitlabRenderError(GitlabOperationError):
+    pass
+
+
+class GitlabRepairError(GitlabOperationError):
+    pass
+
+
+class GitlabLicenseError(GitlabOperationError):
+    pass
 
 
 def on_http_error(error):
@@ -244,6 +259,7 @@ def on_http_error(error):
         error(Exception): The exception type to raise -- must inherit from
             GitlabError
     """
+
     def wrap(f):
         @functools.wraps(f)
         def wrapped_f(*args, **kwargs):
@@ -251,5 +267,7 @@ def on_http_error(error):
                 return f(*args, **kwargs)
             except GitlabHttpError as e:
                 raise error(e.error_message, e.response_code, e.response_body)
+
         return wrapped_f
+
     return wrap

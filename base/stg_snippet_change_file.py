@@ -23,7 +23,7 @@ class StGitlabSnippetChangeFileCommand(sublime_plugin.TextCommand):
             obj.file_name,
             on_done,
             text,
-            project_id=project.id,
+            project_id=project.id if project else None,
             object_id=obj.iid if hasattr(obj, 'iid') else obj.id
         )
 
@@ -43,7 +43,6 @@ class StGitlabSnippetChangeFileDoneCommand(sublime_plugin.TextCommand):
     def run(self, edit, text, obj_kwargs):
         gitlab = utils.gl.get(self.view)
         obj = gitlab.object_by_view()
-        # obj.save(code=text)
-        obj.code = text
+        obj.content = text
         obj.save()
         self.view.run_command('st_gitlab_object_refresh')

@@ -19,6 +19,7 @@ class StGitlab(object):
     cgroups = None
     cgroup = {}
 
+    @staticmethod
     def connect():
         settings = sublime.load_settings("StGitlab.sublime-settings")
         url = settings.get('gitlab_url')
@@ -60,7 +61,8 @@ class StGitlab(object):
         if oid is None:
             oid = self.view.settings().get('project_id', None)
         if not oid:
-            raise Exception('Project id is not defined')
+            # raise Exception('Project id is not defined')
+            return None
         if not self.cproject.get(oid):
             self.cproject[oid] = self.conn.projects.get(oid)
         return self.cproject.get(oid)
@@ -139,6 +141,9 @@ class StGitlab(object):
         return self.project(project_id).mergerequests.list(**kwargs)
 
     def labels(self, project_id=None, **kwargs):
+        if not project_id:
+            # NOTE: example: global snippet (no project)
+            return []
         if len(kwargs.keys()) == 1 and kwargs.get('all', False):
             if not self.clabels:
                 self.clabels = self.project(project_id).labels.list(**kwargs)
@@ -185,11 +190,14 @@ class StGitlab(object):
         return self.project(project_id).commits.get(sha)
 
     def snippets(self, project_id=None, **kwargs):
-        return self.project(project_id).snippets.list(**kwargs)
+        obj = self.project(project_id) if project_id else self.conn
+        return obj.snippets.list(**kwargs)
 
     def snippet(self, project_id=None, oid=None):
         if oid is None:
             oid = self.view.settings().get('object_id', None)
         if not oid:
             raise Exception('Snippet id is not defined')
-        return self.project(project_id).snippets.get(oid)
+        if project_id:
+            return self.project(project_id).snippets.get(oid)
+        return self.conn.snippets.get(oid)

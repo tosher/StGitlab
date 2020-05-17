@@ -19,7 +19,7 @@ class StGitlabObjectAddNoteCommand(sublime_plugin.TextCommand):
             'Note',
             on_done,
             '',
-            project_id=project.id,
+            project_id=project.id if project else None,
             object_id=obj.iid if hasattr(obj, 'iid') else obj.id
         )
 

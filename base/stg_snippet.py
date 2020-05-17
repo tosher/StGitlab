@@ -14,16 +14,18 @@ class StGitlabSnippetCreateCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         self.gitlab = utils.gl.get()
+        self.project = None
         self.project_id = self.view.settings().get('project_id', None)
         if self.project_id:
             self.set_project(self.project_id)
         else:
-            panel = ProjectSelectPanel(callback=self.set_project)
+            panel = ProjectSelectPanel(callback=self.set_project, required=False)
             panel.show_input()
 
     def set_project(self, project_id):
         self.project_id = project_id
-        self.project = self.gitlab.project(oid=self.project_id)
+        if self.project_id:
+            self.project = self.gitlab.project(oid=self.project_id)
         self.get_snippet_title()
 
     def get_snippet_title(self):
@@ -45,7 +47,8 @@ class StGitlabSnippetCreateCommand(sublime_plugin.TextCommand):
         if visibility_idx < 0:
             return
         visibility_value = self.visibility[visibility_idx]
-        snippet = self.project.snippets.create(
+        create_method = self.project.snippets.create if self.project else self.gitlab.conn.snippets.create
+        snippet = create_method(
             {
                 'title': self.title,
                 'file_name': self.file_name,
@@ -59,7 +62,8 @@ class StGitlabSnippetCreateCommand(sublime_plugin.TextCommand):
         syntax_file = utils.get_setting('syntax_file')
         r.set_syntax_file(syntax_file)
         r.settings().set('object_id', snippet.id)
-        r.settings().set('project_id', self.project_id)
+        if self.project:
+            r.settings().set('project_id', self.project_id)
         r.run_command('st_gitlab_snippet_fetcher', {'obj_id': snippet.id})
 
 
@@ -67,9 +71,10 @@ class StGitlabSnippetCommand(StGitlabObjectCommand):
 
     INPUT_STR = 'Snippet ID'
     object_name = 'snippet'
+    project_required = False
 
-    def get_issue(self):
-        return self.gitlab.snippet(project_id=self.project_id, oid=self.obj_id)
+    # def get_issue(self):
+    #     return self.gitlab.snippet(project_id=self.project_id, oid=self.obj_id)
 
 
 class StGitlabSnippetDeleteCommand(StGitlabSnippetCommand):

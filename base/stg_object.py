@@ -11,6 +11,7 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
 
     INPUT_STR = 'Object ID'
     object_name = ''
+    project_required = True
 
     def run(self, edit, obj_id=None):
         self.obj_id = obj_id
@@ -50,7 +51,7 @@ class StGitlabObjectCommand(sublime_plugin.TextCommand):
         if project_id:
             self.project_done(project_id)
         else:
-            panel = ProjectSelectPanel(callback=self.project_done)
+            panel = ProjectSelectPanel(callback=self.project_done, required=self.project_required)
             panel.show_input()
 
     def project_done(self, project_id):

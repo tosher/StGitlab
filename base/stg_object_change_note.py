@@ -25,7 +25,7 @@ class StGitlabObjectChangeNoteCommand(sublime_plugin.TextCommand):
             'Note %s' % note_id,
             on_done,
             note.attributes.get('body', ''),
-            project_id=project.id,
+            project_id=project.id if project else None,
             object_id=obj.iid if hasattr(obj, 'iid') else obj.id,
             note_id=note_id
         )

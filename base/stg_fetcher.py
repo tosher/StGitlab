@@ -45,17 +45,20 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         self.obj_id = obj_id if obj_id else self.view.settings().get('object_id')
         self.project_id = project_id if project_id else self.view.settings().get('project_id')
 
-        if not self.obj_id:
-            raise Exception('%(name)s id is not defined. %(name)s can not be opened.' % {'name': self.obj_name})
-
-        if not self.project_id:
-            raise Exception('Project is not defined. %s can not be opened.' % self.obj_name)
+        self.validate_input()
 
         try:
             self.st_gitlab_view(edit)
         except Exception as e:
             traceback.print_exc()
             self.view.window().status_message('%s #%s cannot be opened: %s' % (self.obj_name, obj_id, e))
+
+    def validate_input(self):
+        if not self.obj_id:
+            raise Exception('%(name)s id is not defined. %(name)s can not be opened.' % {'name': self.obj_name})
+
+        if not self.project_id:
+            raise Exception('Project is not defined. %s can not be opened.' % self.obj_name)
 
     def get_shortcuts(self, view):
         StShortcutsMenu(view, shortcuts=self.shortcuts, cols=self.cols)
@@ -74,8 +77,9 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         cols_maxlen = len(max([col['colname'] for col in cols], key=len)) + 5  # +4* +1
         cols_data = []
         line_format = '\t{:<%s}: {:<}' % cols_maxlen
-        header += line_format.format('**Project**', self.gitlab.project().name)
-        header += '\n'
+        if self.project_id:
+            header += line_format.format('**Project**', self.gitlab.project().name)
+            header += '\n'
         for col in cols:
             value = utils.stg_get_property_value(obj, col)
 
@@ -125,6 +129,11 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         return msg
 
     def get_notes(self, obj):
+        # Non-project snippet doesn't has a notes in API
+        if not hasattr(obj, 'notes'):
+            print('Warning: Object {} doesn\'t has a notes attribute'.format(self.obj_name_sub))
+            return ''
+
         notes = ''
         content = ''
         # TODO: sorting not works?
@@ -216,7 +225,8 @@ class StGitlabFetcherCommand(sublime_plugin.TextCommand):
         r.insert(edit, 0, content)
         StNotesIcons(r)
         sublime.set_timeout_async(utils.stg_show_images(r), 0)
-        r.run_command('st_gitlab_view_show_labels')
+        if self.project_id:
+            r.run_command('st_gitlab_view_show_labels')
         r.set_read_only(True)
 
 
@@ -447,6 +457,10 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
     obj_name = 'Snippet'
     obj_name_sub = 'snippet'
 
+    def validate_input(self):
+        if not self.obj_id:
+            raise Exception('%(name)s id is not defined. %(name)s can not be opened.' % {'name': self.obj_name})
+
     def auto_syntax(self, name):
         return utils.syntaxes.get(name.split('.')[-1])
 
@@ -467,4 +481,3 @@ class StGitlabSnippetFetcherCommand(StGitlabFetcherCommand):
         content += BLOCK_MD_LINE_STOP
         content += '\n'
         return content
-

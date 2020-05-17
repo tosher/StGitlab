@@ -14,13 +14,12 @@ class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
         project = gitlab.project()
         obj = gitlab.object_by_view()
         on_done = 'st_gitlab_object_change_description_done'
-        description = obj.description if obj.description else ''
         eb = Editbox(self.view.id())
         eb.edit(
             'Description',
             on_done,
-            description,
-            project_id=project.id,
+            obj.description or None,
+            project_id=project.id if project else None,
             object_id=obj.iid if hasattr(obj, 'iid') else obj.id
         )
 
