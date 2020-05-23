@@ -27,9 +27,9 @@ class ProjectSelectPanel(object):
         self.window.show_quick_panel(projects_menu, self.get_project)
 
     def get_project(self, idx):
-        gitlab = utils.gl.get()
         if idx < 0:
             return
+        gitlab = utils.gl.get()
 
         if idx == 0:
 

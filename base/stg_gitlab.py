@@ -101,9 +101,15 @@ class StGitlab(object):
         else:
             return self.conn.users.list(**kwargs)
 
-    def user(self, oid=None):
+    def user(self, oid=None, name=None):
         if oid is None:
-            raise Exception('User id is not defined')
+            if not name:
+                raise Exception('User id or name are not defined')
+            users = self.conn.users.list(username=name)
+            if users:
+                return users[0]
+            else:
+                raise Exception('User with name "{}" does not found'.format(name))
         return self.conn.users.get(oid)
 
     def assignee_set(self, oid, obj):

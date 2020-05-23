@@ -1,0 +1,3 @@
+StGitlab 1.0.9 changelog:
+
+* New approach for user selection (possibility to set custom name)
