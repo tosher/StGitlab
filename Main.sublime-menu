@@ -1,30 +1,74 @@
 [
     {
         "id": "tools",
-        "children":
-        [
+        "children": [
             {
                 "id": "StGitlab",
                 "caption": "StGitlab",
-                "children":
-                [
-                    {"command": "st_gitlab_project_issues", "caption": "Project issues"},
-                    {"command": "st_gitlab_project_merges", "caption": "Project merge requests"},
-                    {"command": "st_gitlab_project_pipelines", "caption": "Project pipelines"},
-                    {"command": "st_gitlab_project_branches", "caption": "Project branches"},
-                    {"command": "st_gitlab_project_snippets", "caption": "Project snippets"},
-                    { "caption": "-" },
-                    {"command": "st_gitlab_issue_create", "caption": "Create issue"},
-                    {"command": "st_gitlab_issue", "caption": "Open issue"},
-                    { "caption": "-" },
-                    {"command": "st_gitlab_merge", "caption": "Open merge-request"},
-                    { "caption": "-" },
-                    {"command": "st_gitlab_pipeline", "caption": "Open pipeline"},
-                    { "caption": "-" },
-                    {"command": "st_gitlab_snippet_create", "caption": "Create snippet"},
-                    {"command": "st_gitlab_snippet", "caption": "Open snippet"},
-                    { "caption": "-" },
-                    {"command": "st_gitlab_reset", "caption": "Reset cash"}
+                "children": [
+                    {
+                        "command": "st_gitlab_project_issues",
+                        "caption": "Project issues"
+                    },
+                    {
+                        "command": "st_gitlab_project_merges",
+                        "caption": "Project merge requests"
+                    },
+                    {
+                        "command": "st_gitlab_project_pipelines",
+                        "caption": "Project pipelines"
+                    },
+                    {
+                        "command": "st_gitlab_project_branches",
+                        "caption": "Project branches"
+                    },
+                    {
+                        "command": "st_gitlab_project_snippets",
+                        "caption": "Project snippets"
+                    },
+                    {
+                        "caption": "-"
+                    },
+                    {
+                        "command": "st_gitlab_issue_create",
+                        "caption": "Create issue"
+                    },
+                    {
+                        "command": "st_gitlab_issue",
+                        "caption": "Open issue"
+                    },
+                    {
+                        "caption": "-"
+                    },
+                    {
+                        "command": "st_gitlab_merge",
+                        "caption": "Open merge-request"
+                    },
+                    {
+                        "caption": "-"
+                    },
+                    {
+                        "command": "st_gitlab_pipeline",
+                        "caption": "Open pipeline"
+                    },
+                    {
+                        "caption": "-"
+                    },
+                    {
+                        "command": "st_gitlab_snippet_create",
+                        "caption": "Create snippet"
+                    },
+                    {
+                        "command": "st_gitlab_snippet",
+                        "caption": "Open snippet"
+                    },
+                    {
+                        "caption": "-"
+                    },
+                    {
+                        "command": "st_gitlab_reset",
+                        "caption": "Reset cash"
+                    }
                 ]
             }
         ]
@@ -33,18 +77,15 @@
         "caption": "Preferences",
         "mnemonic": "n",
         "id": "preferences",
-        "children":
-        [
+        "children": [
             {
                 "caption": "Package Settings",
                 "mnemonic": "P",
                 "id": "package-settings",
-                "children":
-                [
+                "children": [
                     {
                         "caption": "StGitlab",
-                        "children":
-                        [
+                        "children": [
                             {
                                 "command": "edit_settings",
                                 "args": {

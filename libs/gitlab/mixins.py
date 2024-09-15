@@ -1,80 +1,174 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013-2017 Gauvain Pocentek <gauvain@pocentek.net>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import enum
+from types import ModuleType
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TYPE_CHECKING,
+    Union,
+)
+
+import requests
 
 import gitlab
-from gitlab import base
-from gitlab import cli
+from gitlab import base, cli
 from gitlab import exceptions as exc
-from gitlab import types as g_types
 from gitlab import utils
 
+__all__ = [
+    "GetMixin",
+    "GetWithoutIdMixin",
+    "RefreshMixin",
+    "ListMixin",
+    "RetrieveMixin",
+    "CreateMixin",
+    "UpdateMixin",
+    "SetMixin",
+    "DeleteMixin",
+    "CRUDMixin",
+    "NoUpdateMixin",
+    "SaveMixin",
+    "ObjectDeleteMixin",
+    "UserAgentDetailMixin",
+    "AccessRequestMixin",
+    "DownloadMixin",
+    "SubscribableMixin",
+    "TodoMixin",
+    "TimeTrackingMixin",
+    "ParticipantsMixin",
+    "BadgeRenderMixin",
+]
 
-class GetMixin(object):
+if TYPE_CHECKING:
+    # When running mypy we use these as the base classes
+    _RestManagerBase = base.RESTManager
+    _RestObjectBase = base.RESTObject
+else:
+    _RestManagerBase = object
+    _RestObjectBase = object
+
+
+class HeadMixin(_RestManagerBase):
+    @exc.on_http_error(exc.GitlabHeadError)
+    def head(
+        self, id: Optional[Union[str, int]] = None, **kwargs: Any
+    ) -> "requests.structures.CaseInsensitiveDict[Any]":
+        """Retrieve headers from an endpoint.
+
+        Args:
+            id: ID of the object to retrieve
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Returns:
+            A requests header object.
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabHeadError: If the server cannot perform the request
+        """
+        if TYPE_CHECKING:
+            assert self.path is not None
+
+        path = self.path
+        if id is not None:
+            path = f"{path}/{utils.EncodedId(id)}"
+
+        return self.gitlab.http_head(path, **kwargs)
+
+
+class GetMixin(HeadMixin, _RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _optional_get_attrs: Tuple[str, ...] = ()
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
     @exc.on_http_error(exc.GitlabGetError)
-    def get(self, id, lazy=False, **kwargs):
+    def get(
+        self, id: Union[str, int], lazy: bool = False, **kwargs: Any
+    ) -> base.RESTObject:
         """Retrieve a single object.
 
         Args:
-            id (int or str): ID of the object to retrieve
-            lazy (bool): If True, don't request the server, but create a
+            id: ID of the object to retrieve
+            lazy: If True, don't request the server, but create a
                          shallow object giving access to the managers. This is
                          useful if you want to avoid useless calls to the API.
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Returns:
-            object: The generated RESTObject.
+            The generated RESTObject.
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabGetError: If the server cannot perform the request
         """
-        if not isinstance(id, int):
-            id = utils.clean_str_id(id)
-        path = "%s/%s" % (self.path, id)
+        if isinstance(id, str):
+            id = utils.EncodedId(id)
+        path = f"{self.path}/{id}"
+        if TYPE_CHECKING:
+            assert self._obj_cls is not None
         if lazy is True:
-            return self._obj_cls(self, {self._obj_cls._id_attr: id})
+            if TYPE_CHECKING:
+                assert self._obj_cls._id_attr is not None
+            return self._obj_cls(self, {self._obj_cls._id_attr: id}, lazy=lazy)
         server_data = self.gitlab.http_get(path, **kwargs)
-        return self._obj_cls(self, server_data)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
+        return self._obj_cls(self, server_data, lazy=lazy)
 
 
-class GetWithoutIdMixin(object):
+class GetWithoutIdMixin(HeadMixin, _RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _optional_get_attrs: Tuple[str, ...] = ()
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
     @exc.on_http_error(exc.GitlabGetError)
-    def get(self, id=None, **kwargs):
+    def get(self, **kwargs: Any) -> base.RESTObject:
         """Retrieve a single object.
 
         Args:
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Returns:
-            object: The generated RESTObject
+            The generated RESTObject
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabGetError: If the server cannot perform the request
         """
+        if TYPE_CHECKING:
+            assert self.path is not None
         server_data = self.gitlab.http_get(self.path, **kwargs)
-        if server_data is None:
-            return None
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
+            assert self._obj_cls is not None
         return self._obj_cls(self, server_data)
 
 
-class RefreshMixin(object):
+class RefreshMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
     @exc.on_http_error(exc.GitlabGetError)
-    def refresh(self, **kwargs):
+    def refresh(self, **kwargs: Any) -> None:
         """Refresh a single object from server.
 
         Args:
@@ -87,160 +181,171 @@ class RefreshMixin(object):
             GitlabGetError: If the server cannot perform the request
         """
         if self._id_attr:
-            path = "%s/%s" % (self.manager.path, self.id)
+            path = f"{self.manager.path}/{self.encoded_id}"
         else:
+            if TYPE_CHECKING:
+                assert self.manager.path is not None
             path = self.manager.path
         server_data = self.manager.gitlab.http_get(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
         self._update_attrs(server_data)
 
 
-class ListMixin(object):
+class ListMixin(HeadMixin, _RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _list_filters: Tuple[str, ...] = ()
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
     @exc.on_http_error(exc.GitlabListError)
-    def list(self, **kwargs):
+    def list(self, **kwargs: Any) -> Union[base.RESTObjectList, List[base.RESTObject]]:
         """Retrieve a list of objects.
 
         Args:
-            all (bool): If True, return all the items, without pagination
-            per_page (int): Number of items to retrieve per request
-            page (int): ID of the page to return (starts with page 1)
-            as_list (bool): If set to False and no pagination option is
+            all: If True, return all the items, without pagination
+            per_page: Number of items to retrieve per request
+            page: ID of the page to return (starts with page 1)
+            iterator: If set to True and no pagination option is
                 defined, return a generator instead of a list
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Returns:
-            list: The list of objects, or a generator if `as_list` is False
+            The list of objects, or a generator if `iterator` is True
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabListError: If the server cannot perform the request
         """
 
-        # Duplicate data to avoid messing with what the user sent us
-        data = kwargs.copy()
+        data, _ = utils._transform_types(
+            data=kwargs,
+            custom_types=self._types,
+            transform_data=True,
+            transform_files=False,
+        )
+
         if self.gitlab.per_page:
             data.setdefault("per_page", self.gitlab.per_page)
 
-        # We get the attributes that need some special transformation
-        types = getattr(self, "_types", {})
-        if types:
-            for attr_name, type_cls in types.items():
-                if attr_name in data.keys():
-                    type_obj = type_cls(data[attr_name])
-                    data[attr_name] = type_obj.get_for_api()
+        # global keyset pagination
+        if self.gitlab.pagination:
+            data.setdefault("pagination", self.gitlab.pagination)
+
+        if self.gitlab.order_by:
+            data.setdefault("order_by", self.gitlab.order_by)
 
         # Allow to overwrite the path, handy for custom listings
         path = data.pop("path", self.path)
 
+        if TYPE_CHECKING:
+            assert self._obj_cls is not None
         obj = self.gitlab.http_list(path, **data)
         if isinstance(obj, list):
-            return [self._obj_cls(self, item) for item in obj]
-        else:
-            return base.RESTObjectList(self, self._obj_cls, obj)
+            return [self._obj_cls(self, item, created_from_list=True) for item in obj]
+        return base.RESTObjectList(self, self._obj_cls, obj)
 
 
 class RetrieveMixin(ListMixin, GetMixin):
-    pass
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
 
 
-class CreateMixin(object):
-    def _check_missing_create_attrs(self, data):
-        required, optional = self.get_create_attrs()
-        missing = []
-        for attr in required:
-            if attr not in data:
-                missing.append(attr)
-                continue
-        if missing:
-            raise AttributeError("Missing attributes: %s" % ", ".join(missing))
-
-    def get_create_attrs(self):
-        """Return the required and optional arguments.
-
-        Returns:
-            tuple: 2 items: list of required arguments and list of optional
-                   arguments for creation (in that order)
-        """
-        return getattr(self, "_create_attrs", (tuple(), tuple()))
+class CreateMixin(_RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
 
     @exc.on_http_error(exc.GitlabCreateError)
-    def create(self, data, **kwargs):
+    def create(
+        self, data: Optional[Dict[str, Any]] = None, **kwargs: Any
+    ) -> base.RESTObject:
         """Create a new object.
 
         Args:
-            data (dict): parameters to send to the server to create the
+            data: parameters to send to the server to create the
                          resource
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Returns:
-            RESTObject: a new instance of the managed object class built with
+            A new instance of the managed object class built with
                 the data sent by the server
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabCreateError: If the server cannot perform the request
         """
-        self._check_missing_create_attrs(data)
-        files = {}
+        if data is None:
+            data = {}
 
-        # We get the attributes that need some special transformation
-        types = getattr(self, "_types", {})
-        if types:
-            # Duplicate data to avoid messing with what the user sent us
-            data = data.copy()
-            for attr_name, type_cls in types.items():
-                if attr_name in data.keys():
-                    type_obj = type_cls(data[attr_name])
-
-                    # if the type if FileAttribute we need to pass the data as
-                    # file
-                    if issubclass(type_cls, g_types.FileAttribute):
-                        k = type_obj.get_file_name(attr_name)
-                        files[attr_name] = (k, data.pop(attr_name))
-                    else:
-                        data[attr_name] = type_obj.get_for_api()
+        self._create_attrs.validate_attrs(data=data)
+        data, files = utils._transform_types(
+            data=data, custom_types=self._types, transform_data=False
+        )
 
         # Handle specific URL for creation
         path = kwargs.pop("path", self.path)
         server_data = self.gitlab.http_post(path, post_data=data, files=files, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
+            assert self._obj_cls is not None
         return self._obj_cls(self, server_data)
 
 
-class UpdateMixin(object):
-    def _check_missing_update_attrs(self, data):
-        required, optional = self.get_update_attrs()
-        # Remove the id field from the required list as it was previously moved to the http path.
-        required = tuple(filter(lambda k: k != self._obj_cls._id_attr, required))
-        missing = []
-        for attr in required:
-            if attr not in data:
-                missing.append(attr)
-                continue
-        if missing:
-            raise AttributeError("Missing attributes: %s" % ", ".join(missing))
+@enum.unique
+class UpdateMethod(enum.IntEnum):
+    PUT = 1
+    POST = 2
+    PATCH = 3
 
-    def get_update_attrs(self):
-        """Return the required and optional arguments.
 
-        Returns:
-            tuple: 2 items: list of required arguments and list of optional
-                   arguments for update (in that order)
-        """
-        return getattr(self, "_update_attrs", (tuple(), tuple()))
+class UpdateMixin(_RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    _update_method: UpdateMethod = UpdateMethod.PUT
+    gitlab: gitlab.Gitlab
 
-    def _get_update_method(self):
+    def _get_update_method(
+        self,
+    ) -> Callable[..., Union[Dict[str, Any], requests.Response]]:
         """Return the HTTP method to use.
 
         Returns:
-            object: http_put (default) or http_post
+            http_put (default) or http_post
         """
-        if getattr(self, "_update_uses_post", False):
+        if self._update_method is UpdateMethod.POST:
             http_method = self.gitlab.http_post
+        elif self._update_method is UpdateMethod.PATCH:
+            # only patch uses required kwargs, so our types are a bit misaligned
+            http_method = self.gitlab.http_patch  # type: ignore[assignment]
         else:
             http_method = self.gitlab.http_put
         return http_method
 
     @exc.on_http_error(exc.GitlabUpdateError)
-    def update(self, id=None, new_data=None, **kwargs):
+    def update(
+        self,
+        id: Optional[Union[str, int]] = None,
+        new_data: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
         """Update an object on the server.
 
         Args:
@@ -249,7 +354,7 @@ class UpdateMixin(object):
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Returns:
-            dict: The new object data (*not* a RESTObject)
+            The new object data (*not* a RESTObject)
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
@@ -260,58 +365,68 @@ class UpdateMixin(object):
         if id is None:
             path = self.path
         else:
-            path = "%s/%s" % (self.path, id)
+            path = f"{self.path}/{utils.EncodedId(id)}"
 
-        self._check_missing_update_attrs(new_data)
-        files = {}
-
-        # We get the attributes that need some special transformation
-        types = getattr(self, "_types", {})
-        if types:
-            # Duplicate data to avoid messing with what the user sent us
-            new_data = new_data.copy()
-            for attr_name, type_cls in types.items():
-                if attr_name in new_data.keys():
-                    type_obj = type_cls(new_data[attr_name])
-
-                    # if the type if FileAttribute we need to pass the data as
-                    # file
-                    if issubclass(type_cls, g_types.FileAttribute):
-                        k = type_obj.get_file_name(attr_name)
-                        files[attr_name] = (k, new_data.pop(attr_name))
-                    else:
-                        new_data[attr_name] = type_obj.get_for_api()
+        excludes = []
+        if self._obj_cls is not None and self._obj_cls._id_attr is not None:
+            excludes = [self._obj_cls._id_attr]
+        self._update_attrs.validate_attrs(data=new_data, excludes=excludes)
+        new_data, files = utils._transform_types(
+            data=new_data, custom_types=self._types, transform_data=False
+        )
 
         http_method = self._get_update_method()
-        return http_method(path, post_data=new_data, files=files, **kwargs)
+        result = http_method(path, post_data=new_data, files=files, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
 
-class SetMixin(object):
+class SetMixin(_RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
     @exc.on_http_error(exc.GitlabSetError)
-    def set(self, key, value, **kwargs):
+    def set(self, key: str, value: str, **kwargs: Any) -> base.RESTObject:
         """Create or update the object.
 
         Args:
-            key (str): The key of the object to create/update
-            value (str): The value to set for the object
+            key: The key of the object to create/update
+            value: The value to set for the object
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
-            GitlabSetError: If an error occured
+            GitlabSetError: If an error occurred
 
         Returns:
-            obj: The created/updated attribute
+            The created/updated attribute
         """
-        path = "%s/%s" % (self.path, utils.clean_str_id(key))
+        path = f"{self.path}/{utils.EncodedId(key)}"
         data = {"value": value}
         server_data = self.gitlab.http_put(path, post_data=data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
+            assert self._obj_cls is not None
         return self._obj_cls(self, server_data)
 
 
-class DeleteMixin(object):
+class DeleteMixin(_RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
     @exc.on_http_error(exc.GitlabDeleteError)
-    def delete(self, id, **kwargs):
+    def delete(self, id: Optional[Union[str, int]] = None, **kwargs: Any) -> None:
         """Delete an object on the server.
 
         Args:
@@ -325,27 +440,46 @@ class DeleteMixin(object):
         if id is None:
             path = self.path
         else:
-            if not isinstance(id, int):
-                id = utils.clean_str_id(id)
-            path = "%s/%s" % (self.path, id)
+            path = f"{self.path}/{utils.EncodedId(id)}"
+
+        if TYPE_CHECKING:
+            assert path is not None
         self.gitlab.http_delete(path, **kwargs)
 
 
 class CRUDMixin(GetMixin, ListMixin, CreateMixin, UpdateMixin, DeleteMixin):
-    pass
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
 
 
 class NoUpdateMixin(GetMixin, ListMixin, CreateMixin, DeleteMixin):
-    pass
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
 
 
-class SaveMixin(object):
+class SaveMixin(_RestObjectBase):
     """Mixin for RESTObject's that can be updated."""
 
-    def _get_updated_data(self):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    def _get_updated_data(self) -> Dict[str, Any]:
         updated_data = {}
-        required, optional = self.manager.get_update_attrs()
-        for attr in required:
+        for attr in self.manager._update_attrs.required:
             # Get everything required, no matter if it's been updated
             updated_data[attr] = getattr(self, attr)
         # Add the updated attributes
@@ -353,13 +487,16 @@ class SaveMixin(object):
 
         return updated_data
 
-    def save(self, **kwargs):
+    def save(self, **kwargs: Any) -> Optional[Dict[str, Any]]:
         """Save the changes made to the object to the server.
 
         The object is updated to match what the server returns.
 
         Args:
             **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Returns:
+            The new object data (*not* a RESTObject)
 
         Raise:
             GitlabAuthenticationError: If authentication is not correct
@@ -368,19 +505,28 @@ class SaveMixin(object):
         updated_data = self._get_updated_data()
         # Nothing to update. Server fails if sent an empty dict.
         if not updated_data:
-            return
+            return None
 
         # call the manager
-        obj_id = self.get_id()
+        obj_id = self.encoded_id
+        if TYPE_CHECKING:
+            assert isinstance(self.manager, UpdateMixin)
         server_data = self.manager.update(obj_id, updated_data, **kwargs)
-        if server_data is not None:
-            self._update_attrs(server_data)
+        self._update_attrs(server_data)
+        return server_data
 
 
-class ObjectDeleteMixin(object):
+class ObjectDeleteMixin(_RestObjectBase):
     """Mixin for RESTObject's that can be deleted."""
 
-    def delete(self, **kwargs):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    def delete(self, **kwargs: Any) -> None:
         """Delete the object from the server.
 
         Args:
@@ -390,13 +536,23 @@ class ObjectDeleteMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabDeleteError: If the server cannot perform the request
         """
-        self.manager.delete(self.get_id())
+        if TYPE_CHECKING:
+            assert isinstance(self.manager, DeleteMixin)
+            assert self.encoded_id is not None
+        self.manager.delete(self.encoded_id, **kwargs)
 
 
-class UserAgentDetailMixin(object):
-    @cli.register_custom_action(("Snippet", "ProjectSnippet", "ProjectIssue"))
+class UserAgentDetailMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    @cli.register_custom_action(cls_names=("Snippet", "ProjectSnippet", "ProjectIssue"))
     @exc.on_http_error(exc.GitlabGetError)
-    def user_agent_detail(self, **kwargs):
+    def user_agent_detail(self, **kwargs: Any) -> Dict[str, Any]:
         """Get the user agent detail.
 
         Args:
@@ -406,20 +562,33 @@ class UserAgentDetailMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabGetError: If the server cannot perform the request
         """
-        path = "%s/%s/user_agent_detail" % (self.manager.path, self.get_id())
-        return self.manager.gitlab.http_get(path, **kwargs)
+        path = f"{self.manager.path}/{self.encoded_id}/user_agent_detail"
+        result = self.manager.gitlab.http_get(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
 
-class AccessRequestMixin(object):
+class AccessRequestMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
     @cli.register_custom_action(
-        ("ProjectAccessRequest", "GroupAccessRequest"), tuple(), ("access_level",)
+        cls_names=("ProjectAccessRequest", "GroupAccessRequest"),
+        optional=("access_level",),
     )
     @exc.on_http_error(exc.GitlabUpdateError)
-    def approve(self, access_level=gitlab.DEVELOPER_ACCESS, **kwargs):
+    def approve(
+        self, access_level: int = gitlab.const.DEVELOPER_ACCESS, **kwargs: Any
+    ) -> None:
         """Approve an access request.
 
         Args:
-            access_level (int): The access level for the user
+            access_level: The access level for the user
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
@@ -427,18 +596,136 @@ class AccessRequestMixin(object):
             GitlabUpdateError: If the server fails to perform the request
         """
 
-        path = "%s/%s/approve" % (self.manager.path, self.id)
+        path = f"{self.manager.path}/{self.encoded_id}/approve"
         data = {"access_level": access_level}
         server_data = self.manager.gitlab.http_put(path, post_data=data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
         self._update_attrs(server_data)
 
 
-class SubscribableMixin(object):
+class DownloadMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    @cli.register_custom_action(cls_names=("GroupExport", "ProjectExport"))
+    @exc.on_http_error(exc.GitlabGetError)
+    def download(
+        self,
+        streamed: bool = False,
+        action: Optional[Callable[[bytes], None]] = None,
+        chunk_size: int = 1024,
+        *,
+        iterator: bool = False,
+        **kwargs: Any,
+    ) -> Optional[Union[bytes, Iterator[Any]]]:
+        """Download the archive of a resource export.
+
+        Args:
+            streamed: If True the data will be processed by chunks of
+                `chunk_size` and each chunk is passed to `action` for
+                treatment
+            iterator: If True directly return the underlying response
+                iterator
+            action: Callable responsible of dealing with chunk of
+                data
+            chunk_size: Size of each chunk
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabGetError: If the server failed to perform the request
+
+        Returns:
+            The blob content if streamed is False, None otherwise
+        """
+        path = f"{self.manager.path}/download"
+        result = self.manager.gitlab.http_get(
+            path, streamed=streamed, raw=True, **kwargs
+        )
+        if TYPE_CHECKING:
+            assert isinstance(result, requests.Response)
+        return utils.response_content(
+            result, streamed, action, chunk_size, iterator=iterator
+        )
+
+
+class RotateMixin(_RestManagerBase):
+    _computed_path: Optional[str]
+    _from_parent_attrs: Dict[str, Any]
+    _obj_cls: Optional[Type[base.RESTObject]]
+    _parent: Optional[base.RESTObject]
+    _parent_attrs: Dict[str, Any]
+    _path: Optional[str]
+    gitlab: gitlab.Gitlab
+
+    @exc.on_http_error(exc.GitlabRotateError)
+    def rotate(
+        self, id: Union[str, int], expires_at: Optional[str] = None, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Rotate an access token.
+
+        Args:
+            id: ID of the token to rotate
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabRotateError: If the server cannot perform the request
+        """
+        path = f"{self.path}/{utils.EncodedId(id)}/rotate"
+        data: Dict[str, Any] = {}
+        if expires_at is not None:
+            data = {"expires_at": expires_at}
+
+        server_data = self.gitlab.http_post(path, post_data=data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
+        return server_data
+
+
+class ObjectRotateMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    def rotate(self, **kwargs: Any) -> None:
+        """Rotate the current access token object.
+
+        Args:
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabRotateError: If the server cannot perform the request
+        """
+        if TYPE_CHECKING:
+            assert isinstance(self.manager, RotateMixin)
+            assert self.encoded_id is not None
+        server_data = self.manager.rotate(self.encoded_id, **kwargs)
+        self._update_attrs(server_data)
+
+
+class SubscribableMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
     @cli.register_custom_action(
-        ("ProjectIssue", "ProjectMergeRequest", "ProjectLabel", "GroupLabel")
+        cls_names=("ProjectIssue", "ProjectMergeRequest", "ProjectLabel", "GroupLabel")
     )
     @exc.on_http_error(exc.GitlabSubscribeError)
-    def subscribe(self, **kwargs):
+    def subscribe(self, **kwargs: Any) -> None:
         """Subscribe to the object notifications.
 
         Args:
@@ -448,15 +735,17 @@ class SubscribableMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabSubscribeError: If the subscription cannot be done
         """
-        path = "%s/%s/subscribe" % (self.manager.path, self.get_id())
+        path = f"{self.manager.path}/{self.encoded_id}/subscribe"
         server_data = self.manager.gitlab.http_post(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
         self._update_attrs(server_data)
 
     @cli.register_custom_action(
-        ("ProjectIssue", "ProjectMergeRequest", "ProjectLabel", "GroupLabel")
+        cls_names=("ProjectIssue", "ProjectMergeRequest", "ProjectLabel", "GroupLabel")
     )
     @exc.on_http_error(exc.GitlabUnsubscribeError)
-    def unsubscribe(self, **kwargs):
+    def unsubscribe(self, **kwargs: Any) -> None:
         """Unsubscribe from the object notifications.
 
         Args:
@@ -466,15 +755,24 @@ class SubscribableMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabUnsubscribeError: If the unsubscription cannot be done
         """
-        path = "%s/%s/unsubscribe" % (self.manager.path, self.get_id())
+        path = f"{self.manager.path}/{self.encoded_id}/unsubscribe"
         server_data = self.manager.gitlab.http_post(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(server_data, requests.Response)
         self._update_attrs(server_data)
 
 
-class TodoMixin(object):
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"))
+class TodoMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    @cli.register_custom_action(cls_names=("ProjectIssue", "ProjectMergeRequest"))
     @exc.on_http_error(exc.GitlabTodoError)
-    def todo(self, **kwargs):
+    def todo(self, **kwargs: Any) -> None:
         """Create a todo associated to the object.
 
         Args:
@@ -484,14 +782,21 @@ class TodoMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabTodoError: If the todo cannot be set
         """
-        path = "%s/%s/todo" % (self.manager.path, self.get_id())
+        path = f"{self.manager.path}/{self.encoded_id}/todo"
         self.manager.gitlab.http_post(path, **kwargs)
 
 
-class TimeTrackingMixin(object):
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"))
+class TimeTrackingMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    @cli.register_custom_action(cls_names=("ProjectIssue", "ProjectMergeRequest"))
     @exc.on_http_error(exc.GitlabTimeTrackingError)
-    def time_stats(self, **kwargs):
+    def time_stats(self, **kwargs: Any) -> Dict[str, Any]:
         """Get time stats for the object.
 
         Args:
@@ -504,31 +809,42 @@ class TimeTrackingMixin(object):
         # Use the existing time_stats attribute if it exist, otherwise make an
         # API call
         if "time_stats" in self.attributes:
-            return self.attributes["time_stats"]
+            time_stats = self.attributes["time_stats"]
+            if TYPE_CHECKING:
+                assert isinstance(time_stats, dict)
+            return time_stats
 
-        path = "%s/%s/time_stats" % (self.manager.path, self.get_id())
-        return self.manager.gitlab.http_get(path, **kwargs)
+        path = f"{self.manager.path}/{self.encoded_id}/time_stats"
+        result = self.manager.gitlab.http_get(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"), ("duration",))
+    @cli.register_custom_action(
+        cls_names=("ProjectIssue", "ProjectMergeRequest"), required=("duration",)
+    )
     @exc.on_http_error(exc.GitlabTimeTrackingError)
-    def time_estimate(self, duration, **kwargs):
+    def time_estimate(self, duration: str, **kwargs: Any) -> Dict[str, Any]:
         """Set an estimated time of work for the object.
 
         Args:
-            duration (str): Duration in human format (e.g. 3h30)
+            duration: Duration in human format (e.g. 3h30)
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabTimeTrackingError: If the time tracking update cannot be done
         """
-        path = "%s/%s/time_estimate" % (self.manager.path, self.get_id())
+        path = f"{self.manager.path}/{self.encoded_id}/time_estimate"
         data = {"duration": duration}
-        return self.manager.gitlab.http_post(path, post_data=data, **kwargs)
+        result = self.manager.gitlab.http_post(path, post_data=data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"))
+    @cli.register_custom_action(cls_names=("ProjectIssue", "ProjectMergeRequest"))
     @exc.on_http_error(exc.GitlabTimeTrackingError)
-    def reset_time_estimate(self, **kwargs):
+    def reset_time_estimate(self, **kwargs: Any) -> Dict[str, Any]:
         """Resets estimated time for the object to 0 seconds.
 
         Args:
@@ -538,29 +854,37 @@ class TimeTrackingMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabTimeTrackingError: If the time tracking update cannot be done
         """
-        path = "%s/%s/reset_time_estimate" % (self.manager.path, self.get_id())
-        return self.manager.gitlab.http_post(path, **kwargs)
+        path = f"{self.manager.path}/{self.encoded_id}/reset_time_estimate"
+        result = self.manager.gitlab.http_post(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"), ("duration",))
+    @cli.register_custom_action(
+        cls_names=("ProjectIssue", "ProjectMergeRequest"), required=("duration",)
+    )
     @exc.on_http_error(exc.GitlabTimeTrackingError)
-    def add_spent_time(self, duration, **kwargs):
+    def add_spent_time(self, duration: str, **kwargs: Any) -> Dict[str, Any]:
         """Add time spent working on the object.
 
         Args:
-            duration (str): Duration in human format (e.g. 3h30)
+            duration: Duration in human format (e.g. 3h30)
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
             GitlabAuthenticationError: If authentication is not correct
             GitlabTimeTrackingError: If the time tracking update cannot be done
         """
-        path = "%s/%s/add_spent_time" % (self.manager.path, self.get_id())
+        path = f"{self.manager.path}/{self.encoded_id}/add_spent_time"
         data = {"duration": duration}
-        return self.manager.gitlab.http_post(path, post_data=data, **kwargs)
+        result = self.manager.gitlab.http_post(path, post_data=data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
-    @cli.register_custom_action(("ProjectIssue", "ProjectMergeRequest"))
+    @cli.register_custom_action(cls_names=("ProjectIssue", "ProjectMergeRequest"))
     @exc.on_http_error(exc.GitlabTimeTrackingError)
-    def reset_spent_time(self, **kwargs):
+    def reset_spent_time(self, **kwargs: Any) -> Dict[str, Any]:
         """Resets the time spent working on the object.
 
         Args:
@@ -570,22 +894,32 @@ class TimeTrackingMixin(object):
             GitlabAuthenticationError: If authentication is not correct
             GitlabTimeTrackingError: If the time tracking update cannot be done
         """
-        path = "%s/%s/reset_spent_time" % (self.manager.path, self.get_id())
-        return self.manager.gitlab.http_post(path, **kwargs)
+        path = f"{self.manager.path}/{self.encoded_id}/reset_spent_time"
+        result = self.manager.gitlab.http_post(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
 
-class ParticipantsMixin(object):
-    @cli.register_custom_action(("ProjectMergeRequest", "ProjectIssue"))
+class ParticipantsMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    manager: base.RESTManager
+
+    @cli.register_custom_action(cls_names=("ProjectMergeRequest", "ProjectIssue"))
     @exc.on_http_error(exc.GitlabListError)
-    def participants(self, **kwargs):
+    def participants(
+        self, **kwargs: Any
+    ) -> Union[gitlab.client.GitlabList, List[Dict[str, Any]]]:
         """List the participants.
 
         Args:
-            all (bool): If True, return all the items, without pagination
-            per_page (int): Number of items to retrieve per request
-            page (int): ID of the page to return (starts with page 1)
-            as_list (bool): If set to False and no pagination option is
-                defined, return a generator instead of a list
+            all: If True, return all the items, without pagination
+            per_page: Number of items to retrieve per request
+            page: ID of the page to return (starts with page 1)
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
@@ -593,24 +927,28 @@ class ParticipantsMixin(object):
             GitlabListError: If the list could not be retrieved
 
         Returns:
-            RESTObjectList: The list of participants
+            The list of participants
         """
 
-        path = "%s/%s/participants" % (self.manager.path, self.get_id())
-        return self.manager.gitlab.http_get(path, **kwargs)
+        path = f"{self.manager.path}/{self.encoded_id}/participants"
+        result = self.manager.gitlab.http_list(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
 
 
-class BadgeRenderMixin(object):
+class BadgeRenderMixin(_RestManagerBase):
     @cli.register_custom_action(
-        ("GroupBadgeManager", "ProjectBadgeManager"), ("link_url", "image_url")
+        cls_names=("GroupBadgeManager", "ProjectBadgeManager"),
+        required=("link_url", "image_url"),
     )
     @exc.on_http_error(exc.GitlabRenderError)
-    def render(self, link_url, image_url, **kwargs):
+    def render(self, link_url: str, image_url: str, **kwargs: Any) -> Dict[str, Any]:
         """Preview link_url and image_url after interpolation.
 
         Args:
-            link_url (str): URL of the badge link
-            image_url (str): URL of the badge image
+            link_url: URL of the badge link
+            image_url: URL of the badge image
             **kwargs: Extra options to send to the server (e.g. sudo)
 
         Raises:
@@ -618,8 +956,130 @@ class BadgeRenderMixin(object):
             GitlabRenderError: If the rendering failed
 
         Returns:
-            dict: The rendering properties
+            The rendering properties
         """
-        path = "%s/render" % self.path
+        path = f"{self.path}/render"
         data = {"link_url": link_url, "image_url": image_url}
-        return self.gitlab.http_get(path, data, **kwargs)
+        result = self.gitlab.http_get(path, data, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
+
+
+class PromoteMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    _update_method: UpdateMethod = UpdateMethod.PUT
+    manager: base.RESTManager
+
+    def _get_update_method(
+        self,
+    ) -> Callable[..., Union[Dict[str, Any], requests.Response]]:
+        """Return the HTTP method to use.
+
+        Returns:
+            http_put (default) or http_post
+        """
+        if self._update_method is UpdateMethod.POST:
+            http_method = self.manager.gitlab.http_post
+        else:
+            http_method = self.manager.gitlab.http_put
+        return http_method
+
+    @exc.on_http_error(exc.GitlabPromoteError)
+    def promote(self, **kwargs: Any) -> Dict[str, Any]:
+        """Promote the item.
+
+        Args:
+            **kwargs: Extra options to send to the server (e.g. sudo)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabPromoteError: If the item could not be promoted
+            GitlabParsingError: If the json data could not be parsed
+
+        Returns:
+            The updated object data (*not* a RESTObject)
+        """
+
+        path = f"{self.manager.path}/{self.encoded_id}/promote"
+        http_method = self._get_update_method()
+        result = http_method(path, **kwargs)
+        if TYPE_CHECKING:
+            assert not isinstance(result, requests.Response)
+        return result
+
+
+class UploadMixin(_RestObjectBase):
+    _id_attr: Optional[str]
+    _attrs: Dict[str, Any]
+    _module: ModuleType
+    _parent_attrs: Dict[str, Any]
+    _updated_attrs: Dict[str, Any]
+    _upload_path: str
+    manager: base.RESTManager
+
+    def _get_upload_path(self) -> str:
+        """Formats _upload_path with object attributes.
+
+        Returns:
+            The upload path
+        """
+        if TYPE_CHECKING:
+            assert isinstance(self._upload_path, str)
+        data = self.attributes
+        return self._upload_path.format(**data)
+
+    @cli.register_custom_action(
+        cls_names=("Project", "ProjectWiki"), required=("filename", "filepath")
+    )
+    @exc.on_http_error(exc.GitlabUploadError)
+    def upload(
+        self,
+        filename: str,
+        filedata: Optional[bytes] = None,
+        filepath: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Upload the specified file.
+
+        .. note::
+
+            Either ``filedata`` or ``filepath`` *MUST* be specified.
+
+        Args:
+            filename: The name of the file being uploaded
+            filedata: The raw data of the file being uploaded
+            filepath: The path to a local file to upload (optional)
+
+        Raises:
+            GitlabAuthenticationError: If authentication is not correct
+            GitlabUploadError: If the file upload fails
+            GitlabUploadError: If ``filedata`` and ``filepath`` are not
+                specified
+            GitlabUploadError: If both ``filedata`` and ``filepath`` are
+                specified
+
+        Returns:
+            A ``dict`` with info on the uploaded file
+        """
+        if filepath is None and filedata is None:
+            raise exc.GitlabUploadError("No file contents or path specified")
+
+        if filedata is not None and filepath is not None:
+            raise exc.GitlabUploadError("File contents and file path specified")
+
+        if filepath is not None:
+            with open(filepath, "rb") as f:
+                filedata = f.read()
+
+        file_info = {"file": (filename, filedata)}
+        path = self._get_upload_path()
+        server_data = self.manager.gitlab.http_post(path, files=file_info, **kwargs)
+
+        if TYPE_CHECKING:
+            assert isinstance(server_data, dict)
+        return server_data

@@ -1,42 +1,36 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-# import sublime
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from .stg_object import StGitlabObjectCommand
 from . import utils
 
+if TYPE_CHECKING:
+    from ..libs.gitlab.v4.objects import ProjectBranch  # type: ignore
+
 
 class StGitlabBranchCommand(StGitlabObjectCommand):
+    VALID_SCREENS = {
+        "branch": ["screen_list"],
+    }
 
-    INPUT_STR = 'Branch ID'
-    object_name = 'branch'
+    INPUT_STR = "Branch ID"
+    object_name = "branch"
 
-    def get_branch(self):
+    def get_branch(self) -> ProjectBranch:
         return self.gitlab.branch(project_id=self.project_id, oid=self.obj_id)
 
-    def refresh(self):
-        if self.screen == utils.object_commands.get('branch', {}).get('screen_list'):
-            self.view.run_command('st_gitlab_project_list_refresh')
-        # elif self.screen == utils.object_commands.get('branch', {}).get('screen_view'):
-        #     self.view.run_command('st_gitlab_object_refresh')
-
-    def is_visible(self, *args):
-        screen = self.view.settings().get('screen')
-        if not screen:
-            return False
-        valid_screens = [
-            utils.object_commands.get('branch', {}).get('screen_list')
-        ]
-        if screen in valid_screens:
-            return True
-        return False
+    def refresh(self) -> None:
+        if self.screen == utils.object_commands.get("branch", {}).get("screen_list"):
+            self.view.run_command("st_gitlab_project_list_refresh")
 
 
 class StGitlabBranchToggleProtectCommand(StGitlabBranchCommand):
+    INPUT_STR = "Branch"
 
-    INPUT_STR = 'Branch'
-
-    def process(self):
+    def process(self) -> None:
         if not self.obj_id:
             return
 
@@ -46,19 +40,16 @@ class StGitlabBranchToggleProtectCommand(StGitlabBranchCommand):
 
 
 class StGitlabBranchCreateMergeCommand(StGitlabBranchCommand):
-    INPUT_STR = 'Branch'
+    INPUT_STR = "Branch"
 
-    def process(self):
-        def on_done(name):
+    def process(self) -> None:
+        def on_done(name: str) -> None:
             if not name:
                 return
             project = self.gitlab.project(oid=self.project_id)
-            project.mergerequests.create({
-                'source_branch': branch.name,
-                'target_branch': 'master',
-                'title': name,
-                'description': description
-            })
+            project.mergerequests.create(
+                {"source_branch": branch.name, "target_branch": "master", "title": name, "description": description}
+            )
             self.refresh()
 
         if not self.obj_id:
@@ -67,13 +58,13 @@ class StGitlabBranchCreateMergeCommand(StGitlabBranchCommand):
         branch = self.get_branch()
         issue_id = None
         try:
-            issue_id = int(branch.name.split('-')[0])
+            issue_id = int(branch.name.split("-")[0])
             issue = self.gitlab.issue(oid=issue_id)
-            title = 'Resolve: %s' % issue.title
-            description = 'Closes #%s\n' % issue_id
+            title = f"Resolve: {issue.title}"
+            description = f"Closes #{issue_id}\n"
         except Exception:
             issue = None
-            title = ''
-            description = ''
+            title = ""
+            description = ""
 
         self.view.window().show_input_panel("Title:", title, on_done, None, None)

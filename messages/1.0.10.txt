@@ -1,0 +1,7 @@
+StGitlab 1.0.10 changelog:
+
+* Python 3.8 instead of Python 3.3
+* Typing used
+* Python-Gitlab updated to 4.11.1
+* Terminaltables replaced by Tabulate
+* Pipeline, Merge-request delete commands added

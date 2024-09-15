@@ -1,168 +1,430 @@
 [
     {
-        "keys": ["ctrl+s"], "command": "editbox_save",
+        "keys": [
+            "ctrl+s"
+        ],
+        "command": "editbox_save",
         "context": [
-            {"key": "stg_screen", "operand": "editbox"}
+            {
+                "key": "stg_screen",
+                "operand": "editbox"
+            }
         ]
     },
     {
-        "keys": ["n"], "command": "st_gitlab_issue_create",
+        "keys": [
+            "n"
+        ],
+        "command": "st_gitlab_issue_create",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_issues"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_issues"
+            }
         ]
     },
     {
-        "keys": ["n"], "command": "st_gitlab_snippet_create",
+        "keys": [
+            "n"
+        ],
+        "command": "st_gitlab_snippet_create",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_snippets"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_snippets"
+            }
         ]
     },
     {
-        "keys": ["m"], "command": "st_gitlab_branch_create_merge",
+        "keys": [
+            "m"
+        ],
+        "command": "st_gitlab_branch_create_merge",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_branches"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_branches"
+            }
         ]
     },
     {
-        "keys": ["escape"], "command": "editbox_cancel",
+        "keys": [
+            "escape"
+        ],
+        "command": "editbox_cancel",
         "context": [
-            {"key": "stg_screen", "operand": "editbox"},
-            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
-            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true }
+            {
+                "key": "stg_screen",
+                "operand": "editbox"
+            },
+            {
+                "key": "auto_complete_visible",
+                "operator": "equal",
+                "operand": false
+            },
+            {
+                "key": "selection_empty",
+                "operator": "equal",
+                "operand": true,
+                "match_all": true
+            }
         ]
     },
     {
-        "keys": ["c"], "command": "st_gitlab_object_add_note",
+        "keys": [
+            "c"
+        ],
+        "command": "st_gitlab_object_add_note",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+c"], "command": "st_gitlab_object_change_note",
+        "keys": [
+            "alt+c"
+        ],
+        "command": "st_gitlab_object_change_note",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["f5"], "command": "st_gitlab_object_refresh",
+        "keys": [
+            "f5"
+        ],
+        "command": "st_gitlab_object_refresh",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_pipeline",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["f7"], "command": "st_gitlab_issue_create_branch",
+        "keys": [
+            "f7"
+        ],
+        "command": "st_gitlab_issue_create_branch",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_issue"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_issue"
+            }
         ]
     },
     {
-        "keys": ["s"], "command": "st_gitlab_object_change_state",
+        "keys": [
+            "s"
+        ],
+        "command": "st_gitlab_object_change_state",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge"
+                ]
+            }
         ]
     },
     {
-        "keys": ["g"], "command": "st_gitlab_object_in_browser",
+        "keys": [
+            "g"
+        ],
+        "command": "st_gitlab_object_in_browser",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_pipeline",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["m"], "command": "st_gitlab_object_set_milestone",
+        "keys": [
+            "m"
+        ],
+        "command": "st_gitlab_object_set_milestone",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge"
+                ]
+            }
         ]
     },
     {
-        "keys": ["m"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "set_milestone"},
+        "keys": [
+            "m"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "set_milestone"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+m"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "del_milestone"},
+        "keys": [
+            "alt+m"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "del_milestone"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["a"], "command": "st_gitlab_object_change_assigned",
+        "keys": [
+            "a"
+        ],
+        "command": "st_gitlab_object_change_assigned",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge"
+                ]
+            }
         ]
     },
     {
-        "keys": ["a"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "set_assignee"},
+        "keys": [
+            "a"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "set_assignee"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+a"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "del_assignee"},
+        "keys": [
+            "alt+a"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "del_assignee"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["delete"], "command": "st_gitlab_issue_delete",
+        "keys": [
+            "delete"
+        ],
+        "command": "st_gitlab_issue_delete",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_issue"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_issue"
+                ]
+            }
         ]
     },
     {
-        "keys": ["delete"], "command": "st_gitlab_snippet_delete",
+        "keys": [
+            "delete"
+        ],
+        "command": "st_gitlab_snippet_delete",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_snippets", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_snippets",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["enter"], "command": "st_gitlab_issue",
+        "keys": [
+            "enter"
+        ],
+        "command": "st_gitlab_issue",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_issues"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_issues"
+            }
         ]
     },
     {
-        "keys": ["enter"], "command": "st_gitlab_merge",
+        "keys": [
+            "enter"
+        ],
+        "command": "st_gitlab_merge",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_merges"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_merges"
+            }
         ]
     },
     {
-        "keys": ["enter"], "command": "st_gitlab_pipeline",
+        "keys": [
+            "enter"
+        ],
+        "command": "st_gitlab_pipeline",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_pipelines"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_pipelines"
+            }
         ]
     },
     {
-        "keys": ["enter"], "command": "st_gitlab_snippet",
+        "keys": [
+            "enter"
+        ],
+        "command": "st_gitlab_snippet",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_snippets"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_snippets"
+            }
         ]
     },
     {
-        "keys": ["b"], "command": "st_gitlab_pipeline_retry",
+        "keys": [
+            "b"
+        ],
+        "command": "st_gitlab_pipeline_retry",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_pipelines", "st_gitlab_pipeline"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_pipelines",
+                    "st_gitlab_pipeline"
+                ]
+            }
         ]
     },
     {
-        "keys": ["c"], "command": "st_gitlab_pipeline_cancel",
+        "keys": [
+            "c"
+        ],
+        "command": "st_gitlab_pipeline_cancel",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_pipelines", "st_gitlab_pipeline"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_pipelines",
+                    "st_gitlab_pipeline"
+                ]
+            }
         ]
     },
     {
-        "keys": ["enter"], "command": "st_gitlab_object_change_any",
+        "keys": [
+            "delete"
+        ],
+        "command": "st_gitlab_pipeline_delete",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_pipelines",
+                    "st_gitlab_pipeline"
+                ]
+            }
         ]
     },
     {
-        "keys": ["f5"], "command": "st_gitlab_project_list_refresh",
+        "keys": [
+            "delete"
+        ],
+        "command": "st_gitlab_merge_delete",
+        "context": [
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_merges",
+                    "st_gitlab_merge"
+                ]
+            }
+        ]
+    },
+    {
+        "keys": [
+            "enter"
+        ],
+        "command": "st_gitlab_object_change_any",
+        "context": [
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_pipeline",
+                    "st_gitlab_snippet"
+                ]
+            }
+        ]
+    },
+    {
+        "keys": [
+            "f5"
+        ],
+        "command": "st_gitlab_project_list_refresh",
         "context": [
             {
                 "key": "stg_screen",
@@ -178,115 +440,283 @@
         ]
     },
     {
-        "keys": ["p"], "command": "st_gitlab_change_project",
+        "keys": [
+            "p"
+        ],
+        "command": "st_gitlab_change_project",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_issue"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_issue"
+            }
         ]
     },
     {
-        "keys": ["f2"], "command": "st_gitlab_object_change_title",
+        "keys": [
+            "f2"
+        ],
+        "command": "st_gitlab_object_change_title",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["d"], "command": "st_gitlab_object_change_description",
+        "keys": [
+            "d"
+        ],
+        "command": "st_gitlab_object_change_description",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["w"], "command": "st_gitlab_util_open_url",
+        "keys": [
+            "w"
+        ],
+        "command": "st_gitlab_util_open_url",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["l"], "command": "st_gitlab_object_add_label",
+        "keys": [
+            "l"
+        ],
+        "command": "st_gitlab_object_add_label",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+l"], "command": "st_gitlab_object_remove_label",
+        "keys": [
+            "alt+l"
+        ],
+        "command": "st_gitlab_object_remove_label",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge"
+                ]
+            }
         ]
     },
     {
-        "keys": ["l"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "add_label"},
+        "keys": [
+            "l"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "add_label"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+l"], "command": "st_gitlab_project_objects_list_action",
-        "args": {"action": "del_label"},
+        "keys": [
+            "alt+l"
+        ],
+        "command": "st_gitlab_project_objects_list_action",
+        "args": {
+            "action": "del_label"
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges"
+                ]
+            }
         ]
     },
     {
-        "keys": ["x"], "command": "st_gitlab_object_check_box_toggle",
+        "keys": [
+            "x"
+        ],
+        "command": "st_gitlab_object_check_box_toggle",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+u"], "command": "st_gitlab_toggle_selectable",
+        "keys": [
+            "alt+u"
+        ],
+        "command": "st_gitlab_toggle_selectable",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_pipeline",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["alt+r"], "command": "st_gitlab_toggle_system_notes",
+        "keys": [
+            "alt+r"
+        ],
+        "command": "st_gitlab_toggle_system_notes",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issue", "st_gitlab_merge", "st_gitlab_pipeline", "st_gitlab_snippet"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issue",
+                    "st_gitlab_merge",
+                    "st_gitlab_pipeline",
+                    "st_gitlab_snippet"
+                ]
+            }
         ]
     },
     {
-        "keys": ["i"], "command": "st_gitlab_merge_toggle_wip",
+        "keys": [
+            "i"
+        ],
+        "command": "st_gitlab_merge_toggle_wip",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_merge"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_merge"
+            }
         ]
     },
     {
-        "keys": ["p"], "command": "st_gitlab_merge_accept",
+        "keys": [
+            "p"
+        ],
+        "command": "st_gitlab_merge_accept",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_merge"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_merge"
+            }
         ]
     },
     {
-        "keys": ["f"], "command": "st_gitlab_project_list_filter",
+        "keys": [
+            "f"
+        ],
+        "command": "st_gitlab_project_list_filter",
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges", "st_gitlab_pipelines"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges",
+                    "st_gitlab_pipelines"
+                ]
+            }
         ]
     },
     {
-        "keys": ["shift+left"], "command": "st_gitlab_project_list_page",
-        "args": {"direction": 0},
+        "keys": [
+            "shift+left"
+        ],
+        "command": "st_gitlab_project_list_page",
+        "args": {
+            "direction": 0
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges", "st_gitlab_pipelines", "st_gitlab_snippets"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges",
+                    "st_gitlab_pipelines",
+                    "st_gitlab_snippets"
+                ]
+            }
         ]
     },
     {
-        "keys": ["shift+right"], "command": "st_gitlab_project_list_page",
-        "args": {"direction": 1},
+        "keys": [
+            "shift+right"
+        ],
+        "command": "st_gitlab_project_list_page",
+        "args": {
+            "direction": 1
+        },
         "context": [
-            {"key": "stg_screen", "operand": ["st_gitlab_issues", "st_gitlab_merges", "st_gitlab_pipelines", "st_gitlab_snippets"]}
+            {
+                "key": "stg_screen",
+                "operand": [
+                    "st_gitlab_issues",
+                    "st_gitlab_merges",
+                    "st_gitlab_pipelines",
+                    "st_gitlab_snippets"
+                ]
+            }
         ]
     },
     {
-        "keys": ["p"], "command": "st_gitlab_branch_toggle_protect",
+        "keys": [
+            "p"
+        ],
+        "command": "st_gitlab_branch_toggle_protect",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_branches"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_branches"
+            }
         ]
     },
     {
-        "keys": ["f"], "command": "st_gitlab_snippet_change_file",
+        "keys": [
+            "f"
+        ],
+        "command": "st_gitlab_snippet_change_file",
         "context": [
-            {"key": "stg_screen", "operand": "st_gitlab_snippet"}
+            {
+                "key": "stg_screen",
+                "operand": "st_gitlab_snippet"
+            }
         ]
     }
 ]

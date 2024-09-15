@@ -1,26 +1,14 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013-2017 Gauvain Pocentek <gauvain@pocentek.net>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import functools
+from typing import Any, Callable, cast, Optional, Type, TYPE_CHECKING, TypeVar, Union
 
 
 class GitlabError(Exception):
-    def __init__(self, error_message="", response_code=None, response_body=None):
-
+    def __init__(
+        self,
+        error_message: Union[str, bytes] = "",
+        response_code: Optional[int] = None,
+        response_body: Optional[bytes] = None,
+    ) -> None:
         Exception.__init__(self, error_message)
         # Http status code
         self.response_code = response_code
@@ -30,15 +18,18 @@ class GitlabError(Exception):
         try:
             # if we receive str/bytes we try to convert to unicode/str to have
             # consistent message types (see #616)
+            if TYPE_CHECKING:
+                assert isinstance(error_message, bytes)
             self.error_message = error_message.decode()
         except Exception:
+            if TYPE_CHECKING:
+                assert isinstance(error_message, str)
             self.error_message = error_message
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response_code is not None:
-            return "{0}: {1}".format(self.response_code, self.error_message)
-        else:
-            return "{0}".format(self.error_message)
+            return f"{self.response_code}: {self.error_message}"
+        return f"{self.error_message}"
 
 
 class GitlabAuthenticationError(GitlabError):
@@ -50,6 +41,10 @@ class RedirectError(GitlabError):
 
 
 class GitlabParsingError(GitlabError):
+    pass
+
+
+class GitlabCiLintError(GitlabError):
     pass
 
 
@@ -70,6 +65,10 @@ class GitlabListError(GitlabOperationError):
 
 
 class GitlabGetError(GitlabOperationError):
+    pass
+
+
+class GitlabHeadError(GitlabOperationError):
     pass
 
 
@@ -97,7 +96,15 @@ class GitlabTransferProjectError(GitlabOperationError):
     pass
 
 
+class GitlabGroupTransferError(GitlabOperationError):
+    pass
+
+
 class GitlabProjectDeployKeyError(GitlabOperationError):
+    pass
+
+
+class GitlabPromoteError(GitlabOperationError):
     pass
 
 
@@ -145,6 +152,10 @@ class GitlabJobEraseError(GitlabRetryError):
     pass
 
 
+class GitlabPipelinePlayError(GitlabRetryError):
+    pass
+
+
 class GitlabPipelineRetryError(GitlabRetryError):
     pass
 
@@ -162,6 +173,14 @@ class GitlabDeactivateError(GitlabOperationError):
 
 
 class GitlabActivateError(GitlabOperationError):
+    pass
+
+
+class GitlabBanError(GitlabOperationError):
+    pass
+
+
+class GitlabUnbanError(GitlabOperationError):
     pass
 
 
@@ -185,6 +204,10 @@ class GitlabMRRebaseError(GitlabOperationError):
     pass
 
 
+class GitlabMRResetApprovalError(GitlabOperationError):
+    pass
+
+
 class GitlabMRClosedError(GitlabOperationError):
     pass
 
@@ -197,6 +220,10 @@ class GitlabTodoError(GitlabOperationError):
     pass
 
 
+class GitlabTopicMergeError(GitlabOperationError):
+    pass
+
+
 class GitlabTimeTrackingError(GitlabOperationError):
     pass
 
@@ -206,6 +233,14 @@ class GitlabUploadError(GitlabOperationError):
 
 
 class GitlabAttachFileError(GitlabOperationError):
+    pass
+
+
+class GitlabImportError(GitlabOperationError):
+    pass
+
+
+class GitlabInvitationError(GitlabOperationError):
     pass
 
 
@@ -245,29 +280,149 @@ class GitlabRepairError(GitlabOperationError):
     pass
 
 
+class GitlabRestoreError(GitlabOperationError):
+    pass
+
+
+class GitlabRevertError(GitlabOperationError):
+    pass
+
+
+class GitlabRotateError(GitlabOperationError):
+    pass
+
+
 class GitlabLicenseError(GitlabOperationError):
     pass
 
 
-def on_http_error(error):
+class GitlabFollowError(GitlabOperationError):
+    pass
+
+
+class GitlabUnfollowError(GitlabOperationError):
+    pass
+
+
+class GitlabUserApproveError(GitlabOperationError):
+    pass
+
+
+class GitlabUserRejectError(GitlabOperationError):
+    pass
+
+
+class GitlabDeploymentApprovalError(GitlabOperationError):
+    pass
+
+
+class GitlabHookTestError(GitlabOperationError):
+    pass
+
+
+# For an explanation of how these type-hints work see:
+# https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+#
+# The goal here is that functions which get decorated will retain their types.
+__F = TypeVar("__F", bound=Callable[..., Any])
+
+
+def on_http_error(error: Type[Exception]) -> Callable[[__F], __F]:
     """Manage GitlabHttpError exceptions.
 
     This decorator function can be used to catch GitlabHttpError exceptions
     raise specialized exceptions instead.
 
     Args:
-        error(Exception): The exception type to raise -- must inherit from
-            GitlabError
+        The exception type to raise -- must inherit from GitlabError
     """
 
-    def wrap(f):
+    def wrap(f: __F) -> __F:
         @functools.wraps(f)
-        def wrapped_f(*args, **kwargs):
+        def wrapped_f(*args: Any, **kwargs: Any) -> Any:
             try:
                 return f(*args, **kwargs)
             except GitlabHttpError as e:
-                raise error(e.error_message, e.response_code, e.response_body)
+                raise error(e.error_message, e.response_code, e.response_body) from e
 
-        return wrapped_f
+        return cast(__F, wrapped_f)
 
     return wrap
+
+
+# Export manually to keep mypy happy
+__all__ = [
+    "GitlabActivateError",
+    "GitlabAttachFileError",
+    "GitlabAuthenticationError",
+    "GitlabBanError",
+    "GitlabBlockError",
+    "GitlabBuildCancelError",
+    "GitlabBuildEraseError",
+    "GitlabBuildPlayError",
+    "GitlabBuildRetryError",
+    "GitlabCancelError",
+    "GitlabCherryPickError",
+    "GitlabCiLintError",
+    "GitlabConnectionError",
+    "GitlabCreateError",
+    "GitlabDeactivateError",
+    "GitlabDeleteError",
+    "GitlabDeploymentApprovalError",
+    "GitlabError",
+    "GitlabFollowError",
+    "GitlabGetError",
+    "GitlabGroupTransferError",
+    "GitlabHeadError",
+    "GitlabHookTestError",
+    "GitlabHousekeepingError",
+    "GitlabHttpError",
+    "GitlabImportError",
+    "GitlabInvitationError",
+    "GitlabJobCancelError",
+    "GitlabJobEraseError",
+    "GitlabJobPlayError",
+    "GitlabJobRetryError",
+    "GitlabLicenseError",
+    "GitlabListError",
+    "GitlabMRApprovalError",
+    "GitlabMRClosedError",
+    "GitlabMRForbiddenError",
+    "GitlabMROnBuildSuccessError",
+    "GitlabMRRebaseError",
+    "GitlabMRResetApprovalError",
+    "GitlabMarkdownError",
+    "GitlabOperationError",
+    "GitlabOwnershipError",
+    "GitlabParsingError",
+    "GitlabPipelineCancelError",
+    "GitlabPipelinePlayError",
+    "GitlabPipelineRetryError",
+    "GitlabProjectDeployKeyError",
+    "GitlabPromoteError",
+    "GitlabProtectError",
+    "GitlabRenderError",
+    "GitlabRepairError",
+    "GitlabRestoreError",
+    "GitlabRetryError",
+    "GitlabRevertError",
+    "GitlabRotateError",
+    "GitlabSearchError",
+    "GitlabSetError",
+    "GitlabStopError",
+    "GitlabSubscribeError",
+    "GitlabTimeTrackingError",
+    "GitlabTodoError",
+    "GitlabTopicMergeError",
+    "GitlabTransferProjectError",
+    "GitlabUnbanError",
+    "GitlabUnblockError",
+    "GitlabUnfollowError",
+    "GitlabUnsubscribeError",
+    "GitlabUpdateError",
+    "GitlabUploadError",
+    "GitlabUserApproveError",
+    "GitlabUserRejectError",
+    "GitlabVerifyError",
+    "RedirectError",
+]

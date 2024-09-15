@@ -78,10 +78,14 @@ For auto-completions show, add option to syntax specific settings (markdown):
 
 ## External dependencies
 * [Python Gitlab](http://python-gitlab.readthedocs.io/en/stable/index.html)
+    * [Requests-Toolbelt](https://github.com/requests/toolbelt)
 * [Dimensions](https://pypi.python.org/pypi/dimensions) with some fixes for Python 3
-* [Terminaltables](https://robpol86.github.io/terminaltables/index.html)
+* [Tabulate](https://github.com/astanin/python-tabulate)
 * [Transliterate](https://pypi.python.org/pypi/transliterate)
 
 ### Dependencies, supported by Package control
 * [Requests](https://github.com/packagecontrol/requests)
-
+    * urllib3
+    * idna
+    * six
+    * charset_normalizer

@@ -1,43 +1,44 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-# import sublime
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import webbrowser
-import sublime_plugin
+
 from . import utils
+from .stg_object import StGitlabObjectTextCommand
+
+if TYPE_CHECKING:
+    import sublime  # type: ignore
 
 
-# Issue: Open in Browser
-class StGitlabObjectInBrowserCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
+# Gitlab Object: Open in Browser
+class StGitlabObjectInBrowserCommand(StGitlabObjectTextCommand):
+    VALID_SCREENS = {
+        "issue": ["screen_view"],
+        "merge": ["screen_view"],
+        "pipeline": ["screen_view"],
+    }
+
+    def run(self, edit: sublime.Edit) -> None:
         gitlab = utils.gl.get()
         project = gitlab.project()
-        screen = self.view.settings().get('screen', None)
-        if screen == 'st_gitlab_issue':
+        if project is None:
+            raise ValueError("Project is not defined")
+
+        screen = self.view.settings().get("screen")
+        web_url = None
+        if screen == "st_gitlab_issue":
             obj = gitlab.issue()
-            web_url = obj.attributes.get('web_url')
-        elif screen == 'st_gitlab_merge':
+            web_url = obj.attributes.get("web_url")
+        elif screen == "st_gitlab_merge":
             obj = gitlab.merge()
-            web_url = obj.attributes.get('web_url')
-        elif screen == 'st_gitlab_pipeline':
+            web_url = obj.attributes.get("web_url")
+        elif screen == "st_gitlab_pipeline":
             # url not exists in api now
             obj = gitlab.pipeline()
-            web_url = '%(url)s/%(project)s/pipelines/%(pid)s' % {
-                'url': utils.get_setting('gitlab_url'),
-                'project': project.attributes.get('path_with_namespace'),
-                'pid': obj.id
-            }
-        webbrowser.open(web_url)
-
-    def is_visible(self, *args):
-        screen = self.view.settings().get('screen')
-        if not screen:
-            return False
-        valid_screens = [
-            utils.object_commands.get('issue', {}).get('screen_view'),
-            utils.object_commands.get('merge', {}).get('screen_view'),
-            utils.object_commands.get('pipeline', {}).get('screen_view')
-        ]
-        if screen in valid_screens:
-            return True
-        return False
+            gl_url = utils.get_setting("gitlab_url")
+            project_path = project.attributes.get("path_with_namespace")
+            web_url = f"{gl_url}/{project_path}/pipelines/{obj.id}"
+        if web_url is not None:
+            webbrowser.open(web_url)

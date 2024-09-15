@@ -1,20 +1,32 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-import sublime
-import sublime_plugin
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+import sublime  # type: ignore
+
 from . import utils
+from .stg_object import StGitlabObjectTextCommand
+
+if TYPE_CHECKING:
+    from typing import List, Tuple
 
 
-class StGitlabObjectCheckBoxToggleCommand(sublime_plugin.TextCommand):
-    MARKDOWN_SCOPE = 'text.html.markdown.gfm'
+class StGitlabObjectCheckBoxToggleCommand(StGitlabObjectTextCommand):
+    VALID_SCREENS = {
+        "issue": ["screen_view"],
+        "merge": ["screen_view"],
+    }
+
+    MARKDOWN_SCOPE = "text.html.markdown.gfm"
     LINES_COUNT_BETWEEN_HEADER_AND_TEXT_START = 3  # TODO: bad way!
 
-    def run(self, edit):
+    def run(self, edit: sublime.Edit) -> None:
         gitlab = utils.gl.get()
         self.obj = gitlab.object_by_view()
-        header_pattern = r'^#{2,3}\s.*$'
-        selected_header_str = ''
+        header_pattern = r"^#{2,3}\s.*$"
+        selected_header_str = ""
         try:
             headers = []
             headers_all = self.view.find_all(header_pattern)
@@ -23,7 +35,7 @@ class StGitlabObjectCheckBoxToggleCommand(sublime_plugin.TextCommand):
                     headers.append(h)
             selected = self.view.sel()[0]
             selected_header = max([h for h in headers if h.b < selected.b])
-            selected_header_str = self.view.substr(selected_header).lstrip('# ')
+            selected_header_str = self.view.substr(selected_header).lstrip("# ")
         except Exception as e:
             print(e)
 
@@ -31,57 +43,45 @@ class StGitlabObjectCheckBoxToggleCommand(sublime_plugin.TextCommand):
             header_line = self.view.rowcol(selected_header.a)[0]
             edit_line = self.view.rowcol(self.view.sel()[0].a)[0]
             checkbox_line = edit_line - header_line - self.LINES_COUNT_BETWEEN_HEADER_AND_TEXT_START
-            if selected_header_str.startswith('Description'):
+            if selected_header_str.startswith("Description"):
                 self.toogle_checkbox_description(linenum=checkbox_line)
-            elif selected_header_str.startswith('Note:'):
-                note_id = selected_header_str.split()[0].split(':')[-1]
+            elif selected_header_str.startswith("Note:"):
+                note_id = selected_header_str.split()[0].split(":")[-1]
                 self.toogle_checkbox_note(linenum=checkbox_line, note_id=note_id)
 
     # NOTE: linenum start from 0, not from 1!
-    def toggle_line(self, lines, linenum):
+    def toggle_line(self, lines: List[str], linenum: int) -> Tuple[List[str], bool]:
         success = False
         line = lines[linenum]
-        if ' [ ]' in line:
-            line = line.replace(' [ ]', ' [x]')
+        if " [ ]" in line:
+            line = line.replace(" [ ]", " [x]")
             success = True
-        elif ' [x]' in line:
-            line = line.replace(' [x]', ' [ ]')
+        elif " [x]" in line:
+            line = line.replace(" [x]", " [ ]")
             success = True
         if success:
             lines[linenum] = line
         return lines, success
 
-    def toogle_checkbox_description(self, linenum):
+    def toogle_checkbox_description(self, linenum: int) -> None:
         description = self.obj.description
-        lines = description.split('\n')
+        lines = description.split("\n")
         lines, success = self.toggle_line(lines, linenum)
         if success:
-            self.obj.description = '\n'.join(lines)
+            self.obj.description = "\n".join(lines)
             self.obj.save()
-            self.view.run_command('st_gitlab_object_refresh')
+            self.view.run_command("st_gitlab_object_refresh")
 
-    def toogle_checkbox_note(self, linenum, note_id):
+    def toogle_checkbox_note(self, linenum: int, note_id: int) -> None:
         note = self.obj.notes.get(note_id)
-        if note.attributes.get('system', False):
+        if note.attributes.get("system", False):
             sublime.message_dialog("Unable to edit system message.")
             return
 
         body = note.body
-        lines = body.split('\n')
+        lines = body.split("\n")
         lines, success = self.toggle_line(lines, linenum)
         if success:
-            note.body = '\n'.join(lines)
+            note.body = "\n".join(lines)
             note.save()
-            self.view.run_command('st_gitlab_object_refresh')
-
-    def is_visible(self, *args):
-        screen = self.view.settings().get('screen')
-        if not screen:
-            return False
-        valid_screens = [
-            utils.object_commands.get('issue', {}).get('screen_view'),
-            utils.object_commands.get('merge', {}).get('screen_view')
-        ]
-        if screen in valid_screens:
-            return True
-        return False
+            self.view.run_command("st_gitlab_object_refresh")

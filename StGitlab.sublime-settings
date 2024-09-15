@@ -2,8 +2,8 @@
     "gitlab_url": "https://gitlab.com",
     "api_token": "",
     "ssl_verify": true,
-    "projects_filter": [],  // IDs or Namespace/Names
-    "users_group_filter": [],  // group names
+    "projects_filter": [], // IDs or Namespace/Names
+    "users_group_filter": [], // group names
     "syntax_file": "Packages/StGitlab/StGitlab.sublime-syntax",
     "syntax_file_edit": "Packages/MarkdownEditing/Markdown.sublime-syntax",
     "list_page_size": 30,
@@ -20,95 +20,364 @@
     "grayed_out_labels_in_notes": true,
     "insert_text_command": "st_gitlab_insert_text",
     "issue_list_columns": [
-        { "prop": "iid", "colname": "#", "align": "right" },
-        { "prop": "title", "colname": "Title", "maxlen": 50},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "assignee", "colname": "Assigned", "attr": "name"},
-        { "prop": "milestone", "colname": "Milestone", "attr": "title"},
-        { "prop": "state", "colname": "State"},
-        { "prop": "labels", "colname": "Labels", "type": "list"}
+        {
+            "prop": "iid",
+            "colname": "#",
+            "align": "right"
+        },
+        {
+            "prop": "title",
+            "colname": "Title",
+            "maxlen": 50
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "assignee",
+            "colname": "Assigned",
+            "attr": "name"
+        },
+        {
+            "prop": "milestone",
+            "colname": "Milestone",
+            "attr": "title"
+        },
+        {
+            "prop": "state",
+            "colname": "State"
+        },
+        {
+            "prop": "labels",
+            "colname": "Labels",
+            "type": "list"
+        }
     ],
     "merge_requests_list_columns": [
-        { "prop": "iid", "colname": "#", "align": "right" },
-        { "prop": "title", "colname": "Title", "maxlen": 50},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "assignee", "colname": "Assigned", "attr": "name"},
-        { "prop": "milestone", "colname": "Milestone", "attr": "title"},
-        { "prop": "state", "colname": "State"},
-        { "prop": "labels", "colname": "Labels", "type": "list"},
-        { "prop": "work_in_progress", "colname": "WIP"}
+        {
+            "prop": "iid",
+            "colname": "#",
+            "align": "right"
+        },
+        {
+            "prop": "title",
+            "colname": "Title",
+            "maxlen": 50
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "assignee",
+            "colname": "Assigned",
+            "attr": "name"
+        },
+        {
+            "prop": "milestone",
+            "colname": "Milestone",
+            "attr": "title"
+        },
+        {
+            "prop": "state",
+            "colname": "State"
+        },
+        {
+            "prop": "labels",
+            "colname": "Labels",
+            "type": "list"
+        },
+        {
+            "prop": "work_in_progress",
+            "colname": "WIP"
+        }
     ],
     "pipelines_list_columns": [
-        { "prop": "id", "colname": "#", "align": "right" },
-        { "prop": "ref", "colname": "Branch"},
-        { "prop": "status", "colname": "Status"}
+        {
+            "prop": "id",
+            "colname": "#",
+            "align": "right"
+        },
+        {
+            "prop": "ref",
+            "colname": "Branch"
+        },
+        {
+            "prop": "status",
+            "colname": "Status"
+        }
     ],
     "branches_list_columns": [
-        { "prop": "name", "colname": "Branch"},
-        { "prop": "merged", "colname": "Merged?"},
-        { "prop": "protected", "colname": "Protected?"},
-        { "prop": "commits_summary", "colname": "Commits", "special": true, "key": "name"}
+        {
+            "prop": "name",
+            "colname": "Branch"
+        },
+        {
+            "prop": "merged",
+            "colname": "Merged?"
+        },
+        {
+            "prop": "protected",
+            "colname": "Protected?"
+        },
+        {
+            "prop": "commits_summary",
+            "colname": "Commits",
+            "special": true,
+            "key": "name"
+        }
     ],
     "snippets_list_columns": [
-        { "prop": "id", "colname": "Id"},
-        { "prop": "title", "colname": "Title"},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "file_name", "colname": "File name", "attr": "name"},
-        { "prop": "updated_at", "colname": "Last updated", "type": "datetime"},
-        { "prop": "description", "colname": "Description", "maxlen": 50}
+        {
+            "prop": "id",
+            "colname": "Id"
+        },
+        {
+            "prop": "title",
+            "colname": "Title"
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "file_name",
+            "colname": "File name",
+            "attr": "name"
+        },
+        {
+            "prop": "updated_at",
+            "colname": "Last updated",
+            "type": "datetime"
+        },
+        {
+            "prop": "description",
+            "colname": "Description",
+            "maxlen": 50
+        }
     ],
     "users_list_columns": [
-        { "prop": "id", "colname": "Id"},
-        { "prop": "username", "colname": "Username"},
-        { "prop": "name", "colname": "Name"},
-        { "prop": "created_at", "colname": "Created", "type": "datetime"},
-        { "prop": "web_url", "colname": "User Url"},
-        { "prop": "issues_ratio", "colname": "Issues opened/closed", "special": true, "key": "id"},
-        { "prop": "merge_requests", "colname": "Merge requests", "special": true, "key": "id"}
+        {
+            "prop": "id",
+            "colname": "Id"
+        },
+        {
+            "prop": "username",
+            "colname": "Username"
+        },
+        {
+            "prop": "name",
+            "colname": "Name"
+        },
+        {
+            "prop": "created_at",
+            "colname": "Created",
+            "type": "datetime"
+        },
+        {
+            "prop": "web_url",
+            "colname": "User Url"
+        },
+        {
+            "prop": "issues_ratio",
+            "colname": "Issues opened/closed",
+            "special": true,
+            "key": "id"
+        },
+        {
+            "prop": "merge_requests",
+            "colname": "Merge requests",
+            "special": true,
+            "key": "id"
+        }
     ],
     "issue_view_columns": [
-        { "prop": "iid", "colname": "ID"},
-        { "prop": "title", "colname": "Title"},
-        { "prop": "state", "colname": "State"},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "assignee", "colname": "Assigned to", "attr": "name"},
-        { "prop": "created_at", "colname": "Creation date", "type": "datetime"},
-        { "prop": "milestone", "colname": "Milestone", "attr": "title"},
-        { "prop": "labels", "colname": "Labels", "type": "list"}
+        {
+            "prop": "iid",
+            "colname": "ID"
+        },
+        {
+            "prop": "project",
+            "colname": "Project"
+        },
+        {
+            "prop": "state",
+            "colname": "State"
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "assignee",
+            "colname": "Assigned to",
+            "attr": "name"
+        },
+        {
+            "prop": "created_at",
+            "colname": "Creation date",
+            "type": "datetime"
+        },
+        {
+            "prop": "milestone",
+            "colname": "Milestone",
+            "attr": "title"
+        },
+        {
+            "prop": "labels",
+            "colname": "Labels",
+            "type": "list"
+        }
     ],
-    "issue_view_columns_present": ["iid", "title", "author", "assignee", "state"],
+    "issue_view_columns_present": [
+        "iid",
+        "title",
+        "author",
+        "assignee",
+        "state"
+    ],
     "merge_view_columns": [
-        { "prop": "iid", "colname": "ID"},
-        { "prop": "title", "colname": "Title"},
-        { "prop": "source_branch", "colname": "Source branch"},
-        { "prop": "work_in_progress", "colname": "WIP", "type": "bool"},
-        { "prop": "state", "colname": "State"},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "assignee", "colname": "Assigned to", "attr": "name"},
-        { "prop": "created_at", "colname": "Creation date", "type": "datetime"},
-        { "prop": "milestone", "colname": "Milestone", "attr": "title"},
-        { "prop": "labels", "colname": "Labels", "type": "list"},
-        { "prop": "merge_status", "colname": "Merge status"}
+        {
+            "prop": "iid",
+            "colname": "ID"
+        },
+        {
+            "prop": "title",
+            "colname": "Title"
+        },
+        {
+            "prop": "source_branch",
+            "colname": "Source branch"
+        },
+        {
+            "prop": "work_in_progress",
+            "colname": "WIP",
+            "type": "bool"
+        },
+        {
+            "prop": "state",
+            "colname": "State"
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "assignee",
+            "colname": "Assigned to",
+            "attr": "name"
+        },
+        {
+            "prop": "created_at",
+            "colname": "Creation date",
+            "type": "datetime"
+        },
+        {
+            "prop": "milestone",
+            "colname": "Milestone",
+            "attr": "title"
+        },
+        {
+            "prop": "labels",
+            "colname": "Labels",
+            "type": "list"
+        },
+        {
+            "prop": "merge_status",
+            "colname": "Merge status"
+        }
     ],
-    "merge_view_columns_present": ["iid", "title", "author", "assignee", "state", "work_in_progress"],
+    "merge_view_columns_present": [
+        "iid",
+        "title",
+        "author",
+        "assignee",
+        "state",
+        "work_in_progress"
+    ],
     "pipeline_view_columns": [
-        { "prop": "id", "colname": "ID"},
-        { "prop": "ref", "colname": "Branch"},
-        { "prop": "status", "colname": "Status"},
-        { "prop": "user", "colname": "User", "attr": "name"},
-        { "prop": "created_at", "colname": "Created", "type": "datetime" },
-        { "prop": "started_at", "colname": "Started", "type": "datetime" },
-        { "prop": "updated_at", "colname": "Updated", "type": "datetime" },
-        { "prop": "finished_at", "colname": "Finished", "type": "datetime" },
-        { "prop": "duration", "colname": "Duration", "type": "seconds" }
+        {
+            "prop": "id",
+            "colname": "ID"
+        },
+        {
+            "prop": "ref",
+            "colname": "Branch"
+        },
+        {
+            "prop": "status",
+            "colname": "Status"
+        },
+        {
+            "prop": "user",
+            "colname": "User",
+            "attr": "name"
+        },
+        {
+            "prop": "created_at",
+            "colname": "Created",
+            "type": "datetime"
+        },
+        {
+            "prop": "started_at",
+            "colname": "Started",
+            "type": "datetime"
+        },
+        {
+            "prop": "updated_at",
+            "colname": "Updated",
+            "type": "datetime"
+        },
+        {
+            "prop": "finished_at",
+            "colname": "Finished",
+            "type": "datetime"
+        },
+        {
+            "prop": "duration",
+            "colname": "Duration",
+            "type": "seconds"
+        }
     ],
-    "pipeline_view_columns_present": ["id", "ref", "status", "user"],
+    "pipeline_view_columns_present": [
+        "id",
+        "ref",
+        "status",
+        "user"
+    ],
     "snippet_view_columns": [
-        { "prop": "id", "colname": "Id"},
-        { "prop": "title", "colname": "Title"},
-        { "prop": "author", "colname": "Author", "attr": "name"},
-        { "prop": "file_name", "colname": "File name", "attr": "name"},
-        { "prop": "updated_at", "colname": "Last updated", "type": "datetime"}
+        {
+            "prop": "id",
+            "colname": "Id"
+        },
+        {
+            "prop": "title",
+            "colname": "Title"
+        },
+        {
+            "prop": "author",
+            "colname": "Author",
+            "attr": "name"
+        },
+        {
+            "prop": "file_name",
+            "colname": "File name",
+            "attr": "name"
+        },
+        {
+            "prop": "updated_at",
+            "colname": "Last updated",
+            "type": "datetime"
+        }
     ],
-    "snippet_view_columns_present": ["id", "name"]
+    "snippet_view_columns_present": [
+        "id",
+        "name"
+    ]
 }

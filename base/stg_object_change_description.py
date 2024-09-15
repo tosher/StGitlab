@@ -1,45 +1,45 @@
 #!/usr/bin/env python\n
 # -*- coding: utf-8 -*-
 
-# import sublime
-import sublime_plugin
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+import sublime_plugin  # type: ignore
+
 from . import utils
 from .editbox import Editbox
+from .stg_object import StGitlabObjectTextCommand
+
+if TYPE_CHECKING:
+    from typing import Any
+    import sublime  # type: ignore
 
 
-class StGitlabObjectChangeDescriptionCommand(sublime_plugin.TextCommand):
+class StGitlabObjectChangeDescriptionCommand(StGitlabObjectTextCommand):
+    VALID_SCREENS = {
+        "issue": ["screen_view"],
+        "merge": ["screen_view"],
+    }
 
-    def run(self, edit):
+    def run(self, edit: sublime.Edit) -> None:
         gitlab = utils.gl.get()
         project = gitlab.project()
         obj = gitlab.object_by_view()
-        on_done = 'st_gitlab_object_change_description_done'
+        on_done = "st_gitlab_object_change_description_done"
         eb = Editbox(self.view.id())
         eb.edit(
-            'Description',
+            "Description",
             on_done,
             obj.description or None,
             project_id=project.id if project else None,
-            object_id=obj.iid if hasattr(obj, 'iid') else obj.id
+            object_id=obj.iid if hasattr(obj, "iid") else obj.id,
         )
-
-    def is_visible(self, *args):
-        screen = self.view.settings().get('screen')
-        if not screen:
-            return False
-        valid_screens = [
-            utils.object_commands.get('issue', {}).get('screen_view'),
-            utils.object_commands.get('merge', {}).get('screen_view')
-        ]
-        if screen in valid_screens:
-            return True
-        return False
 
 
 class StGitlabObjectChangeDescriptionDoneCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text, obj_kwargs):
+    def run(self, edit: sublime.Edit, text: str, obj_kwargs: Any) -> None:
         gitlab = utils.gl.get(self.view)
         obj = gitlab.object_by_view()
         obj.description = text
         obj.save(title=obj.title)
-        self.view.run_command('st_gitlab_object_refresh')
+        self.view.run_command("st_gitlab_object_refresh")

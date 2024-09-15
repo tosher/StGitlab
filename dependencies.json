@@ -1,7 +1,11 @@
 {
    "*": {
       "*": [
-         "requests"
+         "requests",
+         "urllib3",
+         "idna",
+         "six",
+         "charset_normalizer"
       ]
    }
 }
